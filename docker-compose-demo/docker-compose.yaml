@@ -1,0 +1,95 @@
+version: '3.8'
+ 
+services:
+
+  apache2:
+
+    image: httpd:latest
+
+    platform: linux/arm64
+
+    container_name: apache2-container
+
+    ports:
+
+      - "8081:80" # Maps Apache's port 80 to localhost:8081
+
+    volumes:
+
+      - ./apache2:/usr/local/apache2/htdocs # Mount local directory to Apache's web root
+ 
+  dvwa:
+
+    image: vulnerables/web-dvwa
+
+    platform: linux/amd64
+
+    container_name: dvwa-container
+
+    ports:
+
+      - "8080:80" # Maps DVWA's port 80 to localhost:8080
+
+    environment:
+
+      - MYSQL_USER=dvwa
+
+      - MYSQL_PASSWORD=dvwa
+
+      - MYSQL_ROOT_PASSWORD=root
+
+      - MYSQL_DATABASE=dvwa
+
+    depends_on:
+
+      - dvwa-db
+ 
+  dvwa-db:
+
+    image: mysql:5.7
+
+    platform: linux/amd64
+
+    container_name: dvwa-db-container
+
+    environment:
+
+      - MYSQL_ROOT_PASSWORD=root
+
+      - MYSQL_DATABASE=dvwa
+
+      - MYSQL_USER=dvwa
+
+      - MYSQL_PASSWORD=dvwa
+
+    volumes:
+
+      - dvwa-db-data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+ 
+  nginx:
+
+    image: nginx:latest
+
+    container_name: nginx-container
+
+    ports:
+
+      - "80:80" # Maps NGINX's port 80 to localhost:80
+
+    volumes:
+
+      - ./nginx.conf:/etc/nginx/nginx.conf # Custom NGINX configuration
+      - ./html:/usr/share/nginx/html #Mount folder containing index.html
+
+    depends_on:
+
+      - apache2
+
+      - dvwa
+ 
+volumes:
+
+  dvwa-db-data:
+
+ 
