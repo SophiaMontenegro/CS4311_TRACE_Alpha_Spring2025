@@ -1,7 +1,8 @@
 <script>
-  import Sidebar from '$lib/components/Sidebar.svelte';
+  //import Sidebar from '$components/Sidebar.svelte';
+  import Sidebar from '$src/components/Sidebar.svelte'; // This works with SvelteKit's default config
   import { page } from '$app/stores';
-  import '../../Styling/app.css';
+  import '../../app.css';
   
   // Extract the current section from the URL
   $: currentSection = $page.url.pathname.split('/').pop() || 'projects';

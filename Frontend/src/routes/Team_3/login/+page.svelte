@@ -35,7 +35,7 @@
             if (response.ok) {
                 localStorage.setItem('analyst_id', data.analyst_id);
                 localStorage.setItem('analyst_initials', initials.trim());
-                goto('/dashboard');
+                goto('/Team_3/dashboard');
             } else {
                 debugInfo = JSON.stringify(data);
                 errorMessage = data.detail || 'Invalid analyst initials';
@@ -51,7 +51,7 @@
     function bypassLogin() {
         localStorage.setItem('analyst_id', 'test123');
         localStorage.setItem('analyst_initials', 'TEST');
-        goto('/dashboard');
+        goto('/Team_3/dashboard');
     }
 
     function toggleRegisterForm() {
@@ -87,7 +87,7 @@
             if (response.ok) {
                 localStorage.setItem('analyst_id', data.analyst_id);
                 localStorage.setItem('analyst_initials', initials.trim());
-                goto('/dashboard');
+                goto('/Team_3/dashboard');
             } else {
                 debugInfo = JSON.stringify(data);
                 errorMessage = data.detail || 'Registration failed';
