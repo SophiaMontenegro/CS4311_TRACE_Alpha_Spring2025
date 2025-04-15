@@ -9,7 +9,7 @@
     let currentZoom = 1;
   
     async function loadTreeData() {
-      const res = await fetch("/web-tree/dummy_tree.json");
+      const res = await fetch("/webtree/dummy_tree.json");
       treeData = await res.json();
       renderTreeGraph();
     }

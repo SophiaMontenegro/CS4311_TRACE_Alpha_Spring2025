@@ -1,0 +1,61 @@
+[
+  {
+    "node_id": "198.51.100.1",
+    "name": "/",
+    "severity": "root",
+    "children": [
+      {
+        "node_id": "198.51.100.3",
+        "name": "/help",
+        "severity": "high",
+        "children": []
+      },
+      {
+        "node_id": "198.51.100.1",
+        "name": "/home",
+        "severity": "high",
+        "children": [
+          {
+            "node_id": "198.51.100.1",
+            "name": "/home/dashboard",
+            "severity": "medium",
+            "children": [
+              {
+                "node_id": "198.51.100.1",
+                "name": "/home/dashboard/settings",
+                "severity": "low",
+                "children": []
+              },
+              {
+                "node_id": "198.51.100.1",
+                "name": "/home/dashboard/metrics",
+                "severity": "high",
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "node_id": "198.51.100.1",
+        "name": "/about",
+        "severity": "medium",
+        "children": [
+          {
+            "node_id": "198.51.100.1",
+            "name": "/about/team",
+            "severity": "high",
+            "children": [
+              {
+                "node_id": "198.51.100.1",
+                "name": "/about/team/members",
+                "severity": "low",
+                "children": []
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]

@@ -100,7 +100,7 @@ class WebTreeController:
             # Refresh and save updated tree to file (always)
             updated_tree = self.tree_builder.fetch_tree()
             formatted_tree = self.build_tree_structure(updated_tree)
-            file_path = os.path.join(BASE_DIR, "../frontend-TRACE/static/web-tree/dummy_tree.json")
+            file_path = os.path.join(BASE_DIR, "../../../Frontend/static/webtree/dummy_tree.json")
             with open(file_path, "w") as file:
                 json.dump(formatted_tree, file, indent=2)
             print(f"Updated tree saved to {file_path}")
