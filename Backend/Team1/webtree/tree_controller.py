@@ -36,6 +36,14 @@ class WebTreeController:
         nodes = {}
         tree = []
 
+        hidden_group = {
+            "node_id": "hidden",
+            "name": "Hidden Nodes",
+            "severity": "low",
+            "children": [],
+        }
+
+
         for item in data:
             path = item["path"]
             name = path  # Full path as name
@@ -62,7 +70,10 @@ class WebTreeController:
             if parent_path in nodes:
                 nodes[parent_path]["children"].append(node)
             else:
-                tree.append(node)  # Fallback if no parent exists
+                hidden_group["children"].append(node)
+
+        if hidden_group["children"]:
+            tree.append(hidden_group)
 
         return tree
 
