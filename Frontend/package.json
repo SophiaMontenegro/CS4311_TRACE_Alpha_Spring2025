@@ -41,6 +41,7 @@
 	},
 	"dependencies": {
 		"@tanstack/table-core": "^8.21.2",
+		"d3": "^7.9.0",
 		"lucide-svelte": "^0.479.0",
 		"mode-watcher": "^0.5.1"
 	}
