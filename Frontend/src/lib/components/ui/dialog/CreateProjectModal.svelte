@@ -1,9 +1,9 @@
 <script lang="ts">
     import { createEventDispatcher } from 'svelte';
     //import { X, CalendarIcon, UploadCloud, Trash2, UserPlus, Mail } from "lucide-svelte";
-    import { Input } from '../../../components/ui/input';
-    import { Textarea } from '../../../components/ui/textarea';
-    import { Button } from '../../../components/ui/button';
+    import { Input } from '../input';
+    import { Textarea } from '../textarea';
+    import { Button } from '../button';
 
 
     import { CalendarIcon, Clock, Mail, Trash2, Check, UserPlus, X } from 'lucide-svelte';

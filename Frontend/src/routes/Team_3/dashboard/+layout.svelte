@@ -1,38 +1,30 @@
 <script>
-  //import Sidebar from '$components/Sidebar.svelte';
-  import Sidebar from '$src/components/Sidebar.svelte'; // This works with SvelteKit's default config
-  import { page } from '$app/stores';
-  import '../../app.css';
-  
-  // Extract the current section from the URL
-  $: currentSection = $page.url.pathname.split('/').pop() || 'projects';
+    import Sidebar_projects from "$lib/components/ui/sidebar/Sidebar_projects.svelte";
+    import { ModeWatcher } from "mode-watcher";
+    import "../../../app.css";
 </script>
+<svelte:head>
+    <title>TRACE | Project Dashboard</title>
+</svelte:head>
 
-<div class="dashboard-layout">
-  <Sidebar activeSection={currentSection} />
-  
-  <main class="content">
-    <slot />
-  </main>
+<ModeWatcher />
+
+<div class="app-container">
+    <Sidebar_projects />
+    <main class="content">
+        <slot />
+    </main>
 </div>
 
 <style>
-  .dashboard-layout {
-    display: flex;
-    width: 100%;
-    height: 100vh;
-    overflow: hidden;
-  }
-  
-  .content {
-    flex: 1;
-    padding: 20px;
-    overflow-y: auto;
-  }
-  
-  :global(body) {
-    margin: 0;
-    padding: 0;
-    font-family: Arial, sans-serif;
-  }
+    .app-container {
+        display: flex;
+        max-height: 100vh;
+        background-color: var(--background);
+    }
+
+    .content {
+        flex-grow: 1;
+        overflow-y: auto;
+    }
 </style>
