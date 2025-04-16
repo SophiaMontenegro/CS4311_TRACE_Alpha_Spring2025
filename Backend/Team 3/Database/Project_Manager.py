@@ -310,7 +310,7 @@ class ProjectManager:
         self.db_manager.run_query(query_delete, params)
 
         print(f"Project '{project_name}' has been deleted successfully by {analyst}.")
-
+        return True
 
 
     def save_project(self, project_id):

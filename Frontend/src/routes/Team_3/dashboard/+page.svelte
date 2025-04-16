@@ -5,8 +5,20 @@
     import EditProjectDialog from '$lib/components/ui/project_management/EditProjectDialog.svelte';
     import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '$lib/components/ui/dropdown-menu';
     import {CalendarIcon, Lock, Settings2, MoreHorizontal, Trash2} from 'lucide-svelte';
+    import {
+        AlertDialog,
+        AlertDialogTrigger,
+        AlertDialogContent,
+        AlertDialogHeader,
+        AlertDialogFooter,
+        AlertDialogTitle,
+        AlertDialogDescription,
+        AlertDialogCancel,
+        AlertDialogAction
+    } from '$lib/components/ui/alert-dialog';
 
-    //import * as DropdownMenu from "$lib/components/ui/dropdown-menu/index.js";
+
+
 
     let projects = [];
     let isLoading = true;
@@ -19,6 +31,9 @@
 
     let editDialogOpen = false;
     let currentProject = null;
+
+    let projectToDelete = null;
+    let showDeleteDialog = false;
 
     onMount(async () => {
         analystInitials = localStorage.getItem('analyst_initials') || '';
@@ -121,7 +136,36 @@
     window.toggleProjectLock = toggleProjectLock;
 
     async function deleteProject(name) {
-        // implement :D
+        try {
+            const response = await fetch(`http://127.0.0.1:8000/projects/${encodeURIComponent(name)}/delete?analyst_id=${analystId}`, {
+                method: 'DELETE'
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.detail || 'Failed to delete project');
+            }
+
+            await loadProjects(); // Reload after deletion
+            console.log(`Project '${name}' deleted successfully`);
+        } catch (err) {
+            console.error('Error deleting project:', err);
+            error = err.message;
+        }
+    }
+
+    function confirmDelete(project) {
+        projectToDelete = project;
+        showDeleteDialog = true;
+    }
+
+    async function handleConfirmedDelete() {
+        if (projectToDelete) {
+            await deleteProject(projectToDelete.name);
+            showDeleteDialog = false;
+            projectToDelete = null;
+        }
     }
 
     async function openEditDialog(project) {
@@ -280,13 +324,35 @@
                                         <Settings2 class="w-4 h-4" />
                                         Edit
                                         </button>
-                                        <button
-                                                class="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 dark:hover:bg-gray-700"
-                                                on:click={() => deleteProject(project.name)}
-                                        >
-                                            <Trash2 class="w-4 h-4" />
-                                            Delete
-                                        </button>
+                                        <AlertDialog>
+                                            <AlertDialogTrigger asChild>
+                                                <button
+                                                        class="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 dark:hover:bg-gray-700"
+                                                        on:click={() => confirmDelete(project)}
+                                                >
+                                                    <Trash2 class="w-4 h-4" />
+                                                    Delete
+                                                </button>
+                                            </AlertDialogTrigger>
+                                            {#if showDeleteDialog}
+                                                <AlertDialogContent>
+                                                    <AlertDialogHeader>
+                                                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                                        <AlertDialogDescription>
+                                                            This will permanently delete the project <strong>{projectToDelete?.name}</strong>.
+                                                        </AlertDialogDescription>
+                                                    </AlertDialogHeader>
+                                                    <AlertDialogFooter>
+                                                        <AlertDialogCancel on:click={() => (showDeleteDialog = false)}>Cancel</AlertDialogCancel>
+                                                        <AlertDialogAction class="bg-red-600 hover:bg-red-700" on:click={handleConfirmedDelete}>
+                                                            Delete
+                                                        </AlertDialogAction>
+                                                    </AlertDialogFooter>
+                                                </AlertDialogContent>
+                                            {/if}
+                                        </AlertDialog>
+
+
                                     {/if}
                                 </div>
                             {/if}

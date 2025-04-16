@@ -95,8 +95,9 @@ async def lock_project(project_name: str, analyst_id: str):
     return {"message": "Project lock state changed successfully", "locked": success}
 
 # ✅ Delete a project (only if unlocked)
-@app.delete("/projects/{project_name}")
+@app.delete("/projects/{project_name}/delete")
 async def delete_project(project_name: str, analyst_id: str):
+    print(f"Delete {project_name} by analyst {analyst_id}")
     success = project_manager.delete_project(analyst_id, project_name)
     if success is None:
         raise HTTPException(status_code=403, detail="Project is locked or does not exist")
