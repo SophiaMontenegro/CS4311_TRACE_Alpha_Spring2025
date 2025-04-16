@@ -2,6 +2,10 @@
     import { onMount, tick } from 'svelte';
     import CreateProjectModal from '$lib/components/ui/dialog/CreateProjectModal.svelte';
     import ImportProjectModal from '$lib/components/ui/dialog/ImportProjectModal.svelte';
+    //import EditProjectDialog from '$lib/components/ui/dialog/EditProjectDialog.svelte';
+    import {CalendarIcon, Lock, Ellipsis, MoreHorizontal} from 'lucide-svelte';
+
+    //import * as DropdownMenu from "$lib/components/ui/dropdown-menu/index.js";
 
     let projects = [];
     let isLoading = true;
@@ -16,7 +20,7 @@
         analystId = localStorage.getItem('analyst_id') || '';
 
         if (!analystInitials || !analystId) {
-            window.location.href = '/login';
+            window.location.href = '/Team_3/login';
             return;
         }
 
@@ -86,13 +90,45 @@
     function handleLogout() {
         localStorage.removeItem('analyst_id');
         localStorage.removeItem('analyst_initials');
-        window.location.href = '/login';
+        window.location.href = '/Team_3/login';
     }
+
+    async function toggleProjectLock(projectName) {
+        console.log("Toggling lock for:", projectName, "by", analystInitials);
+        try {
+            const response = await fetch(`http://127.0.0.1:8000/projects/${encodeURIComponent(projectName)}/lock?analyst_id=${analystInitials}`, {
+                method: 'PUT'
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.detail || 'Failed to update lock status');
+            }
+
+            await loadProjects(); // Refresh projects list
+        } catch (err) {
+            console.error('Error toggling lock:', err);
+            error = err.message;
+        }
+    }
+
+    window.toggleProjectLock = toggleProjectLock;
+
+    async function deleteProject(name) {
+        // implement :D
+    }
+
+    async function handleEditProject(projectName) {
+        // implement :D
+    }
+
+
 </script>
 
 <div class="p-6">
     <header class="flex justify-between items-center mb-8">
-        <h1 class="text-3xl font-bold">TRACE Dashboard</h1>
+        <h1 class="text-3xl font-bold">Project Selection</h1>
         <div class="flex items-center gap-4">
             <span class="text-sm text-muted-foreground">Analyst: {analystInitials}</span>
             <button
@@ -129,24 +165,51 @@
             </button>
         </div>
     {:else}
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="space-y-4">
+            <!-- Column Headers -->
+            <div class="grid grid-cols-4 px-6 py-2 text-sm font-semibold text-muted-foreground">
+                <div>Project Name</div>
+                <div>Last Edit</div>
+                <div>Lead Analyst</div>
+                <div class="text-right pr-4"></div> <!-- delete maybe-->
+            </div>
+
+
             {#each projects as project (project.id)}
-                <div class="border border-border rounded-2xl p-4 shadow-sm bg-card space-y-2">
-                    <h3 class="text-lg font-semibold">{project.name}</h3>
-                    <p class="text-sm text-muted-foreground">{project.description || 'No description'}</p>
-                    <div class="text-sm text-muted-foreground">
-                        <span>Start: {project.start_date || 'N/A'}</span> ·
-                        <span>End: {project.end_date || 'N/A'}</span>
+                <div class="grid grid-cols-4 items-center bg-card rounded-2xl px-6 py-4 shadow-sm border border-border">
+                    <!-- Project Info -->
+                    <div class="flex items-center gap-4">
+                        <!-- Colored status bar -->
+                        <div
+                                class="w-1.5 h-12 rounded-full"
+                                class:bg-green-500={!project.locked}
+                                class:bg-red-500={project.locked}
+                        ></div>
+                        <div>
+                            <h3 class="text-base font-semibold text-foreground">{project.name}</h3>
+                        </div>
                     </div>
-                    <div class="text-sm">
-                        Status:
-                        <span class={project.locked ? 'text-red-500' : 'text-green-500'}>
-              {project.locked ? 'Locked' : 'Unlocked'}
-            </span>
+
+                    <!-- Last Edit -->
+                    <div class="text-sm text-muted-foreground">{project.end_date || 'N/A'}</div>
+
+                    <!-- Lead Analyst -->
+                    <div class="text-sm text-muted-foreground">{analystInitials}</div>
+
+                    <!-- Lock icon + button -->
+                    <div class="flex items-center justify-end gap-3">
+                        {#if project.locked}
+                            <Lock class="w-5 h-5 text-muted-foreground" />
+                        {/if}
+
+                        <button
+                                class="text-sm font-medium bg-[var(--secondary)] text-[var(--secondary-foreground)] px-4 py-2 rounded-md hover:bg-[color:var(--secondary)/90]"
+                        >
+                            {project.locked ? 'View' : 'Run Scan'}
+                        </button>
+
                     </div>
-                    <button class="w-full bg-secondary hover:bg-secondary/80 text-sm font-medium py-2 rounded-md">
-                        View Project
-                    </button>
+
                 </div>
             {/each}
         </div>

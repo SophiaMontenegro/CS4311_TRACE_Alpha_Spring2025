@@ -9,22 +9,11 @@
 
 <ModeWatcher />
 
-<div class="app-container">
-    <Sidebar_projects />
-    <main class="content">
+<div class="flex max-h-screen bg-background">
+    <div class="w-64 shrink-0">
+        <Sidebar_projects />
+    </div>
+    <main class="flex-1 overflow-y-auto p-4">
         <slot />
     </main>
 </div>
-
-<style>
-    .app-container {
-        display: flex;
-        max-height: 100vh;
-        background-color: var(--background);
-    }
-
-    .content {
-        flex-grow: 1;
-        overflow-y: auto;
-    }
-</style>

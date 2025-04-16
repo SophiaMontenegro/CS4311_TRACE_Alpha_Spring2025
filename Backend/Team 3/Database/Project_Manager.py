@@ -257,17 +257,19 @@ class ProjectManager:
         """
         if not self.analyst_manager.check_if_lead_and_member(analyst_name, project_name):
             print(f"Error: Analyst '{analyst_name}' is not the lead of project '{project_name}' and cannot toggle the lock status.")
-            return
+            return None
 
         current_status = self._get_project_lock_status(project_name)
         if current_status is None:
             print(f"Error: Project '{project_name}' not found.")
-            return
+            return None
 
         if current_status:
             self.unlock_project(project_name, analyst_name)
+            return False
         else:
             self.lock_project(project_name, analyst_name)
+            return True
 
     def delete_project(self, analyst, project_name):
         """

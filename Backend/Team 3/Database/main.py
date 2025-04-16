@@ -86,17 +86,18 @@ async def create_project(project: ProjectCreate):
         raise HTTPException(status_code=500, detail=str(e))
 
 # ✅ Lock/Unlock a project
-@app.put("/projects/{project_id}/lock")
-async def lock_project(project_id: int, analyst_id: int):
-    success = project_manager.toggle_project_lock(analyst_id, project_id)
+@app.put("/projects/{project_name}/lock")
+async def lock_project(project_name: str, analyst_id: str):
+    print(f"Toggling lock for project {project_name} by analyst {analyst_id}")
+    success = project_manager.toggle_project_lock(project_name, analyst_id)
     if success is None:
         raise HTTPException(status_code=404, detail="Project not found")
     return {"message": "Project lock state changed successfully", "locked": success}
 
 # ✅ Delete a project (only if unlocked)
-@app.delete("/projects/{project_id}")
-async def delete_project(project_id: int, analyst_id: int):
-    success = project_manager.delete_project(analyst_id, project_id)
+@app.delete("/projects/{project_name}")
+async def delete_project(project_name: str, analyst_id: str):
+    success = project_manager.delete_project(analyst_id, project_name)
     if success is None:
         raise HTTPException(status_code=403, detail="Project is locked or does not exist")
     return {"message": "Project deleted successfully"}
