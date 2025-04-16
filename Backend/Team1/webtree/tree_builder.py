@@ -19,21 +19,26 @@ class WebTreeBuilder:
     def process_update(self, json_data):
         """
         Processes the JSON input, creates or updates nodes, and ensures proper parent-child relationships.
+        Assigns severity internally if not provided.
         """
         try:
             data = json.loads(json_data)
             node_path = data.get("path")
-            severity = data.get("severity", "unknown")  # Default severity if missing
-            operation = data.get("operation")
             ip_address = data.get("ip", None)
 
+            # Assign severity if not present
+            severity = data.get("severity") or self.assign_severity(node_path, ip_address)
+            data["severity"] = severity
+
+            operation = data.get("operation")
+
             # Determine parent path correctly
-            if node_path == "/":  
-                parent_path = None  # Root has no parent
+            if node_path == "/":
+                parent_path = None
             elif node_path.count("/") == 1:
-                parent_path = "/"  # First-level nodes should attach to `/`
+                parent_path = "/"
             else:
-                parent_path = "/".join(node_path.split("/")[:-1])  # Normal hierarchy
+                parent_path = "/".join(node_path.split("/")[:-1])
 
             # Create or update the node
             if operation == "add":
@@ -99,8 +104,6 @@ class WebTreeBuilder:
 
             print(f"Node {path} added (Parent: {parent_path if parent_path else 'None'})")
 
-
-
     def update_node(self, path, severity, ip=None):
         """ Updates an existing node's severity. """
         with self.driver.session() as session:
@@ -112,6 +115,15 @@ class WebTreeBuilder:
                 path=path, severity=severity, ip=ip
             )
         print(f"Node updated: {path}")
+
+    def assign_severity(self, path, ip):
+        path = path.lower() if path else ""
+        if any(keyword in path for keyword in ["admin", "login", "reset", "root"]):
+            return "high"
+        elif any(keyword in path for keyword in ["dashboard", "settings", "config"]):
+            return "medium"
+        else:
+            return "low"
 
     def update_severity(self, path, severity):
         with self.driver.session() as session:
