@@ -76,12 +76,14 @@
         try {
             const projectData = event.detail;
 
+            console.log(projectData);
+
             const response = await fetch('http://127.0.0.1:8000/projects/', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     analyst_id: analystId,
-                    project_name: projectData.name,
+                    project_name: projectData.projectName,
                     start_date: projectData.startDate,
                     end_date: projectData.endDate,
                     description: projectData.description || '',
@@ -90,13 +92,31 @@
             });
 
             const responseData = await response.json();
-            if (!response.ok) throw new Error(responseData.detail || 'Failed to create project');
+            if (!response.ok) {
+                let errorMessage = 'Failed to create project';
+                if (responseData.detail) {
+                    // If it's a string or something printable
+                    errorMessage = typeof responseData.detail === 'string'
+                        ? responseData.detail
+                        : JSON.stringify(responseData.detail);
+                } else if (typeof responseData === 'object') {
+                    errorMessage = JSON.stringify(responseData);
+                }
+
+                throw new Error(errorMessage);
+            }
+
 
             await loadProjects();
             closeCreateModal();
         } catch (err) {
-            console.error('Error creating project:', err);
-            error = err.message;
+            if (err instanceof Error) {
+                console.error("Error creating project:", err.message);
+                error = err.message;
+            } else {
+                console.error("Unknown error creating project:", JSON.stringify(err, null, 2));
+                error = 'An unknown error occurred';
+            }
         }
     }
 
