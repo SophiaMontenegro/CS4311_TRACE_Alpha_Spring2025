@@ -6,7 +6,7 @@
 	let selectedNode = null;
 	let svgElement;
 	let zoomBehavior;
-	let currentZoom = 1;
+	let currentZoom = 0.6;
 
 	async function loadTreeData() {
 		const res = await fetch('/webtree/dummy_tree.json');
@@ -77,17 +77,15 @@
 			const rootNode = root; // root node of this tree
 
 			if (treeRoot.path === '/') {
-				const centerX = width / 2 - root.x;
-				const centerY = height / 2 - root.y;
+				const rootNode = root.descendants()[0]; // root is first in descendants
+				const centerX = width / 2 - rootNode.x;
+				const centerY = height / 2 - rootNode.y;
 
 				zoomGroup.attr('transform', `translate(${centerX}, ${centerY})`);
-				svgElement
-					.transition()
-					.duration(300)
-					.call(
-						zoomBehavior.transform,
-						d3.zoomIdentity.translate(centerX, centerY).scale(currentZoom)
-					);
+				svgElement.call(
+					zoomBehavior.transform,
+					d3.zoomIdentity.translate(centerX, centerY).scale(currentZoom)
+				);
 			}
 
 			// Apply vertical offset based on index to stack roots vertically
@@ -176,9 +174,14 @@
 			headers: {
 				'Content-Type': 'application/json'
 			},
+			// body: JSON.stringify({
+			// 	ip: selectedNode.node_id,
+			// 	path: selectedNode.name,
+			// 	severity: newSeverity
+			// })
 			body: JSON.stringify({
 				ip: selectedNode.node_id,
-				path: selectedNode.name,
+				path: selectedNode.path || selectedNode.name, // fallback if path doesn't exist
 				severity: newSeverity
 			})
 		})
@@ -263,7 +266,7 @@
 
 	.popup {
 		position: fixed;
-		top: 20%;
+		top: 0%;
 		left: 50%;
 		transform: translateX(-50%);
 		background: rgba(0, 0, 0, 0.3);
@@ -274,7 +277,7 @@
 
 	.popup-content {
 		position: absolute;
-		top: 30%;
+		top: 40%;
 		left: 50%;
 		transform: translate(-50%, -30%);
 		background: white;
