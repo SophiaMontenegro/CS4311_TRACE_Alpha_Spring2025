@@ -131,6 +131,7 @@
     function openEditDialog(project) {
         currentProject = project;
         editDialogOpen = true;
+        console.log(currentProject);
     }
 
     function handleSave(updatedProject) {
@@ -268,7 +269,11 @@
                                         <!-- Add Edit Button -->
                                         <button
                                                 class="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-muted-foreground hover:bg-gray-100 dark:hover:bg-gray-700"
-                                                on:click={() => openEditDialog(project)}
+                                                on:click={() =>
+                                                {
+                                                    openEditDialog(project);
+                                                    closeDropdown();
+                                                }}
                                         >
                                         <Settings2 class="w-4 h-4" />
                                         Edit
@@ -310,8 +315,9 @@
 
     {#if editDialogOpen}
         <EditProjectDialog
-                project={currentProject}
-                onSave={handleSave}
+            project={currentProject}
+            onSave={handleSave}
+            on:cancel={() => (editDialogOpen = false)}
         />
     {/if}
 </div>

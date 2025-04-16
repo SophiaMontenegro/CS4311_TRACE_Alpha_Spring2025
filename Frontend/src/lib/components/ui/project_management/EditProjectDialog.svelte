@@ -1,16 +1,25 @@
 <script>
-    import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '$lib/components/ui/dialog/index.js';
+    import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '$lib/components/ui/dialog/index.js';
     import { Button } from '$lib/components/ui/button/index.js';
     import { Input } from '$lib/components/ui/input/index.js';
     import { Textarea } from '$lib/components/ui/textarea/index.js';
+    import { createEventDispatcher, onMount } from 'svelte';
 
     export let project;
-    export let onSave = () => {};
-    let name = project.name;
-    let endDate = project.endDate || '';
-    let description = project.description || '';
-    let users = [...(project.users || [])];
+    const dispatch = createEventDispatcher();
+
+    let name = '';
+    let endDate = '';
+    let description = '';
+    let users = [];
     let newUser = '';
+
+    onMount(() => {
+        name = project.name;
+        endDate = project.endDate || '';
+        description = project.description || '';
+        users = [...(project.users || [])];
+    });
 
     function addUser() {
         if (newUser.trim()) {
@@ -24,28 +33,32 @@
     }
 
     function save() {
-        onSave({
+        dispatch('save', {
             ...project,
             name,
             endDate,
             description,
-            users,
+            users
         });
+    }
+
+    function cancel() {
+        dispatch('cancel');
     }
 </script>
 
-<Dialog>
-    <DialogTrigger let:open>
-        <button on:click={open} class="w-full text-left">Edit</button>
-    </DialogTrigger>
+<Dialog open={true}>
     <DialogContent class="max-w-lg">
         <DialogHeader>
             <DialogTitle>Edit Project</DialogTitle>
         </DialogHeader>
 
         <div class="space-y-4">
+            Project Name:
             <Input bind:value={name} placeholder="Project Name" />
+            End Date:
             <Input bind:value={endDate} type="date" placeholder="End Date" />
+            Description:
             <Textarea bind:value={description} placeholder="Description" />
 
             <div>
@@ -67,6 +80,7 @@
 
         <DialogFooter>
             <Button on:click={save}>Save</Button>
+            <Button variant="outline" on:click={cancel}>Cancel</Button>
         </DialogFooter>
     </DialogContent>
 </Dialog>
