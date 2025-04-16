@@ -122,24 +122,3 @@ class WebTreeBuilder:
             """
             session.run(query, path=path, severity=severity)
             print(f"Severity updated for {path} to {severity}")
-
-
-
-
-if __name__ == "__main__":
-    builder = WebTreeBuilder("bolt://localhost:7687", "neo4j", "chrischris21")
-
-    # Fetch initial tree
-    print("Initial Tree:", builder.fetch_tree())
-
-
-    # Step 2: Add `/root/home/config` under `/root/home`
-    builder.add_node("/root/home/config", "medium", "/root/home")
-
-    # Step 3: Update `/root/home/user` severity to "critical"
-    builder.update_node("/root/home/user", "critical")
-
-    # Fetch updated tree
-    print("Updated Tree:", builder.fetch_tree())
-
-    builder.close()
