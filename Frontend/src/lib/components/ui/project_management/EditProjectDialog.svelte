@@ -7,12 +7,15 @@
 
     export let project;
     const dispatch = createEventDispatcher();
+    let modalOpen = true;
 
     let name = '';
     let endDate = '';
     let description = '';
     let users = [];
     let newUser = '';
+
+    console.log("EditProjectDialog mounted"); // ✅ Check this!
 
     onMount(() => {
         name = project.name;
@@ -32,7 +35,8 @@
         users.splice(index, 1);
     }
 
-    function save() {
+    async function handleSave() {
+        console.log('Saving project:', project);
         dispatch('save', {
             ...project,
             name,
@@ -40,10 +44,12 @@
             description,
             users
         });
+        //modalOpen = false;
     }
 
-    function cancel() {
+    async function handleCancel() {
         dispatch('cancel');
+        //modalOpen = false;
     }
 </script>
 
@@ -57,12 +63,12 @@
             Project Name:
             <Input bind:value={name} placeholder="Project Name" />
             End Date:
-            <Input bind:value={endDate} type="date" placeholder="End Date" />
+            <Input bind:value={endDate} type="date"  placeholder="End Date" />
             Description:
             <Textarea bind:value={description} placeholder="Description" />
 
             <div>
-                <div class="mb-2 font-semibold">Users</div>
+                <div class="mb-2 font-semibold">Analysts</div>
                 <div class="space-y-1">
                     {#each users as user, index}
                         <div class="flex justify-between items-center">
@@ -75,12 +81,16 @@
                     <Input bind:value={newUser} placeholder="Add user..." />
                     <Button on:click={addUser}>Add</Button>
                 </div>
+
+                <!-- analysts -->
+
             </div>
         </div>
 
+
         <DialogFooter>
-            <Button on:click={save}>Save</Button>
-            <Button variant="outline" on:click={cancel}>Cancel</Button>
+            <Button on:click={() => handleSave()}>Save</Button>
+            <Button variant="outline" on:click={handleCancel}>Cancel</Button>
         </DialogFooter>
     </DialogContent>
 </Dialog>

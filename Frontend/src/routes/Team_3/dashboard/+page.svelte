@@ -124,21 +124,23 @@
         // implement :D
     }
 
-    async function handleEditProject(projectName) {
-        // implement :D
-    }
-
-    function openEditDialog(project) {
+    async function openEditDialog(project) {
         currentProject = project;
-        editDialogOpen = true;
+        editDialogOpen = false; // Force it closed first
+        await tick();           // Wait for DOM update cycle
+        editDialogOpen = true;  // Now reopen
         console.log(currentProject);
     }
 
     function handleSave(updatedProject) {
         // Save logic here, such as updating the project in your state or database
-        console.log(updatedProject);
+        console.log('Save event received in parent:', updatedProject);
         editDialogOpen = false; // Close the dialog after saving
     }
+    function handleCancel() {
+        editDialogOpen = false; // Close the dialog when canceled
+    }
+
 
 
 
@@ -316,8 +318,8 @@
     {#if editDialogOpen}
         <EditProjectDialog
             project={currentProject}
-            onSave={handleSave}
-            on:cancel={() => (editDialogOpen = false)}
+            on:save={handleSave}
+            on:cancel={handleCancel}
         />
     {/if}
 </div>
