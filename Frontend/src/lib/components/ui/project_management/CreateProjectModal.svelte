@@ -26,7 +26,8 @@
 
     let errors = {
         projectName: '',
-        dates: ''
+        startDate: '',
+        endDate: ''
     };
 
     function handleFileUpload(event: Event) {
@@ -51,13 +52,13 @@
         }
 
         if (!startDate) {
-            errors.dates = 'Start date is required';
+            errors.startDate = 'Start date is required';
             valid = false;
         } else if (!endDate) {
-            errors.dates = 'End date is required';
+            errors.endDate = 'End date is required';
             valid = false;
         } else if (new Date(endDate) < new Date(startDate)) {
-            errors.dates = 'End date must be after start date';
+            errors.startDate = 'End date must be after start date';
             valid = false;
         }
 
@@ -91,6 +92,7 @@
 
             console.log('Submitting project data:', projectData);
             dispatch('create', projectData);
+            handleClose();
         }
     }
 
@@ -122,24 +124,34 @@
                 {/if}
             </div>
 
-            <!-- Start Date -->
-            <div class="space-y-2">
-                <label class="text-sm font-medium">Start Date *</label>
-                <div class="relative">
-                    <Input type="date" bind:value={startDate} class="pr-10" />
-                    <CalendarIcon class="absolute right-3 top-2.5 w-5 h-5 text-muted-foreground" />
+            <!-- Start & End Dates in same row -->
+            <div class="col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Start Date -->
+                <div class="space-y-2">
+                    <label class="text-sm font-medium">Start Date *</label>
+                    <div class="relative">
+                        <Input type="date" bind:value={startDate} class="pr-10" />
+
+                    </div>
+                    {#if errors.startDate}
+                        <p class="text-red-500 text-sm">{errors.startDate}</p>
+                    {/if}
+                </div>
+
+                <!-- End Date -->
+                <div class="space-y-2">
+                    <label class="text-sm font-medium">End Date *</label>
+                    <div class="relative">
+                        <Input type="date" bind:value={endDate} class="pr-10" />
+
+                    </div>
+                    {#if errors.endDate}
+                        <p class="text-red-500 text-sm">{errors.endDate}</p>
+                    {/if}
                 </div>
             </div>
 
-            <!--
-            <div class="space-y-2">
-                <label class="text-sm font-medium">Time *</label>
-                <div class="relative">
-                    <Input type="time" bind:value={time} class="pr-10" />
-                    <Clock class="absolute right-3 top-2.5 w-5 h-5 text-muted-foreground" />
-                </div>
-            </div>
-            Time -->
+
 
             <!-- Project Description -->
             <div class="space-y-2 md:col-span-2">
@@ -191,7 +203,14 @@
         <!-- Action Buttons -->
         <div class="flex justify-end gap-2">
             <Button variant="ghost" size="sm" on:click={handleClose}>Cancel</Button>
-            <Button variant="default" size="sm" on:click={handleSubmit}>Create</Button>
+            <!-- Not in a form -->
+            <Button variant="default" size="sm" on:click={() => {
+                console.log("Button clicked!");
+                handleSubmit();
+                }}>
+                Create
+            </Button>
+
         </div>
     </div>
 </div>
