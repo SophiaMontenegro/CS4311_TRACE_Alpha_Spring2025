@@ -89,8 +89,8 @@
 
 
         <DialogFooter>
-            <Button on:click={() => handleSave()}>Save</Button>
-            <Button variant="outline" on:click={handleCancel}>Cancel</Button>
+            <Button onclick={() => handleSave()}>Save</Button>
+            <Button variant="outline" onclick={handleCancel}>Cancel</Button>
         </DialogFooter>
     </DialogContent>
 </Dialog>

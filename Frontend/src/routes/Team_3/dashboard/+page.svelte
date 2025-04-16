@@ -17,8 +17,7 @@
         AlertDialogAction
     } from '$lib/components/ui/alert-dialog';
 
-
-
+    import Alert from '$lib/components/ui/alert/Alert.svelte';
 
     let projects = [];
     let isLoading = true;
@@ -33,7 +32,7 @@
     let currentProject = null;
 
     let projectToDelete = null;
-    let showDeleteDialog = false;
+    let showDeleteDialog = false; //come back
 
     onMount(async () => {
         analystInitials = localStorage.getItem('analyst_initials') || '';
@@ -136,7 +135,9 @@
     window.toggleProjectLock = toggleProjectLock;
 
     async function deleteProject(name) {
+        console.log("Deleting project:", name); // Not working
         try {
+            showDeleteDialog = false;
             const response = await fetch(`http://127.0.0.1:8000/projects/${encodeURIComponent(name)}/delete?analyst_id=${analystId}`, {
                 method: 'DELETE'
             });
@@ -156,16 +157,22 @@
     }
 
     function confirmDelete(project) {
+        console.log("message from confirm delete: Project", project.name); // 👈 This is working
         projectToDelete = project;
         showDeleteDialog = true;
     }
 
     async function handleConfirmedDelete() {
+        console.log("message from handle confirmed delete: Project", projectToDelete.name); // Not working
         if (projectToDelete) {
             await deleteProject(projectToDelete.name);
             showDeleteDialog = false;
             projectToDelete = null;
         }
+    }
+
+    function handleCancelDelete() {
+        showDeleteDialog = false; // Close the dialog when canceled
     }
 
     async function openEditDialog(project) {
@@ -324,33 +331,13 @@
                                         <Settings2 class="w-4 h-4" />
                                         Edit
                                         </button>
-                                        <AlertDialog>
-                                            <AlertDialogTrigger asChild>
-                                                <button
-                                                        class="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 dark:hover:bg-gray-700"
-                                                        on:click={() => confirmDelete(project)}
-                                                >
-                                                    <Trash2 class="w-4 h-4" />
-                                                    Delete
-                                                </button>
-                                            </AlertDialogTrigger>
-                                            {#if showDeleteDialog}
-                                                <AlertDialogContent>
-                                                    <AlertDialogHeader>
-                                                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                                                        <AlertDialogDescription>
-                                                            This will permanently delete the project <strong>{projectToDelete?.name}</strong>.
-                                                        </AlertDialogDescription>
-                                                    </AlertDialogHeader>
-                                                    <AlertDialogFooter>
-                                                        <AlertDialogCancel on:click={() => (showDeleteDialog = false)}>Cancel</AlertDialogCancel>
-                                                        <AlertDialogAction class="bg-red-600 hover:bg-red-700" on:click={handleConfirmedDelete}>
-                                                            Delete
-                                                        </AlertDialogAction>
-                                                    </AlertDialogFooter>
-                                                </AlertDialogContent>
-                                            {/if}
-                                        </AlertDialog>
+                                        <button
+                                                class="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-muted-foreground hover:bg-gray-100 dark:hover:bg-gray-700"
+                                                on:click={() =>(confirmDelete(project))}
+                                        >
+                                            <Trash2 class="w-4 h-4" />
+                                            Delete
+                                        </button>
 
 
                                     {/if}
@@ -388,4 +375,12 @@
             on:cancel={handleCancel}
         />
     {/if}
+
+    <Alert
+            isOpen={showDeleteDialog}
+            title="Are you absolutely sure?"
+            message="This action cannot be undone."
+            onCancel={handleCancelDelete}
+            onContinue={handleConfirmedDelete}
+    />
 </div>

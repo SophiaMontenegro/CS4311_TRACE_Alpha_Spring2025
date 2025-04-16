@@ -202,9 +202,9 @@
 
         <!-- Action Buttons -->
         <div class="flex justify-end gap-2">
-            <Button variant="ghost" size="sm" on:click={handleClose}>Cancel</Button>
+            <Button variant="ghost" size="sm" onclick={handleClose}>Cancel</Button>
             <!-- Not in a form -->
-            <Button variant="default" size="sm" on:click={() => {
+            <Button variant="default" size="sm" onclick={() => {
                 console.log("Button clicked!");
                 handleSubmit();
                 }}>
