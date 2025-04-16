@@ -14,9 +14,9 @@ from Team7.src.modules.crawler.service.crawler_service_router import get_websock
 from Team7.src.modules.crawler.service.crawler_service import job_results as crawler_job_results, running_jobs as crawler_running_jobs
 
 # ML Routers and Services
-# from Team7.src.modules.ai.ml_service_router import get_service_routers as get_ml_router
-# from Team7.src.modules.ai.ml_service_router import get_websocket_handlers as get_ml_websocket_handlers
-# from Team7.src.modules.ai.ml_service import job_results as ml_job_results, running_jobs as ml_running_jobs
+from Team7.src.modules.ai.service.ml_service_router import get_service_routers as get_ml_router
+from Team7.src.modules.ai.service.ml_service_router import get_websocket_handlers as get_ml_websocket_handlers
+from Team7.src.modules.ai.service.ml_service import job_results as ml_job_results, running_jobs as ml_running_jobs
 
 # Fuzzer Routers and Services
 from Team7.src.modules.fuzzer.service.fuzzer_service_router import get_service_routers as gett_fuzzer_routers
@@ -140,29 +140,29 @@ class Query:
     #                 return []
     #     return []
     
-    # @strawberry.field
-    # def get_ml_results(self, job_id: str) -> List[CredentialType]:
-    #     if job_id in ml_job_results and 'results_file' in ml_job_results[job_id]:
-    #         result_file = ml_job_results[job_id]['results_file']
+    @strawberry.field
+    def get_ml_results(self, job_id: str) -> List[CredentialType]:
+        if job_id in ml_job_results and 'results_file' in ml_job_results[job_id]:
+            result_file = ml_job_results[job_id]['results_file']
 
-    #         if os.path.exists(result_file):
-    #             try:
-    #                 with open(result_file, 'r') as file:
-    #                     data = json.load(file)
-    #                     return [
-    #                         CredentialType(
-    #                             id=item['id'],
-    #                             username=item['username'],
-    #                             username_score=item['username_score'],
-    #                             password=item['password'],
-    #                             is_secure=item['is_secure'],
-    #                             password_evaluation=item['password_evaluation'],
-    #                         ) for item in data
-    #                     ]
-    #             except Exception as e:
-    #                 logger.error(f'Error reading ML results: {e}')
-    #                 return []
-    #     return []
+            if os.path.exists(result_file):
+                try:
+                    with open(result_file, 'r') as file:
+                        data = json.load(file)
+                        return [
+                            CredentialType(
+                                id=item['id'],
+                                username=item['username'],
+                                username_score=item['username_score'],
+                                password=item['password'],
+                                is_secure=item['is_secure'],
+                                password_evaluation=item['password_evaluation'],
+                            ) for item in data
+                        ]
+                except Exception as e:
+                    logger.error(f'Error reading ML results: {e}')
+                    return []
+        return []
     
     @strawberry.field
     def get_fuzzer_results(self, job_id: str) -> List[FuzzerResultType]:
@@ -208,13 +208,13 @@ class Query:
     #         return 'completed'
     #     return 'not found'
     
-    # @strawberry.field
-    # def get_ml_job_status(self, job_id: str) -> str:
-    #     if job_id in ml_running_jobs:
-    #         return ml_running_jobs[job_id]['status']
-    #     if job_id in ml_job_results:
-    #         return 'completed'
-    #     return 'not found'
+    @strawberry.field
+    def get_ml_job_status(self, job_id: str) -> str:
+        if job_id in ml_running_jobs:
+            return ml_running_jobs[job_id]['status']
+        if job_id in ml_job_results:
+            return 'completed'
+        return 'not found'
 
     @strawberry.field
     def get_fuzzer_job_status(self, job_id: str) -> str:
@@ -253,9 +253,9 @@ for router in get_crawler_routers():
 # for router in get_dbf_routers():
 #     app.include_router(router)
 
-# # ML router
-# for router in get_ml_router():
-#     app.include_router(router)
+# ML router
+for router in get_ml_router():
+    app.include_router(router)
 
 # Fuzzer router
 for router in gett_fuzzer_routers():
@@ -264,7 +264,7 @@ for router in gett_fuzzer_routers():
 # Register WebSocket handlers
 crawler_websocket_handlers = get_crawler_websocket_handlers()
 # dbf_websocket_handlers = get_dbf_websocket_handlers()
-# ml_websocket_handlers = get_ml_websocket_handlers()
+ml_websocket_handlers = get_ml_websocket_handlers()
 fuzzer_websocket_handlers = get_fuzzer_websocket_handlers()
 
 # WebSocket endpoint for crawler updates
@@ -276,9 +276,9 @@ async def crawler_socket(websocket: WebSocket, job_id: str):
 # async def dbf_socket(websocket: WebSocket, job_id: str):
 #     await dbf_websocket_handlers['dbf'](websocket, job_id)
 
-# @app.websocket('/ws/ml/{job_id}')
-# async def ml_socket(websocket: WebSocket, job_id: str):
-#     await ml_websocket_handlers['ml'](websocket, job_id)
+@app.websocket('/ws/ml/{job_id}')
+async def ml_socket(websocket: WebSocket, job_id: str):
+    await ml_websocket_handlers['ml'](websocket, job_id)
 
 @app.websocket('/ws/fuzzer/{job_id}')
 async def fuzzer_socket(websocket: WebSocket, job_id: str):

@@ -1,0 +1,16 @@
+admin
+administrator
+root
+user
+guest
+test
+manager
+support
+developer
+secure
+password
+qwerty
+abc123
+company
+letmein
+trustno1
