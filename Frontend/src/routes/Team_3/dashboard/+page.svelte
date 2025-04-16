@@ -1,9 +1,10 @@
 <script>
     import { onMount, tick } from 'svelte';
-    import CreateProjectModal from '$lib/components/ui/dialog/CreateProjectModal.svelte';
-    import ImportProjectModal from '$lib/components/ui/dialog/ImportProjectModal.svelte';
-    //import EditProjectDialog from '$lib/components/ui/dialog/EditProjectDialog.svelte';
-    import {CalendarIcon, Lock, Ellipsis, MoreHorizontal} from 'lucide-svelte';
+    import CreateProjectModal from '$lib/components/ui/project_management/CreateProjectModal.svelte';
+    import ImportProjectModal from '$lib/components/ui/project_management/ImportProjectModal.svelte';
+    import EditProjectDialog from '$lib/components/ui/project_management/EditProjectDialog.svelte';
+    import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '$lib/components/ui/dropdown-menu';
+    import {CalendarIcon, Lock, Settings2, MoreHorizontal, Trash2} from 'lucide-svelte';
 
     //import * as DropdownMenu from "$lib/components/ui/dropdown-menu/index.js";
 
@@ -14,6 +15,10 @@
     let analystId = '';
     let showCreateModal = false;
     let showImportModal = false;
+    export const ssr = false;
+
+    let editDialogOpen = false;
+    let currentProject = null;
 
     onMount(async () => {
         analystInitials = localStorage.getItem('analyst_initials') || '';
@@ -123,6 +128,40 @@
         // implement :D
     }
 
+    function openEditDialog(project) {
+        currentProject = project;
+        editDialogOpen = true;
+    }
+
+    function handleSave(updatedProject) {
+        // Save logic here, such as updating the project in your state or database
+        console.log(updatedProject);
+        editDialogOpen = false; // Close the dialog after saving
+    }
+
+
+
+    let openDropdownId = null;
+
+    function toggleDropdown(id) {
+        openDropdownId = openDropdownId === id ? null : id;
+    }
+
+    function closeDropdown() {
+        openDropdownId = null;
+    }
+
+    function handleClickOutside(event) {
+        if (!event.target.closest('.options-wrapper')) {
+            closeDropdown();
+        }
+    }
+
+    onMount(() => {
+        window.addEventListener('click', handleClickOutside);
+    });
+
+
 
 </script>
 
@@ -150,7 +189,7 @@
         </button>
     </div>
 
-    {#if isLoading}
+    {#if isLoading }
         <div class="text-gray-500">Loading projects...</div>
     {:else if error}
         <div class="text-red-500">Error: {error}</div>
@@ -191,7 +230,7 @@
                     </div>
 
                     <!-- Last Edit -->
-                    <div class="text-sm text-muted-foreground">{project.end_date || 'N/A'}</div>
+                    <div class="text-sm text-muted-foreground">{project.timestamp || 'N/A'}</div>
 
                     <!-- Lead Analyst -->
                     <div class="text-sm text-muted-foreground">{analystInitials}</div>
@@ -207,6 +246,45 @@
                         >
                             {project.locked ? 'View' : 'Run Scan'}
                         </button>
+                        <!-- Drop Down: Lock, Delete, and Edit -->
+                        <div class="relative options-wrapper">
+                            <button
+                                    class="options-btn p-1 hover:bg-muted rounded"
+                                    on:click|stopPropagation={() => toggleDropdown(project.id)}
+                            >
+                                <MoreHorizontal class="w-5 h-5" />
+                            </button>
+                            {#if openDropdownId === project.id}
+                                <div class="absolute right-0 mt-2 w-32 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-md z-50">
+                                    <button
+                                            class="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-muted-foreground hover:bg-gray-100 dark:hover:bg-gray-700"
+                                            on:click={() => toggleProjectLock(project.name)}
+                                    >
+                                        <Lock class="w-4 h-4" />
+                                        {project.locked ? 'Unlock' : 'Lock'}
+                                    </button>
+
+                                    {#if !project.locked} <!-- Use !project.locked to check when it's unlocked -->
+                                        <!-- Add Edit Button -->
+                                        <button
+                                                class="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-muted-foreground hover:bg-gray-100 dark:hover:bg-gray-700"
+                                                on:click={() => openEditDialog(project)}
+                                        >
+                                        <Settings2 class="w-4 h-4" />
+                                        Edit
+                                        </button>
+                                        <button
+                                                class="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 dark:hover:bg-gray-700"
+                                                on:click={() => deleteProject(project.name)}
+                                        >
+                                            <Trash2 class="w-4 h-4" />
+                                            Delete
+                                        </button>
+                                    {/if}
+                                </div>
+                            {/if}
+
+                        </div>
 
                     </div>
 
@@ -227,6 +305,13 @@
         <ImportProjectModal
                 on:close={() => (showImportModal = false)}
                 on:import={handleImportProject}
+        />
+    {/if}
+
+    {#if editDialogOpen}
+        <EditProjectDialog
+                project={currentProject}
+                onSave={handleSave}
         />
     {/if}
 </div>

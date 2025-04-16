@@ -1,8 +1,8 @@
 <script>
-    import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '$lib/components/ui/dialog';
-    import { Button } from '$lib/components/ui/button';
-    import { Input } from '$lib/components/ui/input';
-    import { Textarea } from '$lib/components/ui/textarea';
+    import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '$lib/components/ui/dialog/index.js';
+    import { Button } from '$lib/components/ui/button/index.js';
+    import { Input } from '$lib/components/ui/input/index.js';
+    import { Textarea } from '$lib/components/ui/textarea/index.js';
 
     export let project;
     export let onSave = () => {};
