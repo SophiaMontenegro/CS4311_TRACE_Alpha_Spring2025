@@ -7,23 +7,30 @@
 	let hideCodes = [];
 	let showOnlyCodes = [];
 
-	async function handleResult({ result }) {
-		if (result.type === 'failure') {
-			response = { error: result.statusText };
-			return;
-		}
+  async function handleResult({ result }) {
+	const res = await result;
 
-		const data = result.data;
-		response = {
-			status: data.status_code,
-			statusText: data.statusText ?? 'OK',
-			headers: data.headers ?? {},
-			cookies: data.cookies ?? {},
-			body: data.body ?? '',
-			time: data.time,
-			size: data.size
-		};
-	}
+  if (result.type === 'failure') {
+	response = { error: result.statusText };
+	return;
+}
+
+const data = result.data;
+
+
+  response = {
+	status: data.status_code ?? 0, // fallback for safety
+	statusText: data.statusText ?? 'OK',
+	headers: data.headers ?? {},
+	cookies: data.cookies ?? {},
+	body: data.body ?? '',
+	time: data.time ?? null,
+	size: data.size ?? null
+};
+
+	console.log('🔁 Response received in UI:', response);
+}
+
 
 	// Adapter required by `use:enhance`
 	const submitEnhance = (form) => {
@@ -34,11 +41,10 @@
 </script>
 
 <form
-	method="POST"
-	bind:this={formRef}
-	use:enhance={submitEnhance}
-	on:submit={onSubmit}
-	class="flex justify-center items-center w-full h-screen"
+  method="POST"
+  use:enhance={submitEnhance}
+  bind:this={formRef}
+  class="flex justify-center items-center w-full h-screen"
 >
 
 	<div class="flex gap-4 w-full max-w-6xl h-[65vh]">
