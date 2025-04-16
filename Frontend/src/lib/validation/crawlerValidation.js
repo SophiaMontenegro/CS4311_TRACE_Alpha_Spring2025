@@ -1,19 +1,4 @@
 /**
- * Validates a target URL
- * @param {string} url - The URL to validate
- * @returns {Object} - Validation result with error flag and message
- */
-export function validateTargetUrl(url) {
-	if (!url?.trim()) {
-		return { error: true, message: 'Target URL is required.' };
-	}
-	if (!/^https?:\/\/[^\s/$.?#].[^\s]*$/.test(url.trim())) {
-		return { error: true, message: 'Please enter a valid URL.' };
-	}
-	return { error: false, message: '' };
-}
-
-/**
  * Validates excluded URLs
  * @param {string} value - Comma-separated list of URLs to validate
  * @returns {Object} - Validation result with error flag and message
