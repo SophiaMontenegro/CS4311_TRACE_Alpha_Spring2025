@@ -14,8 +14,11 @@ backend_process = subprocess.Popen(BACKEND_CMD)
 time.sleep(2)  # short delay to ensure backend starts
 
 # --- Start Frontend ---
-frontend_process = subprocess.Popen(FRONTEND_CMD, cwd=FRONTEND_DIR)
-
+frontend_process = subprocess.Popen(
+    "npm run dev",
+    cwd=FRONTEND_DIR,
+    shell=True
+)
 # --- Wait for user to quit ---
 try:
     print("Both processes are running. Press Ctrl+C to stop.")
