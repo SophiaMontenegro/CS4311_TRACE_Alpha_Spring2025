@@ -1,0 +1,172 @@
+[
+  {
+    "node_id": "0.0.0.0",
+    "name": "/",
+    "severity": "unknown",
+    "children": [
+      {
+        "node_id": "0.0.0.0",
+        "name": "/login",
+        "severity": "unknown",
+        "children": [
+          {
+            "node_id": "198.51.100.1",
+            "name": "/login/reset",
+            "severity": "medium",
+            "children": []
+          }
+        ]
+      },
+      {
+        "node_id": "0.0.0.0",
+        "name": "/register",
+        "severity": "unknown",
+        "children": [
+          {
+            "node_id": "198.51.100.1",
+            "name": "/register/validate",
+            "severity": "low",
+            "children": []
+          }
+        ]
+      },
+      {
+        "node_id": "0.0.0.0",
+        "name": "/contact",
+        "severity": "unknown",
+        "children": [
+          {
+            "node_id": "198.51.100.1",
+            "name": "/contact/sales",
+            "severity": "high",
+            "children": []
+          }
+        ]
+      },
+      {
+        "node_id": "198.51.100.3",
+        "name": "/help",
+        "severity": "high",
+        "children": []
+      },
+      {
+        "node_id": "198.51.100.1",
+        "name": "/home",
+        "severity": "low",
+        "children": [
+          {
+            "node_id": "198.51.100.1",
+            "name": "/home/dashboard",
+            "severity": "medium",
+            "children": [
+              {
+                "node_id": "198.51.100.1",
+                "name": "/home/dashboard/metrics",
+                "severity": "high",
+                "children": []
+              },
+              {
+                "node_id": "198.51.100.1",
+                "name": "/home/dashboard/settings",
+                "severity": "low",
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "node_id": "198.51.100.1",
+        "name": "/about",
+        "severity": "medium",
+        "children": [
+          {
+            "node_id": "198.51.100.1",
+            "name": "/about/team",
+            "severity": "high",
+            "children": [
+              {
+                "node_id": "198.51.100.1",
+                "name": "/about/team/members",
+                "severity": "low",
+                "children": []
+              }
+            ]
+          },
+          {
+            "node_id": "0.0.0.0",
+            "name": "/about/company",
+            "severity": "unknown",
+            "children": [
+              {
+                "node_id": "198.51.100.1",
+                "name": "/about/company/history",
+                "severity": "low",
+                "children": []
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "node_id": "hidden",
+    "name": "Hidden Nodes",
+    "severity": "low",
+    "children": [
+      {
+        "node_id": "0.0.0.0",
+        "name": "/services/cloud",
+        "severity": "unknown",
+        "children": [
+          {
+            "node_id": "198.51.100.1",
+            "name": "/services/cloud/compute",
+            "severity": "high",
+            "children": []
+          }
+        ]
+      },
+      {
+        "node_id": "0.0.0.0",
+        "name": "/services/ai",
+        "severity": "unknown",
+        "children": [
+          {
+            "node_id": "198.51.100.1",
+            "name": "/services/ai/nlp",
+            "severity": "medium",
+            "children": []
+          }
+        ]
+      },
+      {
+        "node_id": "0.0.0.0",
+        "name": "/blog/posts",
+        "severity": "unknown",
+        "children": [
+          {
+            "node_id": "198.51.100.1",
+            "name": "/blog/posts/trending",
+            "severity": "high",
+            "children": []
+          }
+        ]
+      },
+      {
+        "node_id": "0.0.0.0",
+        "name": "/faq/security",
+        "severity": "unknown",
+        "children": [
+          {
+            "node_id": "198.51.100.1",
+            "name": "/faq/security/test",
+            "severity": "high",
+            "children": []
+          }
+        ]
+      }
+    ]
+  }
+]

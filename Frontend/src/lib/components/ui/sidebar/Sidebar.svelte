@@ -15,7 +15,7 @@
 
 	const menuItems = [
 		{ icon: Hammer, tooltip: 'Tools', route: '/dashboard' },
-		{ icon: Network, tooltip: 'Network' },
+		{ icon: Network, tooltip: 'Network', route: '/web-tree' },
 		{ icon: FileCheck, tooltip: 'Results' },
 		{ icon: Brain, tooltip: 'AI Model', route: '/credGenAI/config' },
 	];
