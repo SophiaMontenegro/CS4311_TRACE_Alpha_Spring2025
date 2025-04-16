@@ -1,8 +1,8 @@
 [
   {
-    "node_id": "198.51.100.1",
+    "node_id": "0.0.0.0",
     "name": "/",
-    "severity": "root",
+    "severity": "unknown",
     "children": [
       {
         "node_id": "0.0.0.0",
@@ -38,7 +38,7 @@
           {
             "node_id": "198.51.100.1",
             "name": "/contact/sales",
-            "severity": "low",
+            "severity": "high",
             "children": []
           }
         ]
@@ -46,7 +46,7 @@
       {
         "node_id": "198.51.100.3",
         "name": "/help",
-        "severity": "low",
+        "severity": "high",
         "children": []
       },
       {
@@ -59,7 +59,18 @@
             "name": "/home/dashboard",
             "severity": "medium",
             "children": [
- 
+              {
+                "node_id": "198.51.100.1",
+                "name": "/home/dashboard/metrics",
+                "severity": "high",
+                "children": []
+              },
+              {
+                "node_id": "198.51.100.1",
+                "name": "/home/dashboard/settings",
+                "severity": "low",
+                "children": []
+              }
             ]
           }
         ]
@@ -74,7 +85,12 @@
             "name": "/about/team",
             "severity": "high",
             "children": [
-
+              {
+                "node_id": "198.51.100.1",
+                "name": "/about/team/members",
+                "severity": "low",
+                "children": []
+              }
             ]
           },
           {
@@ -82,7 +98,12 @@
             "name": "/about/company",
             "severity": "unknown",
             "children": [
-
+              {
+                "node_id": "198.51.100.1",
+                "name": "/about/company/history",
+                "severity": "low",
+                "children": []
+              }
             ]
           }
         ]
