@@ -6,7 +6,6 @@ from typing import List, Dict, Callable, Optional
 from Team1.httpclient.proxy_server import ProxyServer
 from Team1.httpclient.http_client import HTTPClient
 from Team7.src.modules.dbf.dbf_response_processor import ResponseProcessor
-# TODO: add the new http client
 
 log_path = os.path.join(os.path.dirname(__file__), "directory_bruteforce.log")
 logging.basicConfig(
@@ -28,7 +27,6 @@ class DirectoryBruteForceManager:
     def __init__(self) -> None:
         self.config = {}
         self.response_processor = ResponseProcessor()
-        # TODO: add the new http client
         self.proxy = ProxyServer()
         self.http_client = HTTPClient(self.proxy)
         self.request_count = 0
@@ -39,7 +37,9 @@ class DirectoryBruteForceManager:
         self._stopped = False
         self.wordlist = []
         self.current_index = 0
-        self.on_new_row = None
+        self.on_new_row = None 
+        self.progress_callback = None
+        self.last_row = None
 
     def configure_scan(
         self,
@@ -73,6 +73,7 @@ class DirectoryBruteForceManager:
         self._paused = False
         self._stopped = False
         self.current_index = 0
+        self.request_count = -1
 
     async def start_scan(self) -> None:
         self.start_time = time.perf_counter()
@@ -80,14 +81,15 @@ class DirectoryBruteForceManager:
         top = self.config["top_dir"]
         wordlist = self.config["wordlist"]
         headers = self.config["headers"]
+        total_requests = len(wordlist)
 
         for i, word in enumerate(wordlist):
+            self.request_count += 1
             self.current_index = i
-            
+                
             while self._paused and not self._stopped:
                 await self._wait_pause()
                 
-            # Check if we should stop after pause
             if self._stopped:
                 logging.info("Scan stopped after pause.")
                 break
@@ -108,7 +110,7 @@ class DirectoryBruteForceManager:
                 
                 # Create a result object that can be sent to frontend
                 result_item = {
-                    "id": self.request_count + 1,
+                    "id": self.request_count,
                     "url": full_url,
                     "status": response["status_code"],
                     "payload": word,
@@ -116,12 +118,17 @@ class DirectoryBruteForceManager:
                     "error": mock.error
                 }
                 
-                # Call the callback if it exists
+                self.last_row = result_item
                 if callable(self.on_new_row):
                     self.on_new_row(result_item)
                     
                 logging.info("Scanned %s [%d]", full_url, response["status_code"])
-                self.request_count += 1
+
+                self.progress_callback(self.request_count, total_requests, word, None)
+                
+                # Add a small delay to avoid overwhelming the server
+                await asyncio.sleep(0.5)
+
             except Exception as e:
                 logging.error("Request error for %s: %s", full_url, str(e))
                 error_response = MockResponse(full_url, 0, str(e))
@@ -131,7 +138,7 @@ class DirectoryBruteForceManager:
                 
                 # Create an error result object
                 error_item = {
-                    "id": self.request_count + 1,
+                    "id": self.request_count,
                     "url": full_url,
                     "status": 0,
                     "payload": word,
@@ -139,11 +146,13 @@ class DirectoryBruteForceManager:
                     "error": True
                 }
                 
-                # Call the callback if it exists
+                self.last_row = error_item
                 if callable(self.on_new_row):
                     self.on_new_row(error_item)
                     
-                self.request_count += 1
+                # self.request_count += 1
+                
+                self.progress_callback(self.request_count, total_requests, word, str(e))
         
         # Set end time if not stopped
         if not self._stopped:
@@ -174,6 +183,7 @@ class DirectoryBruteForceManager:
             self.end_time = time.perf_counter()
 
     def get_metrics(self) -> Dict[str, float]:
+        """Get metrics about the scan progress and results"""
         current_time = time.perf_counter()
         total_time = (self.end_time or current_time) - (self.start_time or current_time) if self.start_time else 0
         rps = self.request_count / total_time if total_time > 0 else 0
@@ -195,9 +205,9 @@ class DirectoryBruteForceManager:
                 
         return filtered_results
     
-    def save_results_to_txt(self, filename: str = "dbf_results.txt") -> None:
+    def save_results_to_txt(self, filename: str = "Team7/src/database/dbf/dbf_results.txt") -> None:
+        """Save the filtered results to a text file"""
         results = self.get_filtered_results()
-        # TODO: Update the path to the database folder.
         with open(filename, "w", encoding="utf-8") as f:
             for entry in results:
                 f.write(f"URL: {entry['url']}\n")
@@ -206,35 +216,3 @@ class DirectoryBruteForceManager:
                 f.write(f"Length: {entry['length']}\n")
                 f.write(f"Error: {entry['error']}\n")
                 f.write("-" * 40 + "\n")
-
-#sample test
-if __name__ == '__main__':
-    manager = DirectoryBruteForceManager()
-
-    # Sample wordlist
-    wordlist = [
-        '',  # root
-        'level1/page1',
-        'level1/page2',
-        'level2/page1',
-        'level2/page2',
-        'level2/page3',
-        'notfound'
-    ]
-
-    # Configure the scan
-    manager.configure_scan(
-        target_url='http://localhost:5002',
-        wordlist=wordlist,
-        hide_status=[404],
-        show_only_status=[200],
-        length_filter=0,
-        attempt_limit=-1
-    )
-
-    try:
-        loop = asyncio.get_running_loop()
-        task = loop.create_task(manager.start_scan())
-        loop.run_until_complete(task)
-    except RuntimeError:
-        asyncio.run(manager.start_scan())

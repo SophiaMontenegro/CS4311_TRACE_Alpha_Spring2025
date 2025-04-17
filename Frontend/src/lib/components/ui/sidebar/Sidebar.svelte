@@ -10,11 +10,11 @@
 	function isSelected(index, route) {
 		selectedIndex = index;
 		localStorage.setItem('selectedIndex', index);
-		goto(route || '/dashboard');
+		goto(route || '/tool-dashboard');
 	}
 
 	const menuItems = [
-		{ icon: Hammer, tooltip: 'Tools', route: '/dashboard' },
+		{ icon: Hammer, tooltip: 'Tools', route: '/tool-dashboard' },
 		{ icon: Network, tooltip: 'Network', route: '/web-tree' },
 		{ icon: FileCheck, tooltip: 'Results' },
 		{ icon: Brain, tooltip: 'AI Model', route: '/credGenAI/config' },
@@ -42,7 +42,7 @@
 <div class="sidebar">
 	<div class="home-button">
 		<Button
-			onclick={() => isSelected(0, '/dashboard')}
+			onclick={() => isSelected(0, '/tool-dashboard')}
 			variant="ghost"
 			size="icon"
 			type="button"
