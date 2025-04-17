@@ -4,20 +4,36 @@
 	import { serviceStatus } from '$lib/stores/projectServiceStore.js';
 	import { onMount } from 'svelte';
 	import { get } from 'svelte/store';
+
 	import { connectToCrawlerWebSocket } from '$lib/services/crawlerSocket';
+	import { connectToFuzzerWebSocket } from '$lib/services/fuzzerSocket';
+	import { connectToBruteForceWebSocket } from '$lib/services/bruteForceSocket';
 
 	export let data;
-
-	// Reactively get the service status from the store
 	$: $serviceStatus;
 
 	onMount(() => {
-		const jobId = localStorage.getItem('currentCrawlerJobId');
 		const status = get(serviceStatus).status;
+		const type = get(serviceStatus).serviceType;
 
-		if ((status === 'running' || status === 'paused') && jobId) {
-			console.log('[Dashboard] Reconnecting to WebSocket...');
-			connectToCrawlerWebSocket(jobId);
+		if (status === 'running' || status === 'paused') {
+			switch (type) {
+				case 'crawler': {
+					const jobId = localStorage.getItem('currentCrawlerJobId');
+					if (jobId) connectToCrawlerWebSocket(jobId);
+					break;
+				}
+				case 'fuzzer': {
+					const jobId = localStorage.getItem('currentFuzzerJobId');
+					if (jobId) connectToFuzzerWebSocket(jobId);
+					break;
+				}
+				case 'dbf': {
+					const jobId = localStorage.getItem('currentDbfJobId');
+					if (jobId) connectToBruteForceWebSocket(jobId);
+					break;
+				}
+			}
 		}
 	});
 

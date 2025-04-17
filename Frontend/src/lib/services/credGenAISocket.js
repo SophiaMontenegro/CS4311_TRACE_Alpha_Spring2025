@@ -55,6 +55,10 @@ export function connectToCredGenAIWebSocket(jobId, retry = 0) {
 			}
 
 			case 'progress':
+				if (get(serviceStatus).status === 'completed') {
+					console.warn('[credGenAI] Ignoring late progress update');
+					return;
+				}
 				if (!get(scanPaused)) {
 					startScanProgress('credGenAI');
 					scanProgress.set(Math.min(data.progress, 99));

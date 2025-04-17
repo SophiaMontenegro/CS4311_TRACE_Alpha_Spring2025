@@ -1,10 +1,9 @@
 import random
-import time
 import os
-import ollama
 import csv
-from typing import Dict, List, Tuple, Set
+from typing import List, Tuple
 import re
+from google import genai
 
 from .credential_mdp import CredentialMDP
 
@@ -110,12 +109,17 @@ class Credential_Generator:
         ]
 
         try:
-            response = ollama.chat(model="gemma3:latest", messages=message)
-            return response['message']['content']
-        # TODO: Update this exception handler to more specific
+            client = genai.Client(api_key='') 
+            gemini_resp = client.models.generate_content(
+                model="gemini-2.0-flash-lite",
+                contents=[
+                   system_message + query
+                    ],
+            )
+
+            return gemini_resp.text
         except Exception as e:
-            print(f"Error calling Ollama: {e}")
-            # TODO: Update, Fallback evaluation if Ollama call is failing
+            print(f"Error calling Gemini: {e}")
             if score > 0.7:
                 return "secure - meets best practices"
             else:
