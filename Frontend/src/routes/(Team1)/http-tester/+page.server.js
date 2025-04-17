@@ -51,7 +51,7 @@ export const actions = {
 			let parsedUrl;
 			try {
 				parsedUrl = new URL(targetUrl);
-			} catch (err) {
+			} catch {
 				console.warn('⛔️ Invalid URL:', targetUrl);
 				return json({ error: 'Invalid URL format' }, { status: 400 });
 			}
