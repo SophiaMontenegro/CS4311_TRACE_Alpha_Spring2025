@@ -39,5 +39,5 @@ json_samples = [
 
 # Send each JSON via POST to FastAPI
 for entry in json_samples:
-    response = requests.post("http://localhost:8000/update", json=entry)
+    response = requests.post("http://localhost:8000/api/tree/update", json=entry)
     print(f"Sent: {entry['path']} → {response.status_code} | {response.json()}")
