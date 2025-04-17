@@ -34,28 +34,32 @@ export function connectToCrawlerWebSocket(jobId, retry = 0) {
 		switch (type) {
 			// Updates job status in the serviceStatus store
 			case 'status': {
-				const mappedStatus = data.status;
-				switch (mappedStatus) {
-					case 'completed': {
-						break;
-					}
-					case 'paused': {
-						scanPaused.set(true);
-						break;
-					}
-					case 'running': {
-						scanPaused.set(false);
-						break;
-					}
-				}
-			
-				serviceStatus.set({
-					status: mappedStatus,
-					serviceType: 'crawler',
-					startTime: data.started_at || new Date().toISOString()
-				});
-				break;
-			}
+        const mappedStatus = data.status;
+        const current = get(serviceStatus);
+      
+        // Ignore downgrades from completed → idle
+        if (current.status === 'completed' && mappedStatus === 'idle') {
+          console.warn('[Crawler] Ignoring idle status after completion');
+          return;
+        }
+      
+        // handle pause/resume toggling
+        switch (mappedStatus) {
+          case 'paused':
+            scanPaused.set(true);
+            break;
+          case 'running':
+            scanPaused.set(false);
+            break;
+        }
+      
+        serviceStatus.set({
+          status: mappedStatus,
+          serviceType: 'crawler',
+          startTime: data.started_at || new Date().toISOString()
+        });
+        break;
+      }
 			
 			// Updates the crawler result table with a new scanned row
 			case 'new_row':
@@ -67,6 +71,10 @@ export function connectToCrawlerWebSocket(jobId, retry = 0) {
 
 			// Updates the progress of the crawler job
 			case 'progress':
+				if (get(serviceStatus).status === 'completed') {
+					console.warn('[Crawler] Ignoring late progress update');
+					return;
+				}
 				if (!get(scanPaused)) {
 					startScanProgress('crawler');
 					scanProgress.set(Math.min(data.progress, 99));
@@ -75,7 +83,6 @@ export function connectToCrawlerWebSocket(jobId, retry = 0) {
 
 			// Marks the scan as completed and finalizes UI
 			case 'completed':
-				console.log('[Crawler SOCKET] Scan completed successfully!');
 				scanProgress.set(100);
 				stopScanProgress(true);
 				serviceStatus.set({
