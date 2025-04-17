@@ -188,6 +188,6 @@ class CrawlerResponseProcessor:
         for tag in soup.find_all("form", action=True):
             urls.add(tag["action"])
         self.bst.build_tree(base_url, urls)
-        self.bst.save_tree_to_file("extracted_urls_tree.txt")
+        self.bst.save_tree_to_file("Team7/src/database/crawler/extracted_urls_tree.txt")
         return {"processor": "CrawlerResponseProcessor", "extracted_urls": sorted(list(urls)),
             "count": len(urls),}

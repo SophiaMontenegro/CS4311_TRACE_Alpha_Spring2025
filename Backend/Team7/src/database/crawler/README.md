@@ -1,0 +1,1 @@
+This folder stores the result of cralwer_manager runs.
