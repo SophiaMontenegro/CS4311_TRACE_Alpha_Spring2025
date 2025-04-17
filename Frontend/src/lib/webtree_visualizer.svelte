@@ -169,7 +169,7 @@
 	function updateSeverity() {
 		if (!selectedNode || !newSeverity) return;
 
-		fetch('http://localhost:8000/update', {
+		fetch('http://localhost:8000/api/tree/update', {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json'
