@@ -1,8 +1,8 @@
-export function load({ url }) {
-	const projectName = url.searchParams.get('project');
+export function load() {
+	// const projectName = url.searchParams.get('project');
 
 	return {
-		projectName,
+		projectName: 'Project 1',
 		tools: [
 			{ name: 'Crawler', route: '/crawler/config' },
 			{ name: 'Fuzzer', route: '/fuzzer/config' },
