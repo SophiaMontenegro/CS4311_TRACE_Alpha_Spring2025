@@ -4,7 +4,7 @@ import uuid
 import os
 import json
 from datetime import datetime
-from typing import Dict, List, Any
+import asyncio
 
 # Import service module
 from Team7.src.modules.ai.service.ml_service import (
@@ -71,6 +71,30 @@ async def handle_ml_websocket(websocket: WebSocket, job_id: str):
         initial_status = get_job_status_message(job_id)
         await websocket.send_json(initial_status)
 
+        # Send progress immediately after status
+        if job_id in running_jobs:
+            await websocket.send_json({
+                'type': 'progress',
+                'job_id': job_id,
+                'data': {
+                    'progress': running_jobs[job_id].get('progress', 0),
+                    'processed_requests': running_jobs[job_id].get('urls_processed', 0),
+                    'total_requests': running_jobs[job_id].get('total_urls', 0),
+                    'current_payload': running_jobs[job_id].get('last_row', {}).get('payload')
+                }
+            })
+
+            # Send last row for immediate table preview
+            if 'last_row' in running_jobs[job_id]:
+                await websocket.send_json({
+                    'type': 'new_row',
+                    'job_id': job_id,
+                    'data': {
+                        'row': running_jobs[job_id]['last_row']
+                    }
+                })
+
+
         # Listen for client responses
         while True:
             message = await websocket.receive_text()
@@ -131,6 +155,7 @@ async def start_ml_job(config: MLConfig, background_tasks: BackgroundTasks):
     add_log_entry(job_id, f'ML job created with configuration: {config.model_dump()}')
     
     # Start ML job in background
+    await asyncio.sleep(1)
     background_tasks.add_task(run_ml_task, job_id, config)
     
     return MLJobResponse(
@@ -193,7 +218,6 @@ async def get_ml_results(job_id: str):
         if results_file and os.path.exists(results_file):
             try:
                 logger.info(f"Reading ML results from file: {results_file}")
-                # TODO: Update the path to the database folder.
                 with open(results_file, 'r') as f:
                     data = json.load(f)
                     logger.info(f"Successfully loaded {len(data)} credential records from file")

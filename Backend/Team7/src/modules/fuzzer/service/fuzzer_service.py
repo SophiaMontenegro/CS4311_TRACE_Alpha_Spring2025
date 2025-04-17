@@ -203,7 +203,6 @@ async def run_fuzzer_task(job_id: str, config: FuzzerConfig):
         fuzzer.on_new_row = handle_new_row
 
         # Prepare the payloads
-        # TODO: Update the path to the database folder.
         payloads = config.payloads or []
         if config.payload_file and os.path.exists(config.payload_file):
             with open(config.payload_file, 'r', encoding='utf-8') as f:
@@ -281,8 +280,7 @@ async def run_fuzzer_task(job_id: str, config: FuzzerConfig):
             })
 
         # Save the results
-        # TODO: Update the path to the database folder.
-        results_file = f'Fuzzer_results_{job_id}.json' 
+        results_file = f'Team7/src/database/fuzzer/Fuzzer_results_{job_id}.json' 
         with open(results_file, 'w') as file:
             json.dump(formatted_results, file)
         

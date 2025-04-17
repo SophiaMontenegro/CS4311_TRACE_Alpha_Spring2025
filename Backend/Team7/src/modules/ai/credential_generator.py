@@ -1,10 +1,9 @@
 import random
-import time
 import os
-import ollama
 import csv
-from typing import Dict, List, Tuple, Set
+from typing import List, Tuple
 import re
+from google import genai
 
 from .credential_mdp import CredentialMDP
 
@@ -110,12 +109,17 @@ class Credential_Generator:
         ]
 
         try:
-            response = ollama.chat(model="gemma3:latest", messages=message)
-            return response['message']['content']
-        # TODO: Update this exception handler to more specific
+            client = genai.Client(api_key='AIzaSyAFlnecmWoSn5oH1t7-5JIQNf9mvWM_FFg') 
+            gemini_resp = client.models.generate_content(
+                model="gemini-2.0-flash-lite",
+                contents=[
+                   system_message + query
+                    ],
+            )
+
+            return gemini_resp.text
         except Exception as e:
-            print(f"Error calling Ollama: {e}")
-            # TODO: Update, Fallback evaluation if Ollama call is failing
+            print(f"Error calling Gemini: {e}")
             if score > 0.7:
                 return "secure - meets best practices"
             else:
@@ -205,8 +209,7 @@ class Credential_Generator:
                 "password_evaluation":password_response
             })
 
-        # TODO: Update the path to the database folder.
-        with open("processed_credentials.csv", "w", newline="", encoding="utf-8") as outfile:
+        with open("Team7/src/database/ai/processed_credentials.csv", "w", newline="", encoding="utf-8") as outfile:
             fieldnames = ["username", "username_score", "password", "is_secure", "password_evaluation"]
             writer = csv.DictWriter(outfile, fieldnames=fieldnames)
             writer.writeheader()
@@ -345,7 +348,6 @@ class Credential_Generator:
         if not os.path.exists(csv_path):
             raise FileNotFoundError(f'CSV file not found: {csv_path}')
         try:
-            # TODO: Update the path to the database folder.
             with open(csv_path, 'r', encoding='utf-8') as file:
                 reader = csv.DictReader(file)
                 if not {'id', 'content', 'url'}.issubset(set(reader.fieldnames or [])):
@@ -375,7 +377,6 @@ class Credential_Generator:
         if not os.path.exists(file_path):
             raise FileNotFoundError(f'Wordlist file not found: {file_path}')
         try:
-            # TODO: Update the path to the database folder.
             with open(file_path, 'r', encoding='utf-8') as file:
                 words = [line.strip().lower() for line in file if line.strip()]
                 return words

@@ -5,6 +5,9 @@ import time
 import logging
 from typing import List, Dict, Any, Callable
 import asyncio
+from urllib.parse import urlparse
+from Team1.httpclient.http_client import HTTPClient
+from Team1.httpclient.proxy_server import ProxyServer
 from Team7.src.modules.fuzzer.fuzzer_response_processor import FuzzerResponseProcessor
 
 
@@ -45,7 +48,8 @@ class FuzzerManager:
         self.config = {}
         self.response_processor = FuzzerResponseProcessor()
         # TODO: add the new http client
-        # self.http_client = http_client or AsyncHttpClient()
+        self.proxy = ProxyServer()
+        self.http_client = HTTPClient(self.proxy)
         self.request_count = 0
         self.start_time = None
         self.end_time = None
@@ -134,6 +138,7 @@ class FuzzerManager:
             "parameters": parameters,
             "payloads": payloads
         }
+        self.http_client.specify_target_system(target_url)
 
         # Reset status flags
         self._paused = False
@@ -171,6 +176,7 @@ class FuzzerManager:
         payloads = self.config.get("payloads", [])
         logging.info(f"Fuzzing started with {len(payloads)} payloads across {len(parameters)} parameter(s)")
         proxies = {"http": proxy, "https": proxy} if proxy else None
+        parsed = urlparse(target_url)
         for payload in payloads:
             # Check if paused or stopped
             while self._paused and not self._stopped:
@@ -191,27 +197,25 @@ class FuzzerManager:
                 modified_body[param] = payload
                 logging.info(f"Sending {http_method} request to {target_url} with {param}={payload}")
                 try:
-                    response = await self.http_client.send(
-                        method=http_method,
-                        url=target_url,
-                        headers=headers,
-                        cookies=cookies,
-                        data=modified_body if http_method in ["POST", "PUT"] else None,
-                        params=modified_body if http_method == "GET" else None,
-                        proxy=proxies,
-                        timeout=5.0
-                    )
-                    mock = MockResponse(response["url"], response["status"], response["text"])
+                    request = {
+                        "method": http_method,
+                        "url": parsed.path or "/",
+                        "headers": headers
+                    }
+                    if http_method in ["POST", "PUT"]:
+                        request["body"] = modified_body
+                    response = self.http_client.send_request(request)
+                    mock = MockResponse(target_url, response["status_code"], response["body"])
                     mock.payload = payload
-                    mock.error = response["status"] not in [200]
+                    mock.error = response["status_code"] not in [200]
 
                     # Convert this into a table row format
                     row = {
                         "id": self.request_count + 1,
-                        "url": response["url"],
-                        "response": response["status"],
+                        "url": target_url,
+                        "response": response["status_code"],
                         "payload": payload,
-                        "length": len(response["text"]),
+                        "length": len(response["body"]),
                         "error": mock.error
                     }
 
@@ -223,7 +227,7 @@ class FuzzerManager:
 
                     self.response_processor.process_response(mock)
 
-                    logging.info(f'Recieve response {response['status']} from {response['url']}')
+                    logging.info(f'Recieve response {response['status_code']} from {target_url}')
                     self.request_count += 1
                     
                     total_count = len(parameters) * len(payloads)
@@ -293,3 +297,26 @@ class FuzzerManager:
         @ensures isinstance(result, list);
         """
         return self.response_processor.get_filtered_results()
+
+#sample test
+if __name__ == '__main__':
+    manager = FuzzerManager()
+
+    wordlist = ["root", "admin", "test", "guest", "info", "adm", "mysql", "user", "administrator", "oracle", "ftp", "pi", "puppet", "ansible", "ec2-user", "vagrant", "azureuser"]
+
+    manager.configure_fuzzing(
+        target_url="https://team-9-56497.firebaseapp.com/Login",
+        http_method="POST",
+        headers={"User-Agent": "Mozilla/5.0", "Content-Type": "application/x-www-form-urlencoded"},
+        cookies={},
+        proxy=None,
+        body_template={"field-r1__control": "", "field-r2__control": ""},
+        parameters=["field-r1__control", "field-r2__control"],
+        payloads=wordlist
+    )
+    try:
+        loop = asyncio.get_running_loop()
+        task = loop.create_task(manager.start_fuzzing())
+        loop.run_until_complete(task)
+    except RuntimeError:
+        asyncio.run(manager.start_fuzzing())

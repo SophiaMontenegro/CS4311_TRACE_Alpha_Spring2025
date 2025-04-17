@@ -5,7 +5,10 @@ import asyncio
 import datetime
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
+from urllib.parse import urlparse
 # TODO: add the new http client
+from Team1.httpclient.http_client import HTTPClient
+from Team1.httpclient.proxy_server import ProxyServer
 from Team7.src.modules.crawler.crawler_response import CrawlerResponseProcessor
 
 class crawler_manager:
@@ -29,7 +32,8 @@ class crawler_manager:
     def __init__(self):
         self.config = {}
         # TODO: add the new http client
-        # self.http_client = RealHTTPClient()
+        self.proxy = ProxyServer()
+        self.http_client = HTTPClient(self.proxy)
         self.processor = CrawlerResponseProcessor()
         self.visited = set()
         self.results = []
@@ -104,6 +108,7 @@ class crawler_manager:
             "crawl_time": crawl_time,
             "excluded_urls": excluded_urls.split(',') if excluded_urls else []
         }
+        self.http_client.specify_target_system(target_url)
         # Reset flags
         self._paused = False
         self._stopped = False
@@ -141,15 +146,22 @@ class crawler_manager:
             
         self.visited.add(url)
         headers = {"User-Agent": self.config.get("user_agent", "")}
+        parsed = urlparse(url)
         try:
-            raw_html = await self.http_client.get(url, headers=headers, proxy=self.config.get("proxy"))
+            request = {
+                "method": "GET",
+                "url": parsed.path or "/",
+                "headers": headers 
+            }
+            response = self.http_client.send_request(request)
+            raw_html = response["body"]
             await asyncio.sleep(self.config.get("delay", 0) / 1000.0)
+
 
             self.progress_callback(url)
 
             if depth_remaining == self.config.get("depth"):
-                # TODO: Update the path to the database folder.
-                with open("raw_html.txt", "w", encoding="utf-8") as f:
+                with open("Team7/src/database/crawler/raw_html.txt", "w", encoding="utf-8") as f:
                     f.write(raw_html)
 
             soup = BeautifulSoup(raw_html, "html.parser")
@@ -232,8 +244,7 @@ class crawler_manager:
         """
         await self.crawl_recursive(self.config.get("target_url"), self.config.get("depth"))
 
-        # TODO: Update the path to the database folder.
-        with open("crawler_table_data.json", "w", encoding="utf-8") as f:
+        with open("Team7/src/database/crawler/crawler_table_data.json", "w", encoding="utf-8") as f:
             json.dump(self.table_data, f, indent=1)
 
         print("Crawling completed. Results written to crawler_table_data.json")
@@ -243,7 +254,7 @@ class crawler_manager:
 if __name__ == '__main__':
     manager = crawler_manager()
     manager.configure_crawler(
-        target_url="http://localhost:5000",
+        target_url="https://quotes.toscrape.com/",
         depth=5,
         limit=100,
         user_agent="Mozilla/5.0",

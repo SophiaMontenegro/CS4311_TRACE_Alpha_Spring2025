@@ -3,8 +3,9 @@ import time
 import logging
 import asyncio
 from typing import List, Dict, Callable, Optional
+from Team1.httpclient.proxy_server import ProxyServer
+from Team1.httpclient.http_client import HTTPClient
 from Team7.src.modules.dbf.dbf_response_processor import ResponseProcessor
-# TODO: add the new http client
 
 log_path = os.path.join(os.path.dirname(__file__), "directory_bruteforce.log")
 logging.basicConfig(
@@ -26,8 +27,8 @@ class DirectoryBruteForceManager:
     def __init__(self) -> None:
         self.config = {}
         self.response_processor = ResponseProcessor()
-        # TODO: add the new http client
-        # self.http_client = http_client or AsyncHttpClient()
+        self.proxy = ProxyServer()
+        self.http_client = HTTPClient(self.proxy)
         self.request_count = 0
         self.attempt_limit = -1
         self.start_time = None
@@ -36,7 +37,9 @@ class DirectoryBruteForceManager:
         self._stopped = False
         self.wordlist = []
         self.current_index = 0
-        self.on_new_row = None
+        self.on_new_row = None 
+        self.progress_callback = None
+        self.last_row = None
 
     def configure_scan(
         self,
@@ -64,11 +67,13 @@ class DirectoryBruteForceManager:
         self.wordlist = wordlist
         self.attempt_limit = attempt_limit
         self.response_processor.set_filters(show_only_status or [200], hide_status or [], length_filter)
+        self.http_client.specify_target_system(target_url)
         
         # Reset control flags
         self._paused = False
         self._stopped = False
         self.current_index = 0
+        self.request_count = -1
 
     async def start_scan(self) -> None:
         self.start_time = time.perf_counter()
@@ -76,14 +81,15 @@ class DirectoryBruteForceManager:
         top = self.config["top_dir"]
         wordlist = self.config["wordlist"]
         headers = self.config["headers"]
+        total_requests = len(wordlist)
 
         for i, word in enumerate(wordlist):
+            self.request_count += 1
             self.current_index = i
-            
+                
             while self._paused and not self._stopped:
                 await self._wait_pause()
                 
-            # Check if we should stop after pause
             if self._stopped:
                 logging.info("Scan stopped after pause.")
                 break
@@ -91,32 +97,38 @@ class DirectoryBruteForceManager:
             path = f"{top}/{word}" if top else word
             full_url = f"{target}/{path}"
             try:
-                response = await self.http_client.send(
-                    method="GET",
-                    url=full_url,
-                    headers=headers
-                )
-                mock = MockResponse(response["url"], response["status"], response["text"])
+                request = {
+                    "method": "GET",
+                    "url": f"/{path.lstrip('/')}",
+                    "headers": headers
+                }
+                response = self.http_client.send_request(request)
+                mock = MockResponse(full_url, response["status_code"], response["body"])
                 mock.payload = word
-                mock.error = response["status"] not in [200, 403]
+                mock.error = response["status_code"] not in [200, 403]
                 self.response_processor.process_response(mock)
                 
                 # Create a result object that can be sent to frontend
                 result_item = {
-                    "id": self.request_count + 1,
+                    "id": self.request_count,
                     "url": full_url,
-                    "status": response["status"],
+                    "status": response["status_code"],
                     "payload": word,
-                    "length": len(response["text"]),
+                    "length": len(response["body"]),
                     "error": mock.error
                 }
                 
-                # Call the callback if it exists
+                self.last_row = result_item
                 if callable(self.on_new_row):
                     self.on_new_row(result_item)
                     
-                logging.info("Scanned %s [%d]", full_url, response["status"])
-                self.request_count += 1
+                logging.info("Scanned %s [%d]", full_url, response["status_code"])
+
+                self.progress_callback(self.request_count, total_requests, word, None)
+                
+                # Add a small delay to avoid overwhelming the server
+                await asyncio.sleep(0.5)
+
             except Exception as e:
                 logging.error("Request error for %s: %s", full_url, str(e))
                 error_response = MockResponse(full_url, 0, str(e))
@@ -126,7 +138,7 @@ class DirectoryBruteForceManager:
                 
                 # Create an error result object
                 error_item = {
-                    "id": self.request_count + 1,
+                    "id": self.request_count,
                     "url": full_url,
                     "status": 0,
                     "payload": word,
@@ -134,11 +146,13 @@ class DirectoryBruteForceManager:
                     "error": True
                 }
                 
-                # Call the callback if it exists
+                self.last_row = error_item
                 if callable(self.on_new_row):
                     self.on_new_row(error_item)
                     
-                self.request_count += 1
+                # self.request_count += 1
+                
+                self.progress_callback(self.request_count, total_requests, word, str(e))
         
         # Set end time if not stopped
         if not self._stopped:
@@ -169,6 +183,7 @@ class DirectoryBruteForceManager:
             self.end_time = time.perf_counter()
 
     def get_metrics(self) -> Dict[str, float]:
+        """Get metrics about the scan progress and results"""
         current_time = time.perf_counter()
         total_time = (self.end_time or current_time) - (self.start_time or current_time) if self.start_time else 0
         rps = self.request_count / total_time if total_time > 0 else 0
@@ -190,9 +205,9 @@ class DirectoryBruteForceManager:
                 
         return filtered_results
     
-    def save_results_to_txt(self, filename: str = "dbf_results.txt") -> None:
+    def save_results_to_txt(self, filename: str = "Team7/src/database/dbf/dbf_results.txt") -> None:
+        """Save the filtered results to a text file"""
         results = self.get_filtered_results()
-        # TODO: Update the path to the database folder.
         with open(filename, "w", encoding="utf-8") as f:
             for entry in results:
                 f.write(f"URL: {entry['url']}\n")
