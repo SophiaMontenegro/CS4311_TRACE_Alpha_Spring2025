@@ -11,6 +11,7 @@
 <ModeWatcher />
 
 <div class="app-container">
+  <Sidebar />
   <main class="content">
     <Toaster />
     <slot />
