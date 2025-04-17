@@ -171,7 +171,7 @@
         <Button on:click={handleLogout} variant="destructive">Logout</Button>
     </div>
 
-    <!-- Main page content goes here -->
+    <!-- Main page content goes here :)-->
     <div class="mt-20">
         <Card class="p-6 max-w-3xl mx-auto mt-8">
             <CardContent class="space-y-4">
