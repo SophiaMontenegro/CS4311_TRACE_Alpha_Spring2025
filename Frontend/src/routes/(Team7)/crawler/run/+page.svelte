@@ -8,7 +8,7 @@
 	import Spinner from '$lib/components/ui/spinner/Spinner.svelte';
 	import Table from '$lib/components/ui/table/Table.svelte';
 	import Alert from '$lib/components/ui/alert/Alert.svelte';
-	import { derived, get, writable, readable } from 'svelte/store';
+	import { derived, get, writable } from 'svelte/store';
 	import { serviceResults } from '$lib/stores/serviceResultsStore.js';
 	import { toast } from 'svelte-sonner';
 	import { connectToCrawlerWebSocket, closeCrawlerWebSocket } from '$lib/services/crawlerSocket';
@@ -138,7 +138,7 @@
 			if (res.ok) {
 				console.log('Crawler job stopped.');
 			} else {
-				console.error('Failed to stop crawler job:', await res.test());
+				console.error('Failed to stop crawler job:', await res.text());
 			}
 		} catch (e) {
 			console.error('Failed to stop crawler:', e);
@@ -222,7 +222,9 @@
 	// Restore checkpoint on mount
 	onMount(() => {
 		const jobId = localStorage.getItem('currentCrawlerJobId');
-
+		if (jobId && get(serviceStatus).status !== 'completed') {
+			connectToCrawlerWebSocket(jobId);
+		}
 		// Restore checkpoint if available
 		if (jobId) {
 			const savedCheckpoint = localStorage.getItem(`checkpoint_${jobId}`);
@@ -246,7 +248,7 @@
 			const jobId = localStorage.getItem('currentCrawlerJobId');
 			const status = get(serviceStatus);
 
-			// Do not save checkpoints after scan is complete or idle
+			// Do not save checkpoints after scan is completed or idle
 			if (!jobId || (status.status !== 'running' && status.status !== 'paused')) return;
 
 			const data = get(serviceResults).crawler;

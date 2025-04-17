@@ -50,7 +50,7 @@ export const actions = {
 			});
 		}
 
-		// ✅ Convert wordlist file to array of strings
+		// Convert wordlist file to array of strings
 		let wordlistContents = [];
 		if (wordlist) {
 			const text = await wordlist.text();
@@ -60,7 +60,7 @@ export const actions = {
 				.filter(Boolean);
 		}
 
-		// ✅ Convert headers from "Key: Value, ..." string to object
+		// Convert headers from "Key: Value, ..." string to object
 		let parsedHeaders = {};
 		if (formData['headers']) {
 			try {
@@ -78,7 +78,6 @@ export const actions = {
 			}
 		}
 
-		// ✅ Convert show/hide status to arrays of integers
 		const toIntArray = (val) =>
 			val
 				.split(',')
@@ -90,14 +89,14 @@ export const actions = {
 			wordlist: wordlistContents,
 			top_dir: formData['top-level-directory'] || '',
 			hide_status: formData['hide-status-codes'] ? toIntArray(formData['hide-status-codes']) : [],
-			show_only_status: formData['show-status-codes'] ? toIntArray(formData['show-status-codes']) : [],
+			show_only_status: formData['show-status-codes']
+				? toIntArray(formData['show-status-codes'])
+				: [],
 			length_filter: formData['filter-content-length']
 				? parseInt(formData['filter-content-length'], 10)
 				: null,
 			headers: parsedHeaders,
-			attempt_limit: formData['attempt-limit']
-				? parseInt(formData['attempt-limit'], 10)
-				: -1
+			attempt_limit: formData['attempt-limit'] ? parseInt(formData['attempt-limit'], 10) : -1
 		};
 
 		try {
