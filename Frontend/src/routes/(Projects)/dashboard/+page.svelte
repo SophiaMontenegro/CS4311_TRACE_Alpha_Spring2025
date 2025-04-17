@@ -51,7 +51,7 @@
         error = null;
 
         try {
-            const response = await fetch(`http://127.0.0.1:8000/projects/analyst/${analystId}`);
+            const response = await fetch(`http://127.0.0.1:8000/team3/projects/analyst/${analystId}`);
             if (!response.ok) throw new Error('Failed to load projects');
             const data = await response.json();
             projects = data.projects || [];
@@ -78,7 +78,7 @@
 
             console.log(projectData);
 
-            const response = await fetch('http://127.0.0.1:8000/projects/', {
+            const response = await fetch('http://127.0.0.1:8000/team3/projects/', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -135,7 +135,7 @@
     async function toggleProjectLock(projectName) {
         console.log("Toggling lock for:", projectName, "by", analystInitials);
         try {
-            const response = await fetch(`http://127.0.0.1:8000/projects/${encodeURIComponent(projectName)}/lock?analyst_id=${analystInitials}`, {
+            const response = await fetch(`http://127.0.0.1:8000/team3/projects/${encodeURIComponent(projectName)}/lock?analyst_id=${analystInitials}`, {
                 method: 'PUT'
             });
 
@@ -158,7 +158,7 @@
         console.log("Deleting project:", name); // Not working
         try {
             showDeleteDialog = false;
-            const response = await fetch(`http://127.0.0.1:8000/projects/${encodeURIComponent(name)}/delete?analyst_id=${analystId}`, {
+            const response = await fetch(`http://127.0.0.1:8000/team3/projects/${encodeURIComponent(name)}/delete?analyst_id=${analystId}`, {
                 method: 'DELETE'
             });
 

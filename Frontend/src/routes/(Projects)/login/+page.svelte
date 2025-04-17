@@ -22,7 +22,7 @@
         debugInfo = '';
 
         try {
-            const response = await fetch(`http://127.0.0.1:8000/analysts/verify`, {
+            const response = await fetch(`http://127.0.0.1:8000/team3/analysts/verify`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -71,7 +71,7 @@
         debugInfo = '';
 
         try {
-            const response = await fetch(`http://127.0.0.1:8000/analysts/register`, {
+            const response = await fetch(`http://127.0.0.1:8000/team3/analysts/register`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

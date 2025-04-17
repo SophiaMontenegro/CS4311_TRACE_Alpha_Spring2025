@@ -1,52 +1,24 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from datetime import date
-from Project_Manager import ProjectManager
-from Database_Manager import Database_Manager
-from Analyst_Manager import AnalystManager
-from fastapi.middleware.cors import CORSMiddleware
 import logging
+from Team3.Database.Project_Manager import ProjectManager
+from Team3.Database.Database_Manager import Database_Manager
+from Team3.Database.Analyst_Manager import AnalystManager
 
 # ✅ Initialize DB connection and project manager
 try:
     db = Database_Manager()  # No arguments needed anymore
     analyst_manager = AnalystManager(db)
     project_manager = ProjectManager(db, analyst_manager)
-    print("✅ Database connection successful")
+    print("✅ Database connection successful for Team 3")
 except Exception as e:
-    print(f"Database connection test failed ❌: {e}")
+    print(f"Team 3 database connection failed ❌: {e}")
 
-# ✅ FastAPI setup
-app = FastAPI()
+# Create router
+team3_router = APIRouter(prefix="/team3", tags=["team3"])
 
-# ✅ Logging
-logging.basicConfig(level=logging.DEBUG)
-
-# ✅ Allow frontend to communicate with backend (CORS)
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  # frontend's dev server
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-# ✅ Root endpoint
-@app.get("/")
-def read_root():
-    return {"message": "Hello from FastAPI"}
-
-@app.get("/api/data")
-def get_data():
-    return {"data": "This is a sample response from FastAPI"}
-
-# ✅ Error handler for general exceptions
-@app.exception_handler(Exception)
-async def general_exception_handler(request, exc):
-    logging.error(f"Unhandled exception: {exc}")
-    return HTTPException(status_code=500, detail="Internal Server Error")
-
-# ✅ Pydantic model for project creation
+# Pydantic model for project creation
 class ProjectCreate(BaseModel):
     analyst_id: str
     project_name: str
@@ -56,7 +28,7 @@ class ProjectCreate(BaseModel):
     userList: list
 
 # ✅ Create a project
-@app.post("/projects/")
+@team3_router.post("/projects/")
 async def create_project(project: ProjectCreate):
     try:
         # Add logging to debug
@@ -86,7 +58,7 @@ async def create_project(project: ProjectCreate):
         raise HTTPException(status_code=500, detail=str(e))
 
 # ✅ Lock/Unlock a project
-@app.put("/projects/{project_name}/lock")
+@team3_router.put("/projects/{project_name}/lock")
 async def lock_project(project_name: str, analyst_id: str):
     print(f"Toggling lock for project {project_name} by analyst {analyst_id}")
     success = project_manager.toggle_project_lock(project_name, analyst_id)
@@ -95,7 +67,7 @@ async def lock_project(project_name: str, analyst_id: str):
     return {"message": "Project lock state changed successfully", "locked": success}
 
 # ✅ Delete a project (only if unlocked)
-@app.delete("/projects/{project_name}/delete")
+@team3_router.delete("/projects/{project_name}/delete")
 async def delete_project(project_name: str, analyst_id: str):
     print(f"Delete {project_name} by analyst {analyst_id}")
     success = project_manager.delete_project(analyst_id, project_name)
@@ -103,15 +75,12 @@ async def delete_project(project_name: str, analyst_id: str):
         raise HTTPException(status_code=403, detail="Project is locked or does not exist")
     return {"message": "Project deleted successfully"}
 
-# Add these imports at the top with your other imports
-from pydantic import BaseModel
-
-# Add this model class with your other models
+# Analyst verification model
 class AnalystVerify(BaseModel):
     initials: str
 
-# Add this endpoint to your FastAPI app
-@app.post("/analysts/verify")
+# Verify analyst endpoint
+@team3_router.post("/analysts/verify")
 async def verify_analyst(analyst: AnalystVerify):
     try:
         # Query the database to check if the analyst exists
@@ -133,13 +102,13 @@ async def verify_analyst(analyst: AnalystVerify):
         logging.error(f"Error verifying analyst: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-# Add this model class with your other models
+# Analyst registration model
 class AnalystRegister(BaseModel):
     initials: str
     name: str
 
-# Add this endpoint to your FastAPI app
-@app.post("/analysts/register")
+# Register analyst endpoint
+@team3_router.post("/analysts/register")
 async def register_analyst(analyst: AnalystRegister):
     try:
         # Check if analyst with these initials already exists
@@ -172,8 +141,8 @@ async def register_analyst(analyst: AnalystRegister):
         logging.error(f"Error registering analyst: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-# Add this endpoint to get projects by analyst ID
-@app.get("/projects/analyst/{analyst_id}")
+# Get projects by analyst ID
+@team3_router.get("/projects/analyst/{analyst_id}")
 async def get_analyst_projects(analyst_id: str):
     try:
         # Query projects owned by this analyst
