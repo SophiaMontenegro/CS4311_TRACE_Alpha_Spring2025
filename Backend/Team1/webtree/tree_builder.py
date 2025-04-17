@@ -25,14 +25,23 @@ class WebTreeBuilder:
             data = json.loads(json_data)
             node_path = data.get("path")
             ip_address = data.get("ip", None)
+            status_code = data.get("status_code")
 
-            # Assign severity if not present
-            severity = data.get("severity") or self.assign_severity(node_path, ip_address)
+            # === Check if the node is hidden ===
+            tree_paths = [n["path"] for n in self.fetch_tree()]
+            parent_path = "/" if node_path.count("/") == 1 else "/".join(node_path.split("/")[:-1])
+            is_hidden = parent_path not in tree_paths
+
+            # === Assign severity ===
+            if is_hidden:
+                severity = self.status_code_to_severity(status_code)
+            else:
+                severity = data.get("severity") or self.assign_severity(node_path, ip_address)
             data["severity"] = severity
 
             operation = data.get("operation")
 
-            # Determine parent path correctly
+            # === Re-validate parent path for adding/updating ===
             if node_path == "/":
                 parent_path = None
             elif node_path.count("/") == 1:
@@ -40,13 +49,13 @@ class WebTreeBuilder:
             else:
                 parent_path = "/".join(node_path.split("/")[:-1])
 
-            # Create or update the node
+            # === Apply operation ===
             if operation == "add":
-                self.add_node(node_path, severity, parent_path, ip_address)
+                self.add_node(node_path, severity, parent_path, ip_address, status_code)
             elif operation == "update":
-                self.update_node(node_path, severity, ip_address)
+                self.update_node(node_path, severity, ip_address, status_code)
 
-            # Fetch updated tree to confirm changes
+            # === Confirm changes ===
             updated_tree = self.fetch_tree()
             print("Updated Tree Sent to Controller:", updated_tree)
             return updated_tree
@@ -54,17 +63,18 @@ class WebTreeBuilder:
         except json.JSONDecodeError:
             print("Error: Invalid JSON format.")
             return None
-
         
-    def add_node(self, path, severity, parent_path=None, ip=None):
+    def add_node(self, path, severity, parent_path=None, ip=None, status_code=None):
         with self.driver.session() as session:
             # Always ensure the root node `/` exists
             session.run(
                 """
-                MERGE (root:Node {path: "/"})
-                ON CREATE SET root.severity = "unknown", root.ip = "0.0.0.0"
-                """
+                MERGE (n:Node {path: $path})
+                ON CREATE SET n.severity = $severity, n.ip = $ip, n.status_code = $status_code
+                """,
+                path=path, severity=severity, ip=ip, status_code=status_code
             )
+
 
             # Determine parent if not explicitly given
             if path == "/":
@@ -104,17 +114,20 @@ class WebTreeBuilder:
 
             print(f"Node {path} added (Parent: {parent_path if parent_path else 'None'})")
 
-    def update_node(self, path, severity, ip=None):
-        """ Updates an existing node's severity. """
+    def update_node(self, path, severity, ip=None, status_code=None):
+        """ Updates an existing node's severity and status code. """
         with self.driver.session() as session:
             session.run(
                 """
                 MATCH (n:Node {path: $path})
-                SET n.severity = $severity, n.ip = $ip
+                SET n.severity = $severity,
+                    n.ip = $ip,
+                    n.status_code = $status_code
                 """,
-                path=path, severity=severity, ip=ip
+                path=path, severity=severity, ip=ip, status_code=status_code
             )
-        print(f"Node updated: {path}")
+        print(f"Node updated: {path} | severity: {severity} | status_code: {status_code}")
+
 
     def assign_severity(self, path, ip):
         path = path.lower() if path else ""
@@ -134,3 +147,17 @@ class WebTreeBuilder:
             """
             session.run(query, path=path, severity=severity)
             print(f"Severity updated for {path} to {severity}")
+    
+    def status_code_to_severity(self, code):
+        try:
+            code = int(code)
+        except:
+            return "unknown"
+
+        if code == 200:
+            return "high"
+        elif code in [401, 403, 405, 500, 302, 301]:
+            return "medium"
+        elif code in [400, 503]:
+            return "low"
+        return "unknown"
