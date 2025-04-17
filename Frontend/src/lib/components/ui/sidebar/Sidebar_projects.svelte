@@ -1,7 +1,7 @@
 <script>
 	import { beforeUpdate, onMount } from 'svelte';
 	import { Button } from '$lib/components/ui/button/index.js';
-	import { Hammer, Network, FileCheck, Brain, Settings } from 'lucide-svelte';
+	import { Folder, FolderTree, Trash2, Settings } from 'lucide-svelte';
 	import { toggleMode, mode } from 'mode-watcher';
 	import { goto } from '$app/navigation';
 
@@ -10,14 +10,13 @@
 	function isSelected(index, route) {
 		selectedIndex = index;
 		localStorage.setItem('selectedIndex', index);
-		goto(route || '/tool-dashboard');
+		goto(route || '/dashboard');
 	}
 
 	const menuItems = [
-		{ icon: Hammer, tooltip: 'Tools', route: '/tool-dashboard' },
-		{ icon: Network, tooltip: 'Network', route: '/web-tree' },
-		{ icon: FileCheck, tooltip: 'Results' },
-		{ icon: Brain, tooltip: 'AI Model', route: '/credGenAI/config' },
+		{ icon: Folder, tooltip: 'All Projects', route: '/dashboard' },
+		{ icon: FolderTree, tooltip: 'Shared Projects', route: '/dashboard/folders' },
+		{ icon: Trash2, tooltip: 'Deleted Projects', route: '/deleted' }
 	];
 
 	onMount(() => {
@@ -42,7 +41,7 @@
 <div class="sidebar">
 	<div class="home-button">
 		<Button
-			onclick={() => isSelected(0, '/tool-dashboard')}
+			onclick={() => isSelected(0, '/dashboard')}
 			variant="ghost"
 			size="icon"
 			type="button"
