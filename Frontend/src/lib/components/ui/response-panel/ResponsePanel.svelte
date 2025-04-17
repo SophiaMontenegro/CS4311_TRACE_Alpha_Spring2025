@@ -9,29 +9,48 @@
 
   let activeTab = 'preview';
 
-  function formatBody(body) {
-    if (!body || typeof body !== 'string') return '';
+  function getContentType(headers) {
+  if (!headers) return '';
+  const type = headers['Content-Type'] || headers['content-type'];
+  return type?.toLowerCase() || '';
+}
 
-    // Try to format JSON
+
+function formatBody(body, headers) {
+  if (!body || typeof body !== 'string') return '';
+
+  const contentType = getContentType(headers);
+
+  if (contentType.includes('application/json')) {
     try {
       const jsonObj = JSON.parse(body);
       return JSON.stringify(jsonObj, null, 2);
     } catch {
-      // Not JSON, try formatting HTML or fallback to raw
-      return formatHTML(body);
+      return body;
     }
   }
 
-  function formatHTML(html) {
-    // Basic HTML pretty printer using DOMParser
-    try {
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(html, 'text/html');
-      return prettyPrintHTML(doc.body, 0).trim();
-    } catch {
-      return html;
-    }
+  if (contentType.includes('text/html')) {
+    const pretty = formatHTML(body);
+    return pretty || body;
   }
+
+  return body;
+}
+
+
+
+function formatHTML(html) {
+  try {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, 'text/html');
+    if (!doc.body || !doc.body.childNodes.length) return html; // fallback
+    return prettyPrintHTML(doc.body, 0).trim();
+  } catch {
+    return html;
+  }
+}
+
 
   function prettyPrintHTML(node, indentLevel) {
     const indent = '  '.repeat(indentLevel);
@@ -93,7 +112,7 @@
         <!-- Preview Tab: Pretty printed JSON or HTML -->
         <TabsContent value="preview" class="flex-1 overflow-auto p-4">
           <pre class="whitespace-pre-wrap font-mono text-sm bg-[var(--muted)] p-4 rounded overflow-auto h-full">
-{formatBody(response.body)}
+            {formatBody(response.body, response.headers)}
           </pre>
         </TabsContent>
 

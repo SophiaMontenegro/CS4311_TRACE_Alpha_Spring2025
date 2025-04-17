@@ -7,52 +7,65 @@
 	let hideCodes = [];
 	let showOnlyCodes = [];
 
+	let formRef;
+	let builderRef; // for calling .refreshRawRequest()
+	let activeTab = 'request';
+
   async function handleResult({ result }) {
 	const res = await result;
 
-  if (result.type === 'failure') {
-	response = { error: result.statusText };
-	return;
+	if (res?.type === 'failure') {
+		response = { error: res.statusText };
+		builderRef?.refreshRawRequest(); 
+		activeTab = 'raw';
+		return;
+	}
+
+	const data = res.data;
+  console.log('🎯 Successful response, triggering raw build...');
+
+
+	response = {
+		status: data.status_code ?? 0,
+		statusText: data.statusText ?? 'OK',
+		headers: data.headers ?? {},
+		cookies: data.cookies ?? {},
+		body: data.body ?? '',
+		time: data.time ?? null,
+		size: data.size ?? null
+	};
+
+	// ✅ After updating response, generate raw HTTP preview
+	builderRef?.refreshRawRequest();
+	activeTab = 'raw';
 }
 
-const data = result.data;
-
-
-  response = {
-	status: data.status_code ?? 0, // fallback for safety
-	statusText: data.statusText ?? 'OK',
-	headers: data.headers ?? {},
-	cookies: data.cookies ?? {},
-	body: data.body ?? '',
-	time: data.time ?? null,
-	size: data.size ?? null
-};
-
-	console.log('🔁 Response received in UI:', response);
-}
-
-
-	// Adapter required by `use:enhance`
+	// Hook into form handling
 	const submitEnhance = (form) => {
 		return async ({ result }) => handleResult({ result });
 	};
-
-	let formRef; // passed to child so Ctrl+Enter works
 </script>
 
 <form
-  method="POST"
-  use:enhance={submitEnhance}
-  bind:this={formRef}
-  class="flex justify-center items-center w-full h-screen"
+	method="POST"
+	use:enhance={submitEnhance}
+	bind:this={formRef}
+	class="flex justify-center items-center w-full h-screen"
 >
-
 	<div class="flex gap-4 w-full max-w-6xl h-[65vh]">
 		<div class="w-1/2 h-full">
-			<RequestBuilder {formRef} />
+			<RequestBuilder
+				bind:this={builderRef}
+				{formRef}
+				bind:activeTab
+			/>
 		</div>
 		<div class="w-1/2 h-full">
-			<ResponsePanel {response} {hideCodes} {showOnlyCodes} />
+			<ResponsePanel
+				{response}
+				{hideCodes}
+				{showOnlyCodes}
+			/>
 		</div>
 	</div>
 </form>

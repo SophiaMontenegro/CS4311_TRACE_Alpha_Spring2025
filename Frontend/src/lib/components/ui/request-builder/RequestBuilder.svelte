@@ -9,76 +9,96 @@
 	import { Label } from '$lib/components/ui/label';
 	import { Card, CardContent } from '$lib/components/ui/card';
 	import { Tabs, TabsContent, TabsList, TabsTrigger } from '$lib/components/ui/tabs';
+	import { createEventDispatcher } from 'svelte';
 
-	/* your custom header‑syntax helper */
 	import { validateHeaders } from '$lib/validation/validateHeaders';
 
-	/* === props =========================================================== */
-	/** reference to the *outer* <form> element (passed from parent)         */
 	export let formRef = null;
+	export let activeTab;
 
-	/* === reactive state ================================================== */
 	let method = 'GET';
 	let targetUrl = '';
 	let headers = '';
 	let cookies = '';
 	let requestBody = '';
+	export let rawRequest = ''; // Now user-editable
+	let rawEnabled = false;
 
 	const STORAGE_KEY = 'httpTesterFormData';
 
-	/* load previous session, if any */
-	onMount(() => {
-		const saved = localStorage.getItem(STORAGE_KEY);
-		if (saved) {
-			const s = JSON.parse(saved);
-			method = s.method ?? 'GET';
-			targetUrl = s.targetUrl ?? '';
-			headers = s.headers ?? '';
-			cookies = s.cookies ?? '';
-			requestBody = s.requestBody ?? '';
+	// Refresh raw request manually from parent
+  export function refreshRawRequest() {
+	console.log('🛠️ refreshRawRequest() called');
+	console.log('method:', method);
+	console.log('targetUrl:', targetUrl);
+	console.log('headers:', headers);
+	console.log('cookies:', cookies);
+	console.log('requestBody:', requestBody);
+
+	rawRequest = buildRawRequest();
+	rawEnabled = !!rawRequest;
+
+	console.log('🚀 rawRequest generated:\n', rawRequest);
+}
+
+
+function buildRawRequest() {
+	try {
+		let safeUrl = targetUrl.trim();
+		if (!safeUrl.startsWith('http://') && !safeUrl.startsWith('https://')) {
+			safeUrl = 'http://' + safeUrl;
 		}
-	});
 
-	/* -------------------------------------------------------------------- */
-	function buildRawRequest() {
-		try {
-			const u = new URL(targetUrl);
-			let raw = `${method} ${u.pathname || '/'} HTTP/1.1\n`;
-			raw += 'Accept: */*\n';
-			raw += `Host: ${u.host}\n`;
-			if (method !== 'GET') raw += 'Content-Type: application/json\n';
-			raw += 'User-Agent: TRACE-system\n';
+		const u = new URL(safeUrl);
 
-			headers.split('\n').forEach((h) => {
-				const trimmed = h.trim();
-				if (trimmed) raw += trimmed + '\n';
-			});
+		let raw = `${method} ${u.pathname || '/'} HTTP/1.1\n`;
+		raw += 'Accept: */*\n';
+		raw += `Host: ${u.host}\n`;
+		if (method !== 'GET') raw += 'Content-Type: application/json\n';
+		raw += 'User-Agent: TRACE-system\n';
 
-			if (cookies.trim()) raw += `Cookie: ${cookies}\n`;
-			raw += `\n${requestBody}`;
-			return raw;
-		} catch {
-			return '';
-		}
-	}
+		headers.split('\n').forEach((h) => {
+			const trimmed = h.trim();
+			if (trimmed) raw += trimmed + '\n';
+		});
 
-	/* keep raw preview & “Raw” tab in sync */
-	let rawRequest = '';
-	let rawEnabled = false;
-	$: rawRequest = buildRawRequest();
-	$: rawEnabled = !!rawRequest;
+		if (cookies.trim()) raw += `Cookie: ${cookies}\n`;
+		raw += `\n${requestBody}`;
 
-	/* persist to localStorage on every change */
-$: {
-	if (typeof localStorage !== 'undefined') {
-		localStorage.setItem(
-			STORAGE_KEY,
-			JSON.stringify({ method, targetUrl, headers, cookies, requestBody })
-		);
+		return raw;
+	} catch (err) {
+		console.warn('⚠️ Failed to build raw request:', err);
+		return '';
 	}
 }
 
-	/* -------------------------------------------------------------------- */
+
+	onMount(() => {
+		const saved = localStorage.getItem(STORAGE_KEY);
+		if (saved) {
+			try {
+				const s = JSON.parse(saved);
+				method = s.method ?? 'GET';
+				targetUrl = s.targetUrl ?? '';
+				headers = s.headers ?? '';
+				cookies = s.cookies ?? '';
+				requestBody = s.requestBody ?? '';
+			} catch (e) {
+				console.warn('[Storage] Failed to parse saved request:', e);
+			}
+		}
+	});
+
+	// Persist form fields to localStorage
+	$: {
+		if (typeof localStorage !== 'undefined') {
+			localStorage.setItem(
+				STORAGE_KEY,
+				JSON.stringify({ method, targetUrl, headers, cookies, requestBody })
+			);
+		}
+	}
+
 	let validationErrors = [];
 
 	function validateForm() {
@@ -107,10 +127,10 @@ $: {
 				errors.push('Request body must be valid JSON.');
 			}
 		}
+
 		return errors;
 	}
 
-	/* stop bad submissions before they hit the backend */
 	function onSubmit(e) {
 		validationErrors = validateForm();
 		if (validationErrors.length) {
@@ -118,7 +138,6 @@ $: {
 		}
 	}
 
-	/* Ctrl/Cmd + Enter shortcut */
 	function handleKeydown(e) {
 		if (e.ctrlKey && e.key === 'Enter' && formRef) {
 			e.preventDefault();
@@ -142,12 +161,12 @@ $: {
 		{/if}
 
 		<div class="flex-1 flex flex-col overflow-hidden">
-			<Tabs value={rawEnabled ? 'raw' : 'request'} class="flex-1 flex flex-col overflow-hidden">
+			<Tabs bind:value={activeTab} class="flex-1 flex flex-col overflow-hidden">
 				<TabsList class="border-b shrink-0">
 					<TabsTrigger value="request">Request</TabsTrigger>
 					<TabsTrigger value="headers">Headers</TabsTrigger>
 					<TabsTrigger value="body">Body</TabsTrigger>
-					{#if rawEnabled}
+					{#if rawRequest}
 						<TabsTrigger value="raw">Raw</TabsTrigger>
 					{/if}
 				</TabsList>
@@ -204,10 +223,10 @@ $: {
 					/>
 				</TabsContent>
 
-				<!-- Raw preview tab -->
+				<!-- Raw tab -->
 				<TabsContent value="raw" class="flex-1 overflow-auto p-4">
 					<Label>Raw HTTP Request</Label>
-					<Textarea rows="15" bind:value={rawRequest} />
+					<Textarea rows="15" bind:value={rawRequest} class="font-mono" />
 				</TabsContent>
 			</Tabs>
 		</div>
