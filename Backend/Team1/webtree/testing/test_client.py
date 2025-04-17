@@ -2,38 +2,24 @@ import requests
 
 # === Sample input with new expected keys ===
 json_samples = [
-    {"ip": "198.51.100.1", "path": "https://example.com/"},
-    {"ip": "198.51.100.3", "path": "https://example.com/help"},
-    {"ip": "198.51.100.1", "path": "https://example.com/home"},
-    {"ip": "198.51.100.1", "path": "https://example.com/home/dashboard"},
-    {"ip": "198.51.100.1", "path": "https://example.com/home/dashboard/metrics"},
-    {"ip": "198.51.100.1", "path": "https://example.com/home/dashboard/settings"},
-    {"ip": "198.51.100.1", "path": "https://example.com/about"},
-    {"ip": "198.51.100.1", "path": "https://example.com/about/team"},
-    {"ip": "198.51.100.1", "path": "https://example.com/about/team/members"},
+    {"ip": "198.51.100.1", "path": "https://example.com/", "status_code": "200"},
+    {"ip": "198.51.100.3", "path": "https://example.com/help", "status_code": "200"},
+    {"ip": "198.51.100.1", "path": "https://example.com/home", "status_code": "200"},
+    {"ip": "198.51.100.1", "path": "https://example.com/home/dashboard", "status_code": "200"},
+    {"ip": "198.51.100.1", "path": "https://example.com/home/dashboard/metrics", "status_code": "200"},
 
-    # === Added realistic security-related high severity ===
-    {"ip": "198.51.100.1", "path": "https://example.com/admin"},
-    {"ip": "198.51.100.1", "path": "https://example.com/.env"},
-    {"ip": "198.51.100.1", "path": "https://example.com/config.php"},
-    {"ip": "198.51.100.1", "path": "https://example.com/reset/token"},
-    {"ip": "198.51.100.1", "path": "https://example.com/api/credential/dump"},
+    # === High severity from path, status_code irrelevant
+    {"ip": "198.51.100.1", "path": "https://example.com/admin", "status_code": "200"},
+    {"ip": "198.51.100.1", "path": "https://example.com/.env", "status_code": "200"},
 
-    # # === Medium severity based on keywords ===
-    {"ip": "198.51.100.1", "path": "https://example.com/profile/edit"},
-    {"ip": "198.51.100.1", "path": "https://example.com/account/settings"},
-    {"ip": "198.51.100.1", "path": "https://example.com/internal/manage/users"},
-    {"ip": "198.51.100.1", "path": "https://example.com/control/panel"},
+    # === Medium severity from path
+    {"ip": "198.51.100.1", "path": "https://example.com/profile/edit", "status_code": "403"},
+    {"ip": "198.51.100.1", "path": "https://example.com/account/settings", "status_code": "403"},
 
-    # # === Hidden nodes (parents missing or not sent yet) ===
-    {"ip": "198.51.100.1", "path": "https://example.com/about/company/history"},
-    {"ip": "198.51.100.1", "path": "https://example.com/login/reset"},
-    {"ip": "198.51.100.1", "path": "https://example.com/register/validate"},
-    {"ip": "198.51.100.1", "path": "https://example.com/services/cloud/compute"},
-    {"ip": "198.51.100.1", "path": "https://example.com/services/ai/nlp"},
-    {"ip": "198.51.100.1", "path": "https://example.com/contact/sales"},
-    {"ip": "198.51.100.1", "path": "https://example.com/blog/posts/trending"},
-    {"ip": "198.51.100.1", "path": "https://example.com/faq/security/test"}
+    # === Hidden nodes, status_code used for severity
+    {"ip": "198.51.100.1", "path": "https://example.com/about/company/history", "status_code": "503"},  # → low
+    {"ip": "198.51.100.1", "path": "https://example.com/login/reset", "status_code": "401"},            # → medium
+    {"ip": "198.51.100.1", "path": "https://example.com/register/validate", "status_code": "200"}       # → high
 ]
 
 
