@@ -246,15 +246,13 @@ async def run_crawler_task(job_id: str, config: CrawlerConfig):
         tracker.add_log('Crawler execution completed')
 
         # Save the results with the job id so it can be identified
-        # TODO: Update the path to the database folder.
-        if os.path.exists("./crawler_table_data.json"):
+        if os.path.exists("Team7/src/database/crawler/crawler_table_data.json"):
             with open("crawler_table_data.json", 'r') as file:
                 table_data = json.load(file)
 
 
             # Save the results in a new location with id
-            # TODO: Update the path to the database folder.
-            results_file = f'crawler_results_{job_id}.json'
+            results_file = f'Team7/src/database/crawler/crawler_results_{job_id}.json'
             with open(results_file, 'w') as file:
                 json.dump(table_data, file, indent=2)
 

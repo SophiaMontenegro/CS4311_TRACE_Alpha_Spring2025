@@ -4,6 +4,7 @@ import json
 import uuid
 from datetime import datetime
 import os
+import asyncio
 
 # Import the service modules
 from Team7.src.modules.crawler.service.crawler_service import (
@@ -43,6 +44,29 @@ async def handle_crawler_websocket(websocket: WebSocket, job_id: str):
         #Send a status message
         initial_status = get_job_status_message(job_id)
         await websocket.send_json(initial_status)
+
+        # Send progress immediately after status
+        if job_id in running_jobs:
+            await websocket.send_json({
+                'type': 'progress',
+                'job_id': job_id,
+                'data': {
+                    'progress': running_jobs[job_id].get('progress', 0),
+                    'processed_requests': running_jobs[job_id].get('urls_processed', 0),
+                    'total_requests': running_jobs[job_id].get('total_urls', 0),
+                    'current_payload': running_jobs[job_id].get('last_row', {}).get('payload')
+                }
+            })
+
+            # Ssend last row for immediate table preview
+            if 'last_row' in running_jobs[job_id]:
+                await websocket.send_json({
+                    'type': 'new_row',
+                    'job_id': job_id,
+                    'data': {
+                        'row': running_jobs[job_id]['last_row']
+                    }
+                })
 
         while True:
             message = await websocket.receive_text()
@@ -130,6 +154,7 @@ async def start_crawler(config: CrawlerConfig, background_tasks: BackgroundTasks
     add_log_entry(job_id, f'Job created with configuration: {config.model_dump()}')
 
     # Start crawler in background
+    await asyncio.sleep(1)
     background_tasks.add_task(run_crawler_task, job_id, config)
 
     return CrawlerJobResponse(
@@ -192,7 +217,6 @@ async def get_crawler_results(job_id: str):
         if result_file and os.path.exists(result_file):
             try:
                 logger.info(f"Reading results from file: {result_file}")
-                # TODO: Update the path to the database folder.
                 with open(result_file, 'r') as f:
                     data = json.load(f)
                     logger.info(f"Successfully loaded {len(data)} records from file")
@@ -211,8 +235,7 @@ async def get_crawler_results(job_id: str):
             try:
                 if os.path.exists("crawler_table_data.json"):
                     logger.info("Attempting to read from crawler_table_data.json as fallback")
-                    # TODO: Update the path to the database folder.
-                    with open("crawler_table_data.json", 'r') as f:
+                    with open("src/database/crawler/crawler_table_data.json", 'r') as f:
                         data = json.load(f)
                         logger.info(f"Successfully loaded {len(data)} records from fallback file")
                         add_log_entry(job_id, f"Results retrieved from fallback: {len(data)} records")
