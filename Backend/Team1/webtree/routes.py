@@ -16,6 +16,8 @@ async def update_node_severity(payload: dict):
     ip = payload.get("ip")
     path = payload.get("path")
     severity = payload.get("severity")
+    status_code = payload.get("status_code")
+
 
     if not path:
         raise HTTPException(status_code=400, detail="Missing data")
@@ -24,6 +26,7 @@ async def update_node_severity(payload: dict):
         "ip": ip,
         "path": path,
         "severity": severity,
+        "status_code": status_code,
         "operation": "update"  # <-- Force update
     }
 
