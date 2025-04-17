@@ -134,7 +134,7 @@
 					return;
 				}
 
-				localStorage.setItem('currentDbfJobId', jobId);
+				localStorage.setItem('currentBruteForceJobId', jobId);
 
 				setTimeout(() => {
 					import('$lib/services/bruteForceSocket').then(({ connectToBruteForceWebSocket }) => {
