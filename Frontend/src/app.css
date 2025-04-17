@@ -3,123 +3,123 @@
 @tailwind utilities;
 
 @layer base {
-    :root {
-        --font-sans: 'Inter', sans-serif;
+  :root {
+    --font-sans: 'Inter', sans-serif;
 
-        /* General colors */
-        --background: #F2F2F2;
-        --foreground: #0D0D0D;
+    /* General colors */
+    --background: #F2F2F2;
+    --foreground: #0D0D0D;
 
-        --primary: #475062;
-        --primary-foreground: var(--foreground);
+    --primary: #475062;
+    --primary-foreground: var(--foreground);
 
-        --secondary: #363A44;
-        --secondary-foreground: var(--foreground);
+    --secondary: #363A44;
+    --secondary-foreground: var(--foreground);
 
-        --accent: #4AA6B0;
-        --accent-foreground: var(--foreground);
+    --accent: #4AA6B0;
+    --accent-foreground: var(--foreground);
 
-        --accent1: #7AAEBA;
-        --accent1-foreground: var(--foreground);
+    --accent1: #7AAEBA;
+    --accent1-foreground: var(--foreground);
 
-        --accent2: #8BB8C2;
-        --accent2-foreground: var(--foreground);
+    --accent2: #8BB8C2;
+    --accent2-foreground: var(--foreground);
 
-        --accent3: #9BC2CB;
-        --accent3-foreground: var(--foreground);
-        --accent3-hover: #9bc2cb78;
+    --accent3: #9BC2CB;
+    --accent3-foreground: var(--foreground);
+    --accent3-hover: #9bc2cb78;
 
-        --muted: #E1E1E1;
-        --muted-foreground: var(--foreground);
+    --muted: #E1E1E1;
+    --muted-foreground: var(--foreground);
 
-        --error: #DB283B;
-        --error-foreground: var(--foreground);
-        --error-hover: #E95A5C;
-        --error-outline: #db283a74;
+    --error: #DB283B;
+    --error-foreground: var(--foreground);
+    --error-hover: #E95A5C;
+    --error-outline: #db283a74;
 
-        --success: #20A453;
-        --success-foreground: var(--foreground);
-        --success-hover: #4FC872;
+    --success: #20A453;
+    --success-foreground: var(--foreground);
+    --success-hover: #4FC872;
 
-        --warning: #DB8630;
-        --warning-foreground: var(--foreground);
-        --warning-hover: #E9AC60;
+    --warning: #DB8630;
+    --warning-foreground: var(--foreground);
+    --warning-hover: #E9AC60;
 
-        --card: #F2F2F2;
-        --card-foreground: var(--foreground);
+    --card: #F2F2F2;
+    --card-foreground: var(--foreground);
 
-        --background1: #E1E1E1;
-        --background1-foreground: var(--foreground);
+    --background1: #E1E1E1;
+    --background1-foreground: var(--foreground);
 
-        --background2: #D0D0D0;
-        --background2-foreground: var(--foreground);
+    --background2: #D0D0D0;
+    --background2-foreground: var(--foreground);
 
-        --background3: #C0C0C0;
-        --background3-foreground: var(--foreground);
+    --background3: #C0C0C0;
+    --background3-foreground: var(--foreground);
 
-        --border: #C0C0C0;
-        --input: var(--foreground);
-    }
+    --border: #C0C0C0;
+    --input: var(--foreground);
+  }
 
-    .dark {
-        /* General colors */
-        --background: #0D0D0D;
-        --foreground: #F2F2F2;
+  .dark {
+    /* General colors */
+    --background: #0D0D0D;
+    --foreground: #F2F2F2;
 
-        --primary: #9da6b8;
-        --primary-foreground: var(--foreground);
+    --primary: #9da6b8;
+    --primary-foreground: var(--foreground);
 
-        --secondary: #BBBFC9;
-        --secondary-foreground: var(--foreground);
+    --secondary: #BBBFC9;
+    --secondary-foreground: var(--foreground);
 
-        --accent: #4FABB5;
-        --accent-foreground: var(--foreground);
+    --accent: #4FABB5;
+    --accent-foreground: var(--foreground);
 
-        --accent1: #80B1BC;
-        --accent1-foreground: var(--foreground);
+    --accent1: #80B1BC;
+    --accent1-foreground: var(--foreground);
 
-        --accent2: #95BEC7;
-        --accent2-foreground: var(--foreground);
+    --accent2: #95BEC7;
+    --accent2-foreground: var(--foreground);
 
-        --accent3: #AACBD2;
-        --accent3-foreground: var(--foreground);
-        --accent3-hover: #aacbd278;
+    --accent3: #AACBD2;
+    --accent3-foreground: var(--foreground);
+    --accent3-hover: #aacbd278;
 
-        --muted: #242424;
-        --muted-foreground: var(--foreground);
+    --muted: #242424;
+    --muted-foreground: var(--foreground);
 
-        --error: #E95A5C;
-        --error-foreground: var(--foreground);
-        --error-hover: #DB283B;
-        --error-outline: #e95a5c7b;
+    --error: #E95A5C;
+    --error-foreground: var(--foreground);
+    --error-hover: #DB283B;
+    --error-outline: #e95a5c7b;
 
-        --success: #4FC872;
-        --success-foreground: var(--foreground);
-        --success-hover: #20A453;
+    --success: #4FC872;
+    --success-foreground: var(--foreground);
+    --success-hover: #20A453;
 
-        --warning: #E9AC60;
-        --warning-foreground: var(--foreground);
-        --warning-hover: #DB8630;
+    --warning: #E9AC60;
+    --warning-foreground: var(--foreground);
+    --warning-hover: #DB8630;
 
-        --card: #0D0D0D;
-        --card-foreground: var(--foreground);
+    --card: #0D0D0D;
+    --card-foreground: var(--foreground);
 
-        --background1: #242424;
-        --background1-foreground: var(--foreground);
+    --background1: #242424;
+    --background1-foreground: var(--foreground);
 
-        --background2: #3B3B3B;
-        --background2-foreground: var(--foreground);
+    --background2: #3B3B3B;
+    --background2-foreground: var(--foreground);
 
-        --background3: #545454;
-        --background3-foreground: var(--foreground);
+    --background3: #545454;
+    --background3-foreground: var(--foreground);
 
-        --border: #545454;
-        --input: var(--foreground);
-    }
+    --border: #545454;
+    --input: var(--foreground);
+  }
 
-    body {
-        background-color: var(--background);
-        color: var(--foreground);
-        font-family: var(--font-sans);
-    }
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans); 
+  }
 }

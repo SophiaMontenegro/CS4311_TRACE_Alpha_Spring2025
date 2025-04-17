@@ -1,21 +1,4 @@
 /**
- * Validates the uploaded wordlist file
- * @param {File|null} file - The uploaded file
- * @returns {Object} - Validation result with error flag and message
- */
-export function validateWordlistFile(file) {
-	if (!file || file.size === 0) {
-		return { error: true, message: 'Wordlist file is required.' };
-	}
-
-	if (!file.name.endsWith('.txt')) {
-		return { error: true, message: 'Only .txt files are supported.' };
-	}
-
-	return { error: false, message: '' };
-}
-
-/**
  * Validates a string of parameters separated by commas.
  * It ensures that the input is not empty, trims whitespace, and checks for valid parameters.
  * @param {string} value - The input string containing parameters separated by commas.
