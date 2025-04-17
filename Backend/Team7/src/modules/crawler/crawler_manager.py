@@ -161,8 +161,7 @@ class crawler_manager:
             self.progress_callback(url)
 
             if depth_remaining == self.config.get("depth"):
-                # TODO: Update the path to the database folder.
-                with open("raw_html.txt", "w", encoding="utf-8") as f:
+                with open("Team7/src/database/crawler/raw_html.txt", "w", encoding="utf-8") as f:
                     f.write(raw_html)
 
             soup = BeautifulSoup(raw_html, "html.parser")
@@ -245,8 +244,7 @@ class crawler_manager:
         """
         await self.crawl_recursive(self.config.get("target_url"), self.config.get("depth"))
 
-        # TODO: Update the path to the database folder.
-        with open("crawler_table_data.json", "w", encoding="utf-8") as f:
+        with open("Team7/src/database/crawler/crawler_table_data.json", "w", encoding="utf-8") as f:
             json.dump(self.table_data, f, indent=1)
 
         print("Crawling completed. Results written to crawler_table_data.json")

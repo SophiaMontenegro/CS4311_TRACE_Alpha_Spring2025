@@ -8,3 +8,5 @@ aiohttp
 asyncio
 aiofiles
 google-genai
+neo4j
+

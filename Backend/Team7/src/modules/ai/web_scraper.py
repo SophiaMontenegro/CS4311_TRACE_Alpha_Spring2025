@@ -45,9 +45,9 @@ class WebScraper:
         Public main method to run the async scraping from sync code.
         """
         data = await self._scrape_pages_async()
-
+        filename = "Team7/src/database/ai/" + filename
+ 
         # Save the results
-        # TODO: Update the path to the database folder.
         with open(filename, 'w', newline='', encoding='utf-8') as csvfile:
             csv_writer = csv.writer(csvfile)
             # Write a header for clarity
@@ -80,7 +80,6 @@ class WebScraper:
         if parsed_url.scheme == "file":
             local_path = os.path.normpath(parsed_url.path)
             try:
-                # TODO: Update the path to the database folder.
                 with open(local_path, "r", encoding="utf-8") as f:
                     return f.read()
                 
