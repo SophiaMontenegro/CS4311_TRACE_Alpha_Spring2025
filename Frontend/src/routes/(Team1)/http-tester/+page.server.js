@@ -20,7 +20,7 @@ function parseSetCookie(header) {
 
 export const actions = {
 	default: async ({ request }) => {
-		console.log('✅ [Server] Action triggered');
+		console.log('[Server] Action triggered');
 
 		try {
 			const formData = await request.formData();
@@ -30,7 +30,7 @@ export const actions = {
 			const headersRaw = formData.get('headers')?.toString() || '';
 			const requestBody = formData.get('requestBody')?.toString() || '';
 
-			console.log('📥 [Server] Received form data:', {
+			console.log('[Server] Received form data:', {
 				targetUrl,
 				method,
 				headersRaw,
@@ -38,10 +38,7 @@ export const actions = {
 			});
 
 			if (!targetUrl) {
-				return json(
-					{ error: 'Target URL is required' },
-					{ status: 400 }
-				);
+				return json({ error: 'Target URL is required' }, { status: 400 });
 			}
 
 			if (!/^https?:\/\//.test(targetUrl)) {
@@ -52,7 +49,7 @@ export const actions = {
 			try {
 				parsedUrl = new URL(targetUrl);
 			} catch {
-				console.warn('⛔️ Invalid URL:', targetUrl);
+				console.warn('Invalid URL:', targetUrl);
 				return json({ error: 'Invalid URL format' }, { status: 400 });
 			}
 
@@ -78,7 +75,7 @@ export const actions = {
 				}
 			};
 
-			console.log('🚀 Sending request to backend proxy:', proxyPayload);
+			console.log('Sending request to backend proxy:', proxyPayload);
 
 			const res = await fetch('http://127.0.0.1:8000/api/http/send', {
 				method: 'POST',
@@ -101,17 +98,14 @@ export const actions = {
 				size: data.size || null
 			};
 
-			console.log('✅ Returning to frontend:', responsePayload);
+			console.log('Returning to frontend:', responsePayload);
 			return {
 				success: true,
 				...responsePayload
 			};
-					} catch (error) {
-			console.error('🔥 Server action error:', error);
-			return json(
-				{ error: error.message || 'Internal Server Error' },
-				{ status: 500 }
-			);
+		} catch (error) {
+			console.error('Server action error:', error);
+			return json({ error: error.message || 'Internal Server Error' }, { status: 500 });
 		}
 	}
 };
