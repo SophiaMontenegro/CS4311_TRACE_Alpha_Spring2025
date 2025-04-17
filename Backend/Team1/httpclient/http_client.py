@@ -60,7 +60,7 @@ class HTTPClient:
         // @ ensures logs.contains(request, response);
         """
         self.history.append((request, response))
-        print(f"Logged activity: Request={request}, Response={response}") # Simulate logging
+        # print(f"Logged activity: Request={request}, Response={response}") # Simulate logging
 
     def is_valid_url(self, url):
         parsed = urlparse(url)
