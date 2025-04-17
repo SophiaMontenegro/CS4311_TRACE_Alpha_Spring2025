@@ -15,6 +15,7 @@ controller = WebTreeController(tree_builder)
 async def update_node_severity(payload: dict):
     ip = payload.get("ip")
     path = payload.get("path")
+    severity = payload.get("severity")
 
     if not path:
         raise HTTPException(status_code=400, detail="Missing data")
@@ -22,7 +23,10 @@ async def update_node_severity(payload: dict):
     update_data = {
         "ip": ip,
         "path": path,
+        "severity": severity,
+        "operation": "update"  # <-- Force update
     }
 
     result = controller.process_tree_update(update_data)
     return {"status": "updated", "result": result}
+
