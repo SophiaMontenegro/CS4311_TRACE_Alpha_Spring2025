@@ -1,4 +1,5 @@
 <script>
+    // dashboard +page.svelte
     import { onMount, tick } from 'svelte';
     import CreateProjectModal from '$lib/components/ui/project_management/CreateProjectModal.svelte';
     import ImportProjectModal from '$lib/components/ui/project_management/ImportProjectModal.svelte';
