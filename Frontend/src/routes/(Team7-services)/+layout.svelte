@@ -2,7 +2,7 @@
   import Sidebar from "$lib/components/ui/sidebar/Sidebar.svelte";
   import { Toaster } from "$lib/components/ui/sonner/index.js";
   import { ModeWatcher } from "mode-watcher";
-  import "../app.css";
+  import "../../app.css";
 </script>
 <svelte:head>
   <title>TRACE | Tool Dashboard</title>
