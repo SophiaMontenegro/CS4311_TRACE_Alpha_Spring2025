@@ -9,10 +9,8 @@ class WebTreeController:
         self.tree_builder = tree_builder
 
     def validate_json(self, json_data):
-        # Validates that the received JSON contains required fields.
-        required_fields = {"path", "severity"}
-        if not all(field in json_data for field in required_fields):
-            raise ValueError("Invalid JSON: Missing required fields (path, severity)")
+        if "path" not in json_data:
+            raise ValueError("Invalid JSON: Missing required field 'path'")
         return True
 
     def determine_operation(self, json_data, current_tree):
