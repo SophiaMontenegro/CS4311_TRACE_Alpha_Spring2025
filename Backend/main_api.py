@@ -30,6 +30,9 @@ from Team7.src.modules.dbf.service.dbf_service_router import get_websocket_handl
 from Team7.src.modules.dbf.service.dbf_service import job_results as dbf_job_results, running_jobs as dbf_running_jobs
 
 from team1_router import team1_router
+from Team1.intrudertool.intruder_tool import IntruderTool
+
+
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -116,115 +119,170 @@ class Query:
                     return []
         return []
     
-    @strawberry.field
-    def get_dbf_results(self, job_id: str) -> List[DBFResultType]:
-        if job_id in dbf_job_results and 'results_file' in dbf_job_results[job_id]:
-            results_file = dbf_job_results[job_id]['results_file']
+# Team1
+@strawberry.type
+class IntruderAttackResult:
+    payload: str
+    status_code: int
+    length: int
 
-            if os.path.exists(results_file):
-                try:
-                    with open(results_file, 'r') as file:
-                        data = json.load(file)
-                        return [
-                            DBFResultType(
-                                id=item.get('id', index),
-                                url=item['url'],
-                                status=item['status'],
-                                payload=item['payload'],
-                                length=item['length'],
-                                error=item['erro']
-                            ) for index, item in enumerate(data)
-                        ]
-                except Exception as e:
-                    logger.error(f'Error reading DBF results: {e}')
-                    return []
-        return []
-    
-    @strawberry.field
-    def get_ml_results(self, job_id: str) -> List[CredentialType]:
-        if job_id in ml_job_results and 'results_file' in ml_job_results[job_id]:
-            result_file = ml_job_results[job_id]['results_file']
+@strawberry.type
+class IntruderFormField:
+    name: str
+    type: str
 
-            if os.path.exists(result_file):
-                try:
-                    with open(result_file, 'r') as file:
-                        data = json.load(file)
-                        return [
-                            CredentialType(
-                                id=item['id'],
-                                username=item['username'],
-                                username_score=item['username_score'],
-                                password=item['password'],
-                                is_secure=item['is_secure'],
-                                password_evaluation=item['password_evaluation'],
-                            ) for item in data
-                        ]
-                except Exception as e:
-                    logger.error(f'Error reading ML results: {e}')
-                    return []
-        return []
-    
-    @strawberry.field
-    def get_fuzzer_results(self, job_id: str) -> List[FuzzerResultType]:
-        if job_id in fuzzer_job_results and 'results_file' in fuzzer_job_results[job_id]:
-            results_file = fuzzer_job_results[job_id]['results_file']
+@strawberry.type
+class IntruderForm:
+    action: str
+    method: str
+    fields: List[IntruderFormField]
 
-            if os.path.exists(results_file):
-                try:
-                    with open(results_file, 'r') as file:
-                        data = json.load(file)
-                        return [
-                            FuzzerResultType(
-                                id=item['id'],
-                                response=item['response'],
-                                lines=item['lines'],
-                                words=item['words'],
-                                chars=item['chars'],
-                                payload=item['payload'],
-                                length=item['length'],
-                                error=item['error'],
-                            ) for item in data
-                        ]
-                
-                except Exception as e:
-                    logger.error(f'Error reading fuzzer results: {e}')
-                    return []
-                
-        return []
-    
-    @strawberry.field
-    def get_crawler_job_status(self, job_id: str) -> str:
-        if job_id in crawler_running_jobs:
-            return crawler_running_jobs[job_id]['status']
-        if job_id in crawler_job_results:
-            return 'completed'
-        return 'not found'
-    
-    @strawberry.field
-    def get_dbf_job_status(self, job_id: str) -> str:
-        if job_id in dbf_running_jobs:
-            return dbf_running_jobs[job_id]['status']
-        if job_id in dbf_job_results:
-            return 'completed'
-        return 'not found'
-    
-    @strawberry.field
-    def get_ml_job_status(self, job_id: str) -> str:
-        if job_id in ml_running_jobs:
-            return ml_running_jobs[job_id]['status']
-        if job_id in ml_job_results:
-            return 'completed'
-        return 'not found'
+@strawberry.type
+class IntruderConfigureResult:
+    status: int
+    forms_found: List[IntruderForm]
 
-    @strawberry.field
-    def get_fuzzer_job_status(self, job_id: str) -> str:
-        if job_id in fuzzer_running_jobs:
-            return fuzzer_running_jobs[job_id]['status']
-        if job_id in fuzzer_job_results:
-            return 'completed'
-        return 'not found'
+@strawberry.type
+class Mutation:
+    @strawberry.mutation
+    def configure_intruder_attack(self, url: str, form_index: int, intrusion_field: str, payloads: List[str]) -> IntruderConfigureResult:
+        global tool_instance
+        tool_instance = IntruderTool(url)
+        status = tool_instance.fetch_target()
+        raw_forms = tool_instance.parse_forms()
+        tool_instance.select_form(form_index)
+        tool_instance.configure_attack(intrusion_field, payloads)
+
+        parsed_forms = [
+            IntruderForm(
+                action=form["action"],
+                method=form["method"],
+                fields=[
+                    IntruderFormField(name=field["name"], type=field["type"]) 
+                    for field in form["fields"]
+                ]
+            )
+            for form in raw_forms
+        ]
+        return IntruderConfigureResult(status=status, forms_found=parsed_forms)
+    @strawberry.mutation
+    def run_intruder_attack(self) -> List[IntruderAttackResult]:
+        global tool_instance
+        if tool_instance is None:
+            raise Exception("IntruderTool is not configured.")
+        return [IntruderAttackResult(**result) for result in tool_instance.run_attack()]
+
+@strawberry.field
+def get_dbf_results(self, job_id: str) -> List[DBFResultType]:
+    if job_id in dbf_job_results and 'results_file' in dbf_job_results[job_id]:
+        results_file = dbf_job_results[job_id]['results_file']
+
+        if os.path.exists(results_file):
+            try:
+                with open(results_file, 'r') as file:
+                    data = json.load(file)
+                    return [
+                        DBFResultType(
+                            id=item.get('id', index),
+                            url=item['url'],
+                            status=item['status'],
+                            payload=item['payload'],
+                            length=item['length'],
+                            error=item['erro']
+                        ) for index, item in enumerate(data)
+                    ]
+            except Exception as e:
+                logger.error(f'Error reading DBF results: {e}')
+                return []
+    return []
+
+@strawberry.field
+def get_ml_results(self, job_id: str) -> List[CredentialType]:
+    if job_id in ml_job_results and 'results_file' in ml_job_results[job_id]:
+        result_file = ml_job_results[job_id]['results_file']
+
+        if os.path.exists(result_file):
+            try:
+                with open(result_file, 'r') as file:
+                    data = json.load(file)
+                    return [
+                        CredentialType(
+                            id=item['id'],
+                            username=item['username'],
+                            username_score=item['username_score'],
+                            password=item['password'],
+                            is_secure=item['is_secure'],
+                            password_evaluation=item['password_evaluation'],
+                        ) for item in data
+                    ]
+            except Exception as e:
+                logger.error(f'Error reading ML results: {e}')
+                return []
+    return []
+
+@strawberry.field
+def get_fuzzer_results(self, job_id: str) -> List[FuzzerResultType]:
+    if job_id in fuzzer_job_results and 'results_file' in fuzzer_job_results[job_id]:
+        results_file = fuzzer_job_results[job_id]['results_file']
+
+        if os.path.exists(results_file):
+            try:
+                with open(results_file, 'r') as file:
+                    data = json.load(file)
+                    return [
+                        FuzzerResultType(
+                            id=item['id'],
+                            response=item['response'],
+                            lines=item['lines'],
+                            words=item['words'],
+                            chars=item['chars'],
+                            payload=item['payload'],
+                            length=item['length'],
+                            error=item['error'],
+                        ) for item in data
+                    ]
+            
+            except Exception as e:
+                logger.error(f'Error reading fuzzer results: {e}')
+                return []
+            
+    return []
     
-schema = strawberry.Schema(query=Query)
+@strawberry.field
+def get_crawler_job_status(self, job_id: str) -> str:
+    if job_id in crawler_running_jobs:
+        return crawler_running_jobs[job_id]['status']
+    if job_id in crawler_job_results:
+        return 'completed'
+    return 'not found'
+
+@strawberry.field
+def get_dbf_job_status(self, job_id: str) -> str:
+    if job_id in dbf_running_jobs:
+        return dbf_running_jobs[job_id]['status']
+    if job_id in dbf_job_results:
+        return 'completed'
+    return 'not found'
+
+@strawberry.field
+def get_ml_job_status(self, job_id: str) -> str:
+    if job_id in ml_running_jobs:
+        return ml_running_jobs[job_id]['status']
+    if job_id in ml_job_results:
+        return 'completed'
+    return 'not found'
+
+@strawberry.field
+def get_fuzzer_job_status(self, job_id: str) -> str:
+    if job_id in fuzzer_running_jobs:
+        return fuzzer_running_jobs[job_id]['status']
+    if job_id in fuzzer_job_results:
+        return 'completed'
+    return 'not found'
+    
+# schema = strawberry.Schema(query=Query)
+schema = strawberry.Schema(query=Query, mutation=Mutation)
+
 graphql_app = GraphQLRouter(schema)
 
 # Create FastAPI App
