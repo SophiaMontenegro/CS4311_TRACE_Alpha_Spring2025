@@ -28,7 +28,6 @@ class MLConfig(BaseModel):
     """
     Configuration model for ML jobs
     """
-    target_urls: List[str]
     wordlist_path: Optional[str] = None
     credential_count: Optional[int] = 10
     # TODO: add the toggle fields

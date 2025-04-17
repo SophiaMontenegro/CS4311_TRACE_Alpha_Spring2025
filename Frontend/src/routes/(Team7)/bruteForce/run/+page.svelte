@@ -26,10 +26,7 @@
 	let intervalId;
 
 	// Derived stores
-	const bruteForceResults = derived(
-		serviceResults,
-		($serviceResults) => $serviceResults.bruteForce
-	);
+	const bruteForceResults = derived(serviceResults, ($serviceResults) => $serviceResults.bruteForce);
 	const dynamicColumns = derived(bruteForceResults, ($bruteForceResults) =>
 		$bruteForceResults.length > 0
 			? Object.keys($bruteForceResults[0]).map((key) => ({
@@ -51,7 +48,7 @@
 	const currentStep = derived(serviceStatus, ($serviceStatus) =>
 		$serviceStatus.status === 'running' || $serviceStatus.status === 'paused'
 			? 'running'
-			: $serviceStatus.status === 'completed'
+			: $serviceStatus.status === 'complete'
 				? 'results'
 				: 'config'
 	);
@@ -68,6 +65,7 @@
 				...r,
 				bruteForce: parsed
 			}));
+
 		} catch (e) {
 			console.error('Failed to fetch bruteForce results:', e);
 		}
@@ -76,7 +74,7 @@
 	// WebSocket connection
 	$effect(() => {
 		if ($currentStep === 'results' && $bruteForceResults.length === 0) {
-			const jobId = localStorage.getItem('currentDbfJobId');
+			const jobId = localStorage.getItem('currentBruteForceJobId');
 			if (jobId) {
 				console.log('[Fetcher] Fetching results for job:', jobId);
 				fetchResults(jobId);
@@ -86,9 +84,9 @@
 
 	const togglePause = async () => {
 		if ($scanPaused) {
-			await resumeScan('dbf');
+			await resumeScan('bruteForce');
 		} else {
-			await pauseScan('dbf');
+			await pauseScan('bruteForce');
 		}
 	};
 
@@ -97,7 +95,7 @@
 	}
 
 	function saveCheckpoint() {
-		const jobId = localStorage.getItem('currentDbfJobId');
+		const jobId = localStorage.getItem('currentBruteForceJobId');
 		if (!jobId) {
 			toast.error('No job ID found.');
 			return;
@@ -122,7 +120,7 @@
 		closeBruteForceWebSocket();
 
 		// Get the job id
-		const jobId = localStorage.getItem('currentDbfJobId');
+		const jobId = localStorage.getItem('currentBruteForceJobId');
 		if (!jobId) {
 			console.error('No BruteForce Job Id found in local storage');
 		}
@@ -130,7 +128,7 @@
 		// Clear app state
 		serviceResults.update((r) => ({ ...r, bruteForce: [] }));
 		serviceStatus.set({ status: 'idle', serviceType: null, startTime: null });
-		localStorage.removeItem('currentDbfJobId');
+		localStorage.removeItem('currentBruteForceJobId');
 
 		// Tell the backend to stop
 		try {
@@ -140,7 +138,7 @@
 			if (res.ok) {
 				console.log('BruteForce job stopped.');
 			} else {
-				console.error('Failed to stop bruteForce job:', await res.text());
+				console.error('Failed to stop bruteForce job:', await res.test());
 			}
 		} catch (e) {
 			console.error('Failed to stop bruteForce:', e);
@@ -156,35 +154,54 @@
 		// Reset the service results and status
 		serviceResults.update((r) => ({ ...r, bruteForce: [] }));
 		serviceStatus.set({ status: 'idle', serviceType: null, startTime: null });
-		localStorage.removeItem('currentDbfJobId');
+		localStorage.removeItem('currentBruteForceJobId');
 
 		console.log('[Restart] Service state');
 		goto('/bruteForce/config');
 	}
 
 	async function handleExport() {
-		const jobId = localStorage.getItem('currentDbfJobId');
+		const jobId = localStorage.getItem('currentBruteForceJobId');
 		if (!jobId) {
-			console.log('Brute Force job ID not found.');
+			console.log('BruteForce job ID not found.');
 			return;
 		}
 
 		try {
 			const res = await fetch(`http://localhost:8000/api/dbf/${jobId}/results`);
-			if (!res.ok) throw new Error('Failed to fetch brute force results.');
+			if (!res.ok) throw new Error('Failed to fetch bruteForce results.');
 
 			const { results = [] } = await res.json();
 
-			// These are the fields expected by the UI
-			const exportFields = ['id', 'url', 'status', 'payload', 'length', 'error'];
-			const headers = ['ID', 'URL', 'Status Code', 'Payload', 'Length', 'Error'];
+			// Fields you want to include in the export
+			const exportFields = [
+				'url',
+				'parentUrl',
+				'title',
+				'wordCount',
+				'charCount',
+				'linksFound',
+				'error'
+			];
+
+			// Optional: Human-readable column names
+			const headers = [
+				'URL',
+				'Parent URL',
+				'Title',
+				'Word Count',
+				'Character Count',
+				'Links Found',
+				'Error'
+			];
 
 			// Build CSV content
 			const csvRows = [
-				headers.join(','),
+				headers.join(','), // Header row
 				...results.map((row) => exportFields.map((key) => JSON.stringify(row[key] ?? '')).join(','))
 			];
 
+			// Create blob and trigger download
 			const csvContent = csvRows.join('\n');
 			const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
 			const url = URL.createObjectURL(blob);
@@ -198,16 +215,13 @@
 
 			URL.revokeObjectURL(url);
 		} catch (error) {
-			console.error('[Brute Force Export Error]', error);
+			console.error('[BruteForce Export Error]', error);
 		}
 	}
 
 	// Restore checkpoint on mount
 	onMount(() => {
-		const jobId = localStorage.getItem('currentDbfJobId');
-		if (jobId && get(serviceStatus).status !== 'completed') {
-			connectToBruteForceWebSocket(jobId);
-		}
+		const jobId = localStorage.getItem('currentBruteForceJobId');
 
 		// Restore checkpoint if available
 		if (jobId) {
@@ -229,10 +243,10 @@
 		}
 
 		intervalId = setInterval(() => {
-			const jobId = localStorage.getItem('currentDbfJobId');
+			const jobId = localStorage.getItem('currentBruteForceJobId');
 			const status = get(serviceStatus);
 
-			// Do not save checkpoints after scan is completed or idle
+			// Do not save checkpoints after scan is complete or idle
 			if (!jobId || (status.status !== 'running' && status.status !== 'paused')) return;
 
 			const data = get(serviceResults).bruteForce;
