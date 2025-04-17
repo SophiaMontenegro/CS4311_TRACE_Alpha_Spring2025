@@ -3,6 +3,8 @@ import time
 import logging
 import asyncio
 from typing import List, Dict, Callable, Optional
+from Team1.httpclient.proxy_server import ProxyServer
+from Team1.httpclient.http_client import HTTPClient
 from Team7.src.modules.dbf.dbf_response_processor import ResponseProcessor
 # TODO: add the new http client
 
@@ -27,7 +29,8 @@ class DirectoryBruteForceManager:
         self.config = {}
         self.response_processor = ResponseProcessor()
         # TODO: add the new http client
-        # self.http_client = http_client or AsyncHttpClient()
+        self.proxy = ProxyServer()
+        self.http_client = HTTPClient(self.proxy)
         self.request_count = 0
         self.attempt_limit = -1
         self.start_time = None
@@ -64,6 +67,7 @@ class DirectoryBruteForceManager:
         self.wordlist = wordlist
         self.attempt_limit = attempt_limit
         self.response_processor.set_filters(show_only_status or [200], hide_status or [], length_filter)
+        self.http_client.specify_target_system(target_url)
         
         # Reset control flags
         self._paused = False
@@ -91,23 +95,24 @@ class DirectoryBruteForceManager:
             path = f"{top}/{word}" if top else word
             full_url = f"{target}/{path}"
             try:
-                response = await self.http_client.send(
-                    method="GET",
-                    url=full_url,
-                    headers=headers
-                )
-                mock = MockResponse(response["url"], response["status"], response["text"])
+                request = {
+                    "method": "GET",
+                    "url": f"/{path.lstrip('/')}",
+                    "headers": headers
+                }
+                response = self.http_client.send_request(request)
+                mock = MockResponse(full_url, response["status_code"], response["body"])
                 mock.payload = word
-                mock.error = response["status"] not in [200, 403]
+                mock.error = response["status_code"] not in [200, 403]
                 self.response_processor.process_response(mock)
                 
                 # Create a result object that can be sent to frontend
                 result_item = {
                     "id": self.request_count + 1,
                     "url": full_url,
-                    "status": response["status"],
+                    "status": response["status_code"],
                     "payload": word,
-                    "length": len(response["text"]),
+                    "length": len(response["body"]),
                     "error": mock.error
                 }
                 
@@ -115,7 +120,7 @@ class DirectoryBruteForceManager:
                 if callable(self.on_new_row):
                     self.on_new_row(result_item)
                     
-                logging.info("Scanned %s [%d]", full_url, response["status"])
+                logging.info("Scanned %s [%d]", full_url, response["status_code"])
                 self.request_count += 1
             except Exception as e:
                 logging.error("Request error for %s: %s", full_url, str(e))
@@ -201,3 +206,35 @@ class DirectoryBruteForceManager:
                 f.write(f"Length: {entry['length']}\n")
                 f.write(f"Error: {entry['error']}\n")
                 f.write("-" * 40 + "\n")
+
+#sample test
+if __name__ == '__main__':
+    manager = DirectoryBruteForceManager()
+
+    # Sample wordlist
+    wordlist = [
+        '',  # root
+        'level1/page1',
+        'level1/page2',
+        'level2/page1',
+        'level2/page2',
+        'level2/page3',
+        'notfound'
+    ]
+
+    # Configure the scan
+    manager.configure_scan(
+        target_url='http://localhost:5002',
+        wordlist=wordlist,
+        hide_status=[404],
+        show_only_status=[200],
+        length_filter=0,
+        attempt_limit=-1
+    )
+
+    try:
+        loop = asyncio.get_running_loop()
+        task = loop.create_task(manager.start_scan())
+        loop.run_until_complete(task)
+    except RuntimeError:
+        asyncio.run(manager.start_scan())
