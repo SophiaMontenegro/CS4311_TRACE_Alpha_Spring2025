@@ -26,6 +26,7 @@
     }
 </script>
 
+
 <div class="min-h-screen flex flex-col bg-background text-foreground px-6 py-4">
     <!-- Header -->
     <div class="flex justify-between items-center mb-8">
