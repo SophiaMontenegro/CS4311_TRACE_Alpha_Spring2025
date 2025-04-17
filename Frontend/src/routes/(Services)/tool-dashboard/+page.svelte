@@ -111,6 +111,18 @@
 			</div>
 		{/each}
 	</div>
+	<div class="exit-button">
+		<Button
+			default="secondary"
+			size="lg"
+			onclick={() => goto('/dashboard')}
+			class="px-10"
+			aria-label="Settings"
+			title="Settings"
+		>
+			Exit
+		</Button>
+	</div>
 </div>
 
 <style>
@@ -183,5 +195,15 @@
 		font-style: normal;
 		font-weight: 400;
 		color: var(--foreground);
+	}
+
+	.exit-button {
+		display: flex;
+		justify-content: flex-end;
+		align-items: flex-end;
+		padding-right: 3rem;
+		padding-bottom: 3rem;
+		width: 100%;
+		height: 100%;
 	}
 </style>

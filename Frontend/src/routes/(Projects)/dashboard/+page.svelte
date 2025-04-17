@@ -299,7 +299,7 @@
                                 class:bg-red-500={project.locked}
                         ></div>
                         <div>
-                            <h3 class="text-base font-semibold text-foreground">{project.name}</h3>
+                            <h3 class="text-base font-semibold text-foreground">{project?.name}</h3>
                         </div>
                     </div>
 
@@ -315,17 +315,19 @@
                             <Lock class="w-5 h-5 text-muted-foreground" />
                         {/if}
 
+                        {#if project}
                         <button
-                        class="text-sm font-medium bg-[var(--secondary)] text-[var(--secondary-foreground)] px-4 py-2 rounded-md hover:bg-[color:var(--secondary)/90]"
-                        on:click={() => {
-                          if (!project.locked) {
-                            goto('/tool-dashboard');
-                          } else {
-                          }
-                        }}
-                      >
-                        {project.locked ? 'View' : 'Run Scan'}
-                      </button>
+                          class="text-sm font-medium bg-[var(--secondary)] text-[var(--secondary-foreground)] px-4 py-2 rounded-md hover:bg-[color:var(--secondary)/90]"
+                          on:click={() => {
+                            if (!project.locked) {
+                              goto('/tool-dashboard');
+                            }
+                          }}
+                        >
+                          {project.locked ? 'View' : 'Run Scan'}
+                        </button>
+                      {/if}
+                      
                         <!-- Drop Down: Lock, Delete, and Edit -->
                         <div class="relative options-wrapper">
                             <button
