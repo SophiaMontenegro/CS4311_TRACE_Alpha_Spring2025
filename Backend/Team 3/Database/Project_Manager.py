@@ -106,81 +106,6 @@ class ProjectManager:
             logging.error(f"Error in create_project: {e}", exc_info=True)
             return None
 
-    # def create_project(self, owner_name, project_name, startDate, endDate, description, userList):
-    #     """
-    #     Creates a new project and assigns a PART_OF relationship for each user in userList.
-    #     """
-    
-    #     # Generate unique project ID and timestamp
-    #     timestamp = datetime.utcnow().isoformat()
-    #     project_id = str(uuid.uuid4())
-    
-    #     # Check if the owner exists
-    #     owner_query = """
-    #         MATCH (u:Analyst {name: $owner_name})
-    #         RETURN u
-    #     """
-    #     owner = self.db_manager.run_query(owner_query, {"owner_name": owner_name}, fetch=True)
-    
-    #     if not owner:
-    #         print(f"Error: Owner '{owner_name}' not found. Please create the Lead Analyst first.")
-    #         return None
-
-    #     # To check if the project with the same name is already created(existing)
-    #     existingProject = self.db_manager.run_query(
-    #         "MATCH (p:Project {name:$name}) RETURN p",
-    #         {"name":project_name}
-    #     )
-        
-    #     if existingProject:
-    #         print(f"The project with the name: {project_name} already exist")
-    #         return False
-        
-    #     # Create the project node
-    #     project_query = """
-    #         CREATE (p:Project {name: $project_name, id: $project_id, startDate: $startDate, 
-    #                 endDate: $endDate, description: $description, locked: false, timestamp: $timestamp})
-    #         RETURN p
-    #     """
-    #     self.db_manager.run_query(project_query, {
-    #         "project_name": project_name,
-    #         "project_id": project_id,
-    #         "startDate": startDate,
-    #         "endDate": endDate,
-    #         "description": description,
-    #         "timestamp": timestamp
-    #     })
-    
-    #     # Create ownership relationship
-    #     ownership_query = """
-    #         MATCH (u:Analyst {name: $owner_name}), (p:Project {id: $project_id})
-    #         MERGE (u)-[:OWNS]->(p)
-    #     """
-    #     self.db_manager.run_query(ownership_query, {"owner_name": owner_name, "project_id": project_id})
-    
-    #     # Create PART_OF relationships for each user in userList
-    #     for user in userList:
-    #         user_query = """
-    #             MATCH (a:Analyst {name: $user_name})
-    #             RETURN a
-    #         """
-    #         user_exists = self.db_manager.run_query(user_query, {"user_name": user}, fetch=True)
-    
-    #         if not user_exists:
-    #             print(f"User '{user}' not found. Creating new Analyst node.")
-    #             create_user_query = "CREATE (a:Analyst {name: $user_name})"
-    #             self.db_manager.run_query(create_user_query, {"user_name": user})
-    
-    #         # Create relationship
-    #         part_of_query = """
-    #             MATCH (a:Analyst {name: $user_name}), (p:Project {id: $project_id})
-    #             MERGE (a)-[:PART_OF]->(p)
-    #         """
-    #         self.db_manager.run_query(part_of_query, {"user_name": user, "project_id": project_id})
-    
-    #     print(f"✅ Project '{project_name}' created successfully and users have been assigned.")
-    #     return True
-
     def show_projects(self):
         """
         Displays all projects with their owners and lock status.
@@ -190,6 +115,27 @@ class ProjectManager:
             RETURN p.name AS project, u.name AS owner, p.locked AS locked
         """
         projects = self.db_manager.run_query(query, fetch=True)
+        if projects:
+            for project in projects:
+                lock_status = "Locked" if project["locked"] else "Unlocked"
+                print(f"Project: {project['project']}, Owner: {project['owner']}, Status: {lock_status}")
+        else:
+            print("No projects found.")
+
+    def show_Part_Of_projects(self, analyst_name):
+        check_query = """MATCH (a:Analyst {name: $analyst_name}) RETURN a"""
+        analyst = self.db_manager.run_query(check_query, parameters={"analyst_name": analyst_name}, fetch=True)
+
+        if not analyst:
+            print(f"Analyst: {analyst_name} not found in the database.")
+            return
+
+        query = """
+        MATCH (a:Analyst {name: $analyst_name})-[:PART_OF]->(p:Project)
+        RETURN p.name AS project, a.name AS owner, p.locked AS locked
+        """
+        projects = self.db_manager.run_query(query, parameters={"analyst_name": analyst_name}, fetch=True)
+
         if projects:
             for project in projects:
                 lock_status = "Locked" if project["locked"] else "Unlocked"
@@ -360,54 +306,6 @@ class ProjectManager:
             return None
 
 
-    def change_lead(self, new_lead, project_name, lead_changer):
-    # lead_changer is the analyst making this change
-    # Check if the new lead exists and is a Lead Analyst
-        query = """
-        MATCH (a:Analyst)
-        WHERE a.name = $new_lead AND a.role = $role
-        RETURN COUNT(a) > 0 AS has_role
-        """
-        result = self.db_manager.run_query(query, {"new_lead": new_lead, "role": 1}, fetch=True)
-        if not result or not result[0]["has_role"]:
-            print(f"Error: '{new_lead}' is not a Lead Analyst or does not exist.")
-            return
-        project_query = """
-        MATCH (p:Project)
-        WHERE p.name = $project_name
-        RETURN p.id AS project_id
-        """
-        project_result = self.db_manager.run_query(project_query, {"project_name": project_name}, fetch=True)
-        if not project_result:
-            print(f"Error: Project '{project_name}' not found.")
-            return
-        project_id = project_result[0]["project_id"]  # project_id is a string (UUID)
-        owner_query = """
-        MATCH (a:Analyst)-[:OWNS]->(p:Project)
-        WHERE p.id = $project_id
-        RETURN a.name AS owner_name
-        """
-        owner_result = self.db_manager.run_query(owner_query, {"project_id": project_id}, fetch=True)
-        if not owner_result or owner_result[0]["owner_name"] != lead_changer:
-            print(f"Error: '{lead_changer}' is not the current owner of the project '{project_name}' and cannot change the lead.")
-            return
-        delete_query = """
-        MATCH (a:Analyst)-[r:OWNS]->(p:Project)
-        WHERE p.id = $project_id
-        DELETE r
-        """
-        self.db_manager.run_query(delete_query, {"project_id": project_id})
-        add_participant_query = """
-        MATCH (a:Analyst), (p:Project)
-        WHERE a.name = $owner_name AND p.id = $project_id
-        MERGE (a)-[:PART_OF]->(p)
-        """
-        self.db_manager.run_query(add_participant_query, {"owner_name": owner_result[0]["owner_name"], "project_id": project_id})
-        self.db_manager.create_relationship("Analyst", {"name": new_lead}, "Project", {"id": project_id}, "OWNS")
-        print(f"Project '{project_name}' is now owned by {new_lead}.")
-        self.db_manager.create_relationship("Analyst", {"name": new_lead}, "Project", {"id": project_id}, "PART_OF")
-        print(f"New lead '{new_lead}' added as a participant in the project.")
-
 
 
     def edit_project_members(self, project_name, action, participant_name, analyst_name):
@@ -503,6 +401,7 @@ class ProjectManager:
     def edit_timeline(self, project, analyst_name, end_date):
         if not self.analyst_manager.check_if_lead_and_member(analyst_name, project):
             print(f"Error: Analyst '{analyst_name}' isn't part of the current project or doesn't have permission.")
+            return None
         
         check_query = """
         MATCH (p:Project)
@@ -512,7 +411,7 @@ class ProjectManager:
         result = self.db_manager.run_query(check_query, {"project": project}, fetch=True)
         if not result or not result[0]["project_exists"]:
             print(f"Error: Project '{project}' not found.")
-            return
+            return None
         update_query = """
         MATCH (p:Project)
         WHERE p.name = $project
@@ -520,4 +419,5 @@ class ProjectManager:
         """
         self.db_manager.run_query(update_query, {"project": project, "end_date": end_date})
         print(f"Successfully updated end date of '{project}' to {end_date}.")
+        return True
 
