@@ -109,7 +109,7 @@ class Credential_Generator:
         ]
 
         try:
-            client = genai.Client(api_key='AIzaSyAFlnecmWoSn5oH1t7-5JIQNf9mvWM_FFg') 
+            client = genai.Client(api_key='') 
             gemini_resp = client.models.generate_content(
                 model="gemini-2.0-flash-lite",
                 contents=[
