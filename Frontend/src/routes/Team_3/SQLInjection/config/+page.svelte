@@ -2,106 +2,157 @@
     import { onMount } from 'svelte';
     import { goto } from '$app/navigation';
     import { Button } from '$lib/components/ui/button/index.js';
-    import { Input } from '$lib/components/ui/input/index.js';
     import { Label } from '$lib/components/ui/label/index.js';
-    import { Checkbox } from '$lib/components/ui/checkbox/index.js';
-    import { Card, CardContent } from '$lib/components/ui/card';
+    import { Switch } from '$lib/components/ui/switch/index.js';
+    import StepIndicator from '$lib/components/ui/progressStep/ProgressStep.svelte';
+    import FormField from '$lib/components/ui/form/FormField.svelte';
 
     let analystInitials = '';
 
-    let targetUrl = '';
-    let targetPort = '';
-    let injectableParams = '';
-    let customFlags = '';
-
-    let dbUser = '';
-    let dbPass = '';
-    let enumLevel = '1';
-    let timeout = '30';
-    let additional = '';
-    let dbEnum = false;
-
-    let touched = {
-        targetUrl: false,
-        targetPort: false,
-        enumLevel: false,
-        timeout: false
-    };
-
-    let errors = {
+    let formData = {
         targetUrl: '',
         targetPort: '',
-        enumLevel: '',
-        timeout: ''
+        injectableParams: '',
+        customFlags: '',
+        dbUser: '',
+        dbPass: '',
+        enumLevel: '1',
+        timeout: '30',
+        additional: '',
+        dbEnum: false
     };
 
-    let tooltips = {
-        targetUrl: 'Enter the target URL to test for SQL injection vulnerabilities',
-        targetPort: 'Enter the port number of the target',
-        dbUser: 'Optional: Database username if known',
-        dbPass: 'Optional: Database password if known',
-        enumLevel: 'Enumeration level (1-5)',
-        timeout: 'Timeout in seconds',
-        additional: 'Additional SQLMap parameters'
-    };
+
 
     let progress = 0;
     let message = '';
     let history = [];
 
+    let fieldErrors = {};
+
     const API_BASE_URL = 'http://127.0.0.1:8000';
 
-    function handleBlur(field) {
-        touched[field] = true;
-        validate(field);
+
+    const inputFields = [
+        {
+            id: 'targetUrl',
+            label: 'Target URL',
+            placeholder: 'http://example.com',
+            tooltip: 'Enter the target URL to test for SQL injection vulnerabilities',
+            required: true,
+            advanced: false
+        },
+        {
+            id: 'targetPort',
+            label: 'Target Port',
+            placeholder: '80',
+            tooltip: 'Enter the port number of the target',
+            required: true,
+            advanced: false
+        },
+        {
+            id: 'injectableParams',
+            label: 'Injectable Parameters',
+            placeholder: 'id',
+            tooltip: 'Comma-separated parameter names to test (optional)',
+            required: false,
+            advanced: false
+        },
+        {
+            id: 'customFlags',
+            label: 'Custom Flags',
+            placeholder: '--random-agent',
+            tooltip: 'Optional additional SQLMap flags',
+            required: false,
+            advanced: true
+        },
+        {
+            id: 'dbUser',
+            label: 'DB Username',
+            placeholder: 'admin',
+            tooltip: 'Optional: Database username if known',
+            required: false,
+            advanced: true
+        },
+        {
+            id: 'dbPass',
+            label: 'DB Password',
+            placeholder: 'password123',
+            tooltip: 'Optional: Database password if known',
+            required: false,
+            advanced: true
+        },
+        {
+            id: 'enumLevel',
+            label: 'Enumeration Level',
+            placeholder: '1',
+            tooltip: 'Enumeration level (1-5)',
+            required: false,
+            advanced: true
+        },
+        {
+            id: 'timeout',
+            label: 'Timeout',
+            placeholder: '30',
+            tooltip: 'Timeout in seconds',
+            required: false,
+            advanced: true
+        },
+        {
+            id: 'additional',
+            label: 'Additional Flags',
+            placeholder: '',
+            tooltip: 'Any other custom SQLMap flags',
+            required: false,
+            advanced: true
+        }
+    ];
+
+    function handleInputChange(id, value) {
+        formData[id] = value;
+        validateField(id, value);
     }
 
-    function validate(field) {
-        if (field === 'targetUrl') {
-            if (!targetUrl) {
-                errors.targetUrl = 'URL is required';
+    function validateField(id, value) {
+        if (id === 'targetUrl' && !value) {
+            fieldErrors[id] = { error: true, message: 'Target URL is required' };
+        } else if (id === 'targetPort') {
+            if (!value) {
+                fieldErrors[id] = { error: true, message: 'Target Port is required' };
+            } else if (!/^\d+$/.test(value)) {
+                fieldErrors[id] = { error: true, message: 'Port must be numeric' };
             } else {
-                errors.targetUrl = '';
+                fieldErrors[id] = null;
             }
-        } else if (field === 'targetPort') {
-            if (!targetPort) {
-                errors.targetPort = 'Port is required';
-            } else if (!/^\d+$/.test(targetPort)) {
-                errors.targetPort = 'Port must be a number';
+        } else if (id === 'enumLevel') {
+            if (value && !/^[1-5]$/.test(value)) {
+                fieldErrors[id] = { error: true, message: 'Level must be 1-5' };
             } else {
-                errors.targetPort = '';
+                fieldErrors[id] = null;
             }
-        } else if (field === 'enumLevel') {
-            if (enumLevel && !/^[1-5]$/.test(enumLevel)) {
-                errors.enumLevel = 'Level must be 1-5';
+        } else if (id === 'timeout') {
+            if (value && !/^\d+$/.test(value)) {
+                fieldErrors[id] = { error: true, message: 'Timeout must be numeric' };
             } else {
-                errors.enumLevel = '';
+                fieldErrors[id] = null;
             }
-        } else if (field === 'timeout') {
-            if (timeout && !/^\d+$/.test(timeout)) {
-                errors.timeout = 'Must be a number';
-            } else {
-                errors.timeout = '';
-            }
+        } else {
+            fieldErrors[id] = null;
         }
     }
 
-    function handleLogout() {
-        localStorage.removeItem('analyst_id');
-        localStorage.removeItem('analyst_initials');
-        goto('/login'); // path is not correct fix later
-    }
+
 
     async function runScan(event) {
         event.preventDefault();
-        touched.targetUrl = true;
-        touched.targetPort = true;
-        validate('targetUrl');
-        validate('targetPort');
-        validate('enumLevel');
-        validate('timeout');
 
-        if (errors.targetUrl || errors.targetPort || errors.enumLevel || errors.timeout) {
+        // Validate all required fields
+        for (const field of inputFields) {
+            validateField(field.id, formData[field.id]);
+        }
+
+        const hasErrors = Object.values(fieldErrors).some((e) => e?.error);
+        if (hasErrors) {
             message = 'Please fix the errors before running the scan';
             return;
         }
@@ -110,23 +161,21 @@
         progress = 10;
 
         try {
-            let flags = customFlags || '';
-            if (dbUser) flags += ` --dbuser=${dbUser}`;
-            if (dbPass) flags += ` --dbpass=${dbPass}`;
-            if (enumLevel) flags += ` --level=${enumLevel}`;
-            if (timeout) flags += ` --timeout=${timeout}`;
-            if (dbEnum) flags += ` --dbs`;
-            if (additional) flags += ` ${additional}`;
+            let flags = formData.customFlags || '';
+            if (formData.dbUser) flags += ` --dbuser=${formData.dbUser}`;
+            if (formData.dbPass) flags += ` --dbpass=${formData.dbPass}`;
+            if (formData.enumLevel) flags += ` --level=${formData.enumLevel}`;
+            if (formData.timeout) flags += ` --timeout=${formData.timeout}`;
+            if (formData.dbEnum) flags += ` --dbs`;
+            if (formData.additional) flags += ` ${formData.additional}`;
 
             const res = await fetch(`${API_BASE_URL}/sqlmap/scan`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    url: targetUrl,
-                    port: targetPort,
-                    params: injectableParams,
+                    url: formData.targetUrl,
+                    port: formData.targetPort,
+                    params: formData.injectableParams,
                     custom_flags: flags.trim()
                 })
             });
@@ -156,6 +205,12 @@
         }
     }
 
+    function handleLogout() {
+        localStorage.removeItem('analyst_id');
+        localStorage.removeItem('analyst_initials');
+        goto('/login'); // path is not correct fix later
+    }
+
     onMount(() => {
         analystInitials = localStorage.getItem('analyst_initials') || '';
         if (!analystInitials) goto('/login');
@@ -163,80 +218,68 @@
     });
 </script>
 
-<div class="relative min-h-screen p-4">
+<svelte:head>
+    <title>SQL Injection Configuration | TRACE</title>
+</svelte:head>
 
-    <!-- Top right logout section -->
-    <div class="absolute top-4 right-4 flex items-center space-x-4">
-        <span class="text-sm">Analyst: {analystInitials}</span>
-        <Button on:click={handleLogout} variant="destructive">Logout</Button>
+<div class="injection-config">
+    <div class="title-section">
+        <div class="title">SQL Injection Configuration</div>
+        <StepIndicator status="config" />
     </div>
 
-    <!-- Main page content goes here :)-->
-    <div class="mt-20">
-        <Card class="p-6 max-w-3xl mx-auto mt-8">
-            <CardContent class="space-y-4">
-                <div class="flex justify-between items-center">
-                    <h2 class="text-xl font-semibold">SQL Injection Configuration</h2>
+    <form on:submit={runScan} class="input-container">
 
-                </div>
+        {#each inputFields as field}
+            <FormField
+                    {field}
+                    value={formData[field.id]}
+                    error={fieldErrors[field.id]?.error}
+                    errorText={fieldErrors[field.id]?.message}
+                    onInput={(e) => handleInputChange(field.id, e.target.value)}
+            />
+        {/each}
 
-                <form class="space-y-4" on:submit={runScan}>
-                    <div>
-                        <Label for="url">Target URL</Label>
-                        <Input id="url" type="text" placeholder="http://10.0.2.5/vuln.php" bind:value={targetUrl} on:blur={() => handleBlur('targetUrl')} />
-                        {#if touched.targetUrl && errors.targetUrl}<p class="text-red-500 text-sm">{errors.targetUrl}</p>{/if}
-                    </div>
+        <div class="flex items-center space-x-2 mt-4">
+            <Label for="dbEnum">Enable DB Enumeration</Label>
+            <Switch id="dbEnum" bind:checked={formData.dbEnum} />
+        </div>
 
-                    <div>
-                        <Label for="port">Target Port</Label>
-                        <Input id="port" type="text" placeholder="80" bind:value={targetPort} on:blur={() => handleBlur('targetPort')} />
-                        {#if touched.targetPort && errors.targetPort}<p class="text-red-500 text-sm">{errors.targetPort}</p>{/if}
-                    </div>
-
-                    <div>
-                        <Label for="params">Injectable Parameters</Label>
-                        <Input id="params" type="text" placeholder="id=1" bind:value={injectableParams} />
-                    </div>
-
-                    <div>
-                        <Label for="dbUser">Database Username</Label>
-                        <Input id="dbUser" type="text" placeholder="Optional" bind:value={dbUser} />
-                    </div>
-
-                    <div>
-                        <Label for="dbPass">Database Password</Label>
-                        <Input id="dbPass" type="password" placeholder="Optional" bind:value={dbPass} />
-                    </div>
-
-                    <div>
-                        <Label for="enumLevel">Enumeration Level</Label>
-                        <Input id="enumLevel" type="text" placeholder="1" bind:value={enumLevel} on:blur={() => handleBlur('enumLevel')} />
-                        {#if touched.enumLevel && errors.enumLevel}<p class="text-red-500 text-sm">{errors.enumLevel}</p>{/if}
-                    </div>
-
-                    <div>
-                        <Label for="timeout">Timeout</Label>
-                        <Input id="timeout" type="text" placeholder="30" bind:value={timeout} on:blur={() => handleBlur('timeout')} />
-                        {#if touched.timeout && errors.timeout}<p class="text-red-500 text-sm">{errors.timeout}</p>{/if}
-                    </div>
-
-                    <div>
-                        <Label for="additional">Additional Parameters</Label>
-                        <Input id="additional" type="text" placeholder="--risk=3" bind:value={additional} />
-                    </div>
-
-                    <div class="flex items-center space-x-2">
-                        <Checkbox id="dbEnum" bind:checked={dbEnum} />
-                        <Label for="dbEnum">Enable DB Enumeration</Label>
-                    </div>
-
-                    <Button type="submit">Run Scan</Button>
-                </form>
-            </CardContent>
-        </Card>
-
-    </div>
-
+        <Button type="submit" class="w-96 mt-4">Submit</Button>
+    </form>
 </div>
-
-
+<style>
+    .injection-config {
+        display: flex;
+        margin-left: 4.5rem;
+        height: 100vh;
+        flex-direction: column;
+        justify-content: space-around;
+    }
+    .title-section {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        width: 100%;
+        max-height: fit-content;
+        padding-right: 3rem;
+    }
+    .title {
+        font-size: 2rem;
+        font-style: normal;
+        font-weight: 600;
+        padding-left: 3rem;
+        padding-top: 3rem;
+    }
+    .input-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding-left: 3rem;
+        padding-right: 3rem;
+        max-width: 100%;
+        height: 100%;
+        gap: 1rem;
+    }
+</style>
