@@ -1,0 +1,1 @@
+This folder stores the result of credential_manager, web_scraper, nlp.

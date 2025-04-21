@@ -132,7 +132,6 @@ class NLP:
             ValueError: If the CSV file does not contain all required columns
                        ('id', 'content', 'url').
         """
-        # TODO: Update the path to the database folder.
         with open(csv_path, "r", encoding="utf-8") as infile:
             reader = csv.DictReader(infile)
             fieldnames = reader.fieldnames
@@ -204,7 +203,6 @@ class NLP:
         if not fieldnames:
             fieldnames = list(rows[0].keys()) if rows else ["id", "content", "url"]
 
-        # TODO: Update the path to the database folder.
         with open(csv_path, "w", newline="", encoding="utf-8") as outfile:
             writer = csv.DictWriter(outfile, fieldnames=fieldnames)
             writer.writeheader()
