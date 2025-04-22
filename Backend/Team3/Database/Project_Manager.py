@@ -11,7 +11,7 @@ class ProjectManager:
     def create_project(self, analyst_id, project_name, start_date, end_date, description, userList):
 
         try:
-            logging.debug(f"Creating project: analyst_id={analyst_id}, name={project_name}")
+            logging.debug(f"Creating project: analyst_name={analyst_id}, name={project_name}")
 
             # Convert date objects to strings if they're not already
             start_date_str = start_date.isoformat() if hasattr(start_date, 'isoformat') else start_date
@@ -21,15 +21,15 @@ class ProjectManager:
             project_id = str(uuid.uuid4())
 
             # Getting lead Analyst initials
-            lead_analyst = self.analyst_manager.get_analyst_initials_by_id(analyst_id)
+            # lead_analyst = self.analyst_manager.get_analyst_initials_by_id(analyst_id)
 
             # Create project with the unique ID
             query = """
-            MATCH (a:Analyst {id: $analyst_id})
+            MATCH (a:Analyst {name: $analyst_id})
             CREATE (p:Project {
                 id: $project_id,
                 name: $project_name,
-                lead_analyst: $lead_analyst,
+                lead_analyst: $analyst_id,
                 description: $description,
                 start_date: $start_date,
                 end_date: $end_date,
@@ -44,7 +44,7 @@ class ProjectManager:
             params = {
                 "analyst_id": analyst_id,
                 "project_id": project_id,
-                "lead_analyst": lead_analyst,
+                "lead_analyst": analyst_id,
                 "project_name": project_name,
                 "description": description,
                 "start_date": start_date_str,

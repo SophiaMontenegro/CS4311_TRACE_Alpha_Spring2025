@@ -72,7 +72,7 @@
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    analyst_id: analystId,
+                    analyst_id: analystInitials,
                     project_name: projectData.projectName,
                     start_date: projectData.startDate,
                     end_date: projectData.endDate,
