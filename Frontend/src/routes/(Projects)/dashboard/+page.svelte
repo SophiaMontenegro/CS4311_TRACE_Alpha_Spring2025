@@ -3,22 +3,9 @@
     import CreateProjectModal from '$lib/components/ui/project_management/CreateProjectModal.svelte';
     import ImportProjectModal from '$lib/components/ui/project_management/ImportProjectModal.svelte';
     import EditProjectDialog from '$lib/components/ui/project_management/EditProjectDialog.svelte';
-    // import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '$lib/components/ui/dropdown-menu';
-    import {CalendarIcon, Lock, Settings2, MoreHorizontal, Trash2} from 'lucide-svelte';
+    import {Lock, Settings2, MoreHorizontal, Trash2, Import } from 'lucide-svelte';
     import { goto } from '$app/navigation';
     import { Button } from '$lib/components/ui/button';
-    import {
-        AlertDialog,
-        AlertDialogTrigger,
-        AlertDialogContent,
-        AlertDialogHeader,
-        AlertDialogFooter,
-        AlertDialogTitle,
-        AlertDialogDescription,
-        AlertDialogCancel,
-        AlertDialogAction
-    } from '$lib/components/ui/alert-dialog';
-
     import Alert from '$lib/components/ui/alert/Alert.svelte';
 
     let projects = [];
@@ -262,12 +249,26 @@
 
     <div class="flex justify-between items-center mb-6">
         <h2 class="text-2xl font-semibold">Your Projects</h2>
-        <button
-                class="bg-primary text-white text-sm font-medium px-4 py-2 rounded-md shadow hover:bg-primary/90"
-                on:click={openCreateModal}
-        >
-            Create New Project
-        </button>
+        <!-- Button container -->
+        <div class="flex items-center gap-2">
+            <button
+                    class="bg-[var(--accent)] text-[var(--accent-foreground)] text-sm font-medium px-4 py-2 rounded-md shadow hover:bg-[var(--accent3)]"
+                    on:click={openCreateModal}
+            >
+                Create New Project
+            </button>
+
+            <Button
+                    on:click={() => showImportModal()}
+                    type="button"
+                    size="icon"
+                    title="Import Project"
+                    aria-label="Import Project"
+                    class="w-10 h-10 rounded-md bg-[var(--secondary)] text-[var(--secondary-foreground)] hover:bg-[color:var(--secondary)/90] flex items-center justify-center"
+            >
+                <Import class="w-5 h-5 text--muted" />
+            </Button>
+        </div>
     </div>
 
     {#if isLoading }
