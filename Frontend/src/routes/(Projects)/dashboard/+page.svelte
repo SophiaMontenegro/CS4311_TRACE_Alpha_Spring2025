@@ -264,7 +264,7 @@
                     size="icon"
                     title="Import Project"
                     aria-label="Import Project"
-                    class="w-10 h-10 rounded-md bg-[var(--secondary)] text-[var(--secondary-foreground)] hover:bg-[color:var(--secondary)/90] flex items-center justify-center"
+                    class="w-10 h-10 rounded-md bg-[var(--secondary)] text-[var(--muted)] hover:bg-[color:var(--secondary)/90] flex items-center justify-center"
             >
                 <Import class="w-5 h-5 text--muted" />
             </Button>
