@@ -3,7 +3,7 @@
     import CreateProjectModal from '$lib/components/ui/project_management/CreateProjectModal.svelte';
     import ImportProjectModal from '$lib/components/ui/project_management/ImportProjectModal.svelte';
     import EditProjectDialog from '$lib/components/ui/project_management/EditProjectDialog.svelte';
-    import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '$lib/components/ui/dropdown-menu';
+    // import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '$lib/components/ui/dropdown-menu';
     import {CalendarIcon, Lock, Settings2, MoreHorizontal, Trash2} from 'lucide-svelte';
     import { goto } from '$app/navigation';
     import {
