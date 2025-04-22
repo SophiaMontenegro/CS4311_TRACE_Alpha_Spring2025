@@ -169,6 +169,9 @@
                 <div class="grid grid-cols-4 items-center bg-card rounded-2xl px-6 py-4 shadow-sm border border-border">
                     <!-- Project Info -->
 
+                    <!-- Project Name -->
+                    <div class="text-sm font-medium">{project.name}</div>
+
                     <!-- deleted Date -->
                     <div class="text-sm text-muted-foreground">{project.timestamp || 'N/A'}</div>
 

@@ -16,7 +16,7 @@
 	const menuItems = [
 		{ icon: Folder, tooltip: 'All Projects', route: '/dashboard' },
 		{ icon: FolderTree, tooltip: 'Shared Projects', route: '/dashboard/folders' },
-		{ icon: Trash2, tooltip: 'Deleted Projects', route: '/deleted' }
+		{ icon: Trash2, tooltip: 'Deleted Projects', route: '/dashboard/deleted' }
 	];
 
 	onMount(() => {
