@@ -325,7 +325,7 @@
                         {#if project}
                             <Button
                                     type="button"
-                                    class="w-full"
+                                    class="w-[100px] h-[48px]"
                                     variant="default"
                                     size="lg"
                                     on:click={() => handleProjectClick(project)}
