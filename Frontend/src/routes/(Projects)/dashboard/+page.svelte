@@ -6,6 +6,7 @@
     // import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '$lib/components/ui/dropdown-menu';
     import {CalendarIcon, Lock, Settings2, MoreHorizontal, Trash2} from 'lucide-svelte';
     import { goto } from '$app/navigation';
+    import { Button } from '$lib/components/ui/button';
     import {
         AlertDialog,
         AlertDialogTrigger,
@@ -235,6 +236,12 @@
         window.addEventListener('click', handleClickOutside);
     });
 
+    function handleProjectClick(project) {
+        if (!project.locked) {
+            goto('/tool-dashboard');
+        }
+    }
+
 
 
 </script>
@@ -316,16 +323,19 @@
                         {/if}
 
                         {#if project}
-                        <button
-                          class="text-sm font-medium bg-[var(--secondary)] text-[var(--secondary-foreground)] px-4 py-2 rounded-md hover:bg-[color:var(--secondary)/90]"
-                          on:click={() => {
-                            if (!project.locked) {
-                              goto('/tool-dashboard');
-                            }
-                          }}
-                        >
-                          {project.locked ? 'View' : 'Run Scan'}
-                        </button>
+                            <Button
+                                    type="button"
+                                    class="w-full"
+                                    variant="default"
+                                    size="lg"
+                                    on:click={() => handleProjectClick(project)}
+                            >
+                                {#if project.locked}
+                                    View
+                                {:else}
+                                    Run Scan
+                                {/if}
+                            </Button>
                       {/if}
                       
                         <!-- Drop Down: Lock, Delete, and Edit -->

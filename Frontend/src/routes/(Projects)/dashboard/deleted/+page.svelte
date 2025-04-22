@@ -1,4 +1,4 @@
-<script>
+<script> //deleted projects page
     import { onMount } from 'svelte';
     import { Trash2, MoreHorizontal, ClockFading } from 'lucide-svelte';
     import Alert from '$lib/components/ui/alert/Alert.svelte';
@@ -207,9 +207,6 @@
                             {/if}
 
                         </div>
-
-                    </div>
-
                 </div>
             {/each}
         </div>
