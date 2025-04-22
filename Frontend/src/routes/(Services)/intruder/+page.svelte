@@ -2,19 +2,33 @@
 	let targetUrl = '';
 	let forms = [];
 	let error = '';
+	let selectedFormIndex = null;
+	
 
-	// Fetch forms from backend
+	async function sendSelectedForm() {
+	if (selectedFormIndex === null) return;
+
+	await fetch("http://localhost:8000/api/intruder/select_form", {
+		method: "POST",
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify({ index: selectedFormIndex })
+	});
+}
+
+
+
+
+
 	async function scanForms() {
 		try {
 			const response = await fetch('http://localhost:8000/api/intruder/parse_forms', {
-	method: 'POST',
-	headers: { 'Content-Type': 'application/json' },
-	body: JSON.stringify({ url: targetUrl })
-});
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ url: targetUrl })
+		});
 
 
 			const data = await response.json();
-
 			if (data.forms) {
 				forms = data.forms;
 				error = '';
@@ -49,7 +63,6 @@
 			Scan for Forms
 		</button>
 
-		<!-- Error Message -->
 		{#if error}
 			<p class="text-red-500 mt-2">{error}</p>
 		{/if}
@@ -59,14 +72,50 @@
 			<div class="mt-6">
 				<h3 class="font-semibold text-lg mb-2">Forms Found:</h3>
 				{#each forms as form, i}
-					<div class="border border-gray-300 p-4 rounded mb-4">
-						<p><strong>Form {i}</strong></p>
-						<p><b>Action:</b> {form.action}</p>
-						<p><b>Method:</b> {form.method.toUpperCase()}</p>
-						<p><b>Fields:</b> {form.fields.map(f => f.name || '(no name)').join(', ')}</p>
-					</div>
-				{/each}
+				<div class="border border-gray-300 p-4 rounded mb-4">
+					<label class="flex items-center space-x-2">
+						<input
+							type="radio"
+							name="formSelector"
+							bind:group={selectedFormIndex}
+							value={i}
+						/>
+						<span class="font-semibold">Form {i}</span>
+					</label>
+
+					<p><b>Action:</b> {form.action}</p>
+					<p><b>Method:</b> {form.method.toUpperCase()}</p>
+
+					<table class="w-full mt-2 text-sm border border-gray-300 rounded">
+						<thead class="bg-gray-100 text-left">
+							<tr>
+								<th class="px-4 py-2 border-b">Name</th>
+								<th class="px-4 py-2 border-b">Type</th>
+							</tr>
+						</thead>
+						<tbody>
+							{#each form.fields as field}
+								<tr>
+									<td class="px-4 py-2 border-b">{field.name || '(no name)'}</td>
+									<td class="px-4 py-2 border-b">{field.type || 'text'}</td>
+								</tr>
+							{/each}
+						</tbody>
+					</table>
+				</div>
+			{/each}
+			
+			
+			{#if selectedFormIndex !== null}
+			<p class="mt-2 text-green-700">
+			 Selected Form: {selectedFormIndex}
+			</p>
+			{/if}
+			
 			</div>
+			<button on:click={sendSelectedForm} class="b-start mt-4">
+				Send Selected Form to Backend
+			</button>
 		{/if}
 	</div>
 </div>
