@@ -1,20 +1,42 @@
 <script>
+	import { goto } from "$app/navigation";
 	let targetUrl = '';
 	let forms = [];
 	let error = '';
 	let selectedFormIndex = null;
-	
+	let requestPreview = null;
 
 	async function sendSelectedForm() {
 	if (selectedFormIndex === null) return;
 
-	await fetch("http://localhost:8000/api/intruder/select_form", {
+	const res = await fetch("http://localhost:8000/api/intruder/select_form", {
 		method: "POST",
 		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify({ index: selectedFormIndex })
 	});
+
+	if (res.ok) {
+		// goto("/intruder/configure");
+		goto(`/intruder/configure?formIndex=${selectedFormIndex}`);
+		// await fetchRequestPreview(); 
+	}
 }
 
+
+	async function fetchRequestPreview() {
+	const res = await fetch("http://localhost:8000/api/intruder/preview_request");
+	if (!res.ok) {
+		const data = await res.json();
+		console.error("Error:", data);
+		alert(data.detail || "Failed to get request preview");
+		return;
+	}
+
+	const preview = await res.json();
+	console.log("HTTP Request Preview:", preview);
+	// store it in a reactive variable if you want to show it
+	requestPreview = preview;
+	}
 
 
 
@@ -114,8 +136,21 @@
 			
 			</div>
 			<button on:click={sendSelectedForm} class="b-start mt-4">
-				Send Selected Form to Backend
+				Selected Form
 			</button>
+			{#if requestPreview}
+				<h3 class="mt-6 font-semibold text-lg">HTTP Request Preview</h3>
+				<pre class="bg-gray-100 text-sm p-4 rounded overflow-x-auto">
+				URL: {requestPreview.url}
+				Method: {requestPreview.method}
+				Headers: {JSON.stringify(requestPreview.headers, null, 2)}
+
+				Sample Body:
+				{JSON.stringify(requestPreview.sample_body, null, 2)}
+					</pre>
+			{/if}
+
+
 		{/if}
 	</div>
 </div>
