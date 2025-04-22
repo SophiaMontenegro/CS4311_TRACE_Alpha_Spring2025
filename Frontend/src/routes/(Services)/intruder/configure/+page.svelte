@@ -1,6 +1,7 @@
 <script>
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
+    import { attackResults } from '$lib/stores/intruder';
 
 	let requestPreview = null;
 	let intrusionField = '';
@@ -39,7 +40,11 @@
 	});
 
 	const result = await res.json();
-	console.log('Attack result:', result);
+	// console.log('Attack result:', result);
+    if (result.results) {
+		attackResults.set(result.results);  
+		goto('/intruder/scan');            
+	}
 }
 
 </script>
