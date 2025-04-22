@@ -6,33 +6,20 @@ class ProjectManager:
         self.db_manager = db_manager
         self.analyst_manager = analyst_manager
 
-    
+
 
     def create_project(self, analyst_id, project_name, start_date, end_date, description, userList):
-        """
-        Creates a new project with the given analyst as the owner.
-        
-        Parameters:
-        - analyst_id: The ID of the analyst who will own the project
-        - project_name: The name of the project
-        - start_date: The start date of the project
-        - end_date: The end date of the project
-        - description: A description of the project
-        - userList: A list of user initials to add as team members
-        
-        Returns:
-        - The created project node or None if creation failed
-        """
+
         try:
             logging.debug(f"Creating project: analyst_id={analyst_id}, name={project_name}")
-            
+
             # Convert date objects to strings if they're not already
             start_date_str = start_date.isoformat() if hasattr(start_date, 'isoformat') else start_date
             end_date_str = end_date.isoformat() if hasattr(end_date, 'isoformat') else end_date
-            
+
             # Generate a unique ID for the project
             project_id = str(uuid.uuid4())
-            
+
             # Create project with the unique ID
             query = """
             MATCH (a:Analyst {id: $analyst_id})
@@ -43,12 +30,13 @@ class ProjectManager:
                 start_date: $start_date,
                 end_date: $end_date,
                 locked: false,
-                created_at: datetime()
+                created_at: datetime(),
+                last_edited: datetime()
             })
             CREATE (a)-[:OWNS]->(p)
             RETURN p
             """
-            
+
             params = {
                 "analyst_id": analyst_id,
                 "project_id": project_id,
@@ -57,19 +45,20 @@ class ProjectManager:
                 "start_date": start_date_str,
                 "end_date": end_date_str
             }
-            
+
             logging.debug(f"Running query with params: {params}")
             result = self.db_manager.run_query(query, params, fetch=True)
-            
+            print(result)
+
             logging.debug(f"Project creation query result: {result}")
-            
+
             if not result or len(result) == 0:
                 logging.error("No result returned from project creation query")
                 return None
-            
+
             # Project was created successfully
             logging.debug(f"Created project with ID: {project_id}")
-            
+
             # Add team members if provided
             if userList and len(userList) > 0:
                 for user_initials in userList:
@@ -77,7 +66,7 @@ class ProjectManager:
                     # Find the analyst by initials
                     analyst = self.analyst_manager.get_analyst_by_initials(user_initials)
                     logging.debug(f"Found analyst for {user_initials}: {analyst}")
-                    
+
                     if analyst:
                         try:
                             # Create relationship between analyst and project
@@ -91,16 +80,16 @@ class ProjectManager:
                                 "project_id": project_id
                             }
                             logging.debug(f"Running team member query with params: {team_params}")
-                            
+
                             team_result = self.db_manager.run_query(team_query, team_params)
                             logging.debug(f"Team member addition result: {team_result}")
-                            
+
                             logging.debug(f"Added team member {user_initials} with ID {analyst['id']} to project {project_id}")
                         except Exception as e:
                             logging.error(f"Error adding team member {user_initials}: {e}", exc_info=True)
                     else:
                         logging.warning(f"Team member not found: {user_initials}")
-            
+
             return result[0]['p']
         except Exception as e:
             logging.error(f"Error in create_project: {e}", exc_info=True)
@@ -158,7 +147,7 @@ class ProjectManager:
         """
         Locks a project (only the Lead of that project can do this).
         """
-        if not self.analyst_manager.check_if_lead_and_member(analyst_name, project_name):
+        if not self.analyst_manager.check_if_lead(analyst_name, project_name):
             print(f"Error: Analyst '{analyst_name}' is not the lead of project '{project_name}' and cannot lock it.")
             return
 
@@ -179,7 +168,7 @@ class ProjectManager:
         """
         Unlocks a project (only the Lead of that project can do this).
         """
-        if not self.analyst_manager.check_if_lead_and_member(analyst_name, project_name):
+        if not self.analyst_manager.check_if_lead(analyst_name, project_name):
             print(f"Error: Analyst '{analyst_name}' is not the lead of project '{project_name}' and cannot unlock it.")
             return
 
@@ -201,7 +190,7 @@ class ProjectManager:
         Toggles the lock status of a project (only the Lead of that project can do this).
         Calls `lock_project` or `unlock_project` based on the current status.
         """
-        if not self.analyst_manager.check_if_lead_and_member(analyst_name, project_name):
+        if not self.analyst_manager.check_if_lead(analyst_name, project_name):
             print(f"Error: Analyst '{analyst_name}' is not the lead of project '{project_name}' and cannot toggle the lock status.")
             return None
 
@@ -223,7 +212,7 @@ class ProjectManager:
         """
 
         # Verify if the analyst is a Lead Analyst
-        if not self.analyst_manager.check_if_lead_and_member(analyst, project_name):
+        if not self.analyst_manager.check_if_lead(analyst, project_name):
             print(f"Error: Analyst '{analyst}' does not have permission to delete project '{project_name}'. Only a Lead Analyst can delete a project.")
             return None
 
@@ -261,32 +250,29 @@ class ProjectManager:
 
     def save_project(self, project_id):
         """
-        Saves changes to a project.
-        (Implementation idea: save a snapshot of project details)
-        """
-        """
-        Saves a project by updating its status to 'Saved' and setting a last_updated timestamp.
+        Updates the 'last_edited' timestamp of a project.
         """
         query = """
-        MATCH (p:Project {project_id: $project_id})
-        SET p.status = $status, p.last_updated = $timestamp
-        RETURN p.project_id, p.name, p.status, p.last_updated
-        """
-        timestamp = datetime.utcnow().isoformat()
-        return self.db_managerdb.query(query, {"project_id": project_id, "status": status, "timestamp": timestamp})
+            MATCH (p:Project {id: $project_id})
+            SET p.last_edited = datetime()
+            RETURN p.id AS project_id, p.name AS name, p.last_edited AS last_edited
+            """
+        return self.db_manager.run_query(query, {"project_id": project_id}, fetch=True)
+
+
 
     def load_project(self, project_id, analyst):
         """
         Loads and retrieves a project's details by its project_id.
-        Ensures that the project exists before returning its details.
+        Updates the project's 'last_edited' timestamp to the current datetime.
         """
         query = """
-            MATCH (p:Project {id: $project_id})
-            OPTIONAL MATCH (a:Analyst)-[:OWNS]->(p)
-            RETURN p.id AS id, p.name AS project_name, p.description AS description, 
-                p.status AS status, p.startDate AS startDate, p.endDate AS endDate, p.locked AS locked, 
-                a.name AS lead_analyst
-        """
+                MATCH (p:Project {id: $project_id})
+                SET p.last_edited = datetime()
+                RETURN p.id AS id, p.name AS project_name, p.description AS description,
+                p.startDate AS startDate, p.endDate AS endDate,
+                p.locked AS locked, p.last_edited AS last_edited, p.created_at AS created_at
+            """
         result = self.db_manager.run_query(query, {"project_id": project_id}, fetch=True)
 
         if result:
@@ -299,7 +285,8 @@ class ProjectManager:
                 "startDate": project.get("startDate"),
                 "endDate": project.get("endDate"),
                 "locked": project.get("locked"),
-                "lead_analyst": project.get("lead_analyst"),
+                "last_edited": project.get("last_edited"),
+                "created_at": project.get("created_at")
             }
         else:
             print(f"Error: Project '{project_id}' not found.")
@@ -310,7 +297,7 @@ class ProjectManager:
 
     def edit_project_members(self, project_name, action, participant_name, analyst_name):
         # Check if the analyst has the correct role (Lead or member) for the project
-        if not self.analyst_manager.check_if_lead_and_member(analyst_name, project_name):
+        if not self.analyst_manager.check_if_lead(analyst_name, project_name):
             print(f"Error: Analyst '{analyst_name}' isn't part of the current project or doesn't have permission.")
             return
     
@@ -374,7 +361,7 @@ class ProjectManager:
 
 
     def change_project_name(self, current_name, new_name, analyst_name):
-        if not self.analyst_manager.check_if_lead_and_member(analyst_name, current_name):
+        if not self.analyst_manager.check_if_lead(analyst_name, current_name):
             print(f"Error: Analyst '{analyst_name}' isn't part of the current project or doesn't have permission.")
         
         check_query = """
@@ -399,7 +386,7 @@ class ProjectManager:
 
 
     def edit_timeline(self, project, analyst_name, end_date):
-        if not self.analyst_manager.check_if_lead_and_member(analyst_name, project):
+        if not self.analyst_manager.check_if_lead(analyst_name, project):
             print(f"Error: Analyst '{analyst_name}' isn't part of the current project or doesn't have permission.")
             return None
         
