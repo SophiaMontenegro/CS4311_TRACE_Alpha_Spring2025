@@ -4,6 +4,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from Team1.intrudertool.intruder_tool import IntruderTool
 from typing import List, Dict
+from fastapi import BackgroundTasks
 
 router = APIRouter()
 tool = None
@@ -37,6 +38,33 @@ def select_form(request: IndexRequest):
 
     try:
         tool.select_form(request.index)
+        # print({"status": "form selected", "index": request.index})
         return {"status": "form selected", "index": request.index}
     except IndexError:
         raise HTTPException(status_code=400, detail="Invalid form index")
+
+
+@router.get("/preview_request")
+def preview_request():
+    global tool
+    if not tool or tool.selected_form_index is None:
+        raise HTTPException(status_code=400, detail="No form selected.")
+
+    preview = tool.get_http_request_preview()
+    # print(preview)
+    return preview
+
+
+class AttackRequest(BaseModel):
+    intrusion_field: str
+    payloads: List[str]
+
+@router.post("/run_attack")
+def run_attack(request: AttackRequest):
+    global tool
+    if not tool or tool.selected_form_index is None:
+        raise HTTPException(status_code=400, detail="Form not selected.")
+    tool.configure_attack(request.intrusion_field, request.payloads)
+    results = tool.run_attack()
+    return {"results": results}
+
