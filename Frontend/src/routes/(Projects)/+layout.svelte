@@ -11,5 +11,7 @@
 <ModeWatcher />
 
 <div class="flex max-h-screen bg-background">
-    <slot />
+    <main class="flex-1 overflow-y-auto p-4">
+        <slot />
+    </main>
 </div>
