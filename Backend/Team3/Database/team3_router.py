@@ -1,6 +1,8 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from datetime import date
+from datetime import datetime
+import pytz
 import logging
 from Team3.Database.Project_Manager import ProjectManager
 from Team3.Database.Database_Manager import Database_Manager
@@ -141,6 +143,30 @@ async def register_analyst(analyst: AnalystRegister):
         logging.error(f"Error registering analyst: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+def format_date(dt_obj):
+    try:
+        if dt_obj is None:
+            return ""  # or "N/A" or None
+
+        # If it's a Neo4j datetime object, convert to ISO string first
+        if hasattr(dt_obj, "to_native"):  # neo4j.time.DateTime
+            dt_obj = dt_obj.to_native()
+
+        # If it's a string, make sure it's parsed correctly
+        if isinstance(dt_obj, str):
+            dt_obj = datetime.fromisoformat(dt_obj.replace("Z", "+00:00"))
+
+        # Convert to local timezone (e.g., Eastern Time)
+        local_tz = pytz.timezone("America/New_York")
+        local_time = dt_obj.astimezone(local_tz)
+
+        # Return formatted string
+        return local_time.strftime("%m-%d-%y %H:%M")
+
+    except Exception as e:
+        logging.error(f"Error formatting date: {e}")
+        return ""
+
 # Get projects by analyst ID
 @team3_router.get("/projects/analyst/{analyst_id}")
 async def get_analyst_projects(analyst_id: str):
@@ -166,13 +192,56 @@ async def get_analyst_projects(analyst_id: str):
             formatted_projects.append({
                 "id": project.get("id"),
                 "name": project.get("name"),
+                "lead_analyst": project.get("lead_analyst", ""),
                 "description": project.get("description", ""),
-                "start_date": project.get("start_date"),
-                "end_date": project.get("end_date"),
+                "start_date": format_date(project.get("start_date")),
+                "end_date": format_date(project.get("end_date")),
                 "locked": project.get("locked", False),
-                "created_at": project.get("created_at")
+                "created_at": format_date(project.get("created_at")),
+                "last_edited": format_date(project.get("last_edited"))
             })
             
+        return {"projects": formatted_projects}
+    except Exception as e:
+        logging.error(f"Error fetching analyst projects: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# Get projects by analyst ID
+@team3_router.get("/projects_shared/analyst/{analyst_id}")
+async def get_analyst_shared_projects(analyst_id: str):
+    try:
+        # Query projects owned by this analyst
+        # projects = project_manager.show_Part_Of_projects(analyst_id)
+        projects = project_manager.db_manager.run_query(
+            """
+            MATCH (a:Analyst {name: $analyst_id})-[:PART_OF]->(p:Project)
+            RETURN p
+            ORDER BY p.created_at DESC
+            """,
+            {"analyst_id": analyst_id},
+            fetch=True
+        )
+
+        if projects is None:
+            projects = []
+
+        # Format the projects for the frontend
+        formatted_projects = []
+        for project_record in projects:
+            project = project_record['p']
+            formatted_projects.append({
+                "id": project.get("id"),
+                "name": project.get("name"),
+                "lead_analyst": project.get("lead_analyst", ""),
+                "description": project.get("description", ""),
+                "start_date": format_date(project.get("start_date")),
+                "end_date": format_date(project.get("end_date")),
+                "locked": project.get("locked", False),
+                "created_at": format_date(project.get("created_at")),
+                "last_edited": format_date(project.get("last_edited"))
+            })
+
         return {"projects": formatted_projects}
     except Exception as e:
         logging.error(f"Error fetching analyst projects: {e}")

@@ -43,6 +43,8 @@
             if (!response.ok) throw new Error('Failed to load projects');
             const data = await response.json();
             projects = data.projects || [];
+            console.log("Response data:", response.data);
+
         } catch (err) {
             console.error('Error loading projects:', err);
             error = err.message;
@@ -312,7 +314,7 @@
                     </div>
 
                     <!-- Last Edit -->
-                    <div class="text-sm text-muted-foreground">{project.timestamp || 'N/A'}</div>
+                    <div class="text-sm text-muted-foreground">{project.last_edited || 'N/A'}</div>
 
                     <!-- Lead Analyst -->
                     <div class="text-sm text-muted-foreground">{analystInitials}</div>

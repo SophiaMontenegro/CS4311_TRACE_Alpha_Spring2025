@@ -28,7 +28,7 @@
         error = null;
 
         try {
-            const response = await fetch(`http://127.0.0.1:8000/team3/projects/analyst/${analystId}`); //edit this please to have projects the user is a part of NOT owns
+            const response = await fetch(`http://127.0.0.1:8000/team3/projects_shared/analyst/${analystInitials}`);
             if (!response.ok) throw new Error('Failed to load projects');
             const data = await response.json();
             projects = data.projects || [];
@@ -111,10 +111,10 @@
                     </div>
 
                     <!-- Last Edit -->
-                    <div class="text-sm text-muted-foreground">{project.timestamp || 'N/A'}</div>
+                    <div class="text-sm text-muted-foreground">{project.last_edited || 'N/A'}</div>
 
                     <!-- Lead Analyst -->
-                    <div class="text-sm text-muted-foreground">{analystInitials}</div>
+                    <div class="text-sm text-muted-foreground">{project.lead_analyst}</div>
 
                     <!-- Lock icon + button -->
                     <div class="flex items-center justify-end gap-3">

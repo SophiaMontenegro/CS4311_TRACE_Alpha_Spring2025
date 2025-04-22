@@ -20,12 +20,16 @@ class ProjectManager:
             # Generate a unique ID for the project
             project_id = str(uuid.uuid4())
 
+            # Getting lead Analyst initials
+            lead_analyst = self.analyst_manager.get_analyst_initials_by_id(analyst_id)
+
             # Create project with the unique ID
             query = """
             MATCH (a:Analyst {id: $analyst_id})
             CREATE (p:Project {
                 id: $project_id,
                 name: $project_name,
+                lead_analyst: $lead_analyst,
                 description: $description,
                 start_date: $start_date,
                 end_date: $end_date,
@@ -40,6 +44,7 @@ class ProjectManager:
             params = {
                 "analyst_id": analyst_id,
                 "project_id": project_id,
+                "lead_analyst": lead_analyst,
                 "project_name": project_name,
                 "description": description,
                 "start_date": start_date_str,
@@ -126,11 +131,15 @@ class ProjectManager:
         projects = self.db_manager.run_query(query, parameters={"analyst_name": analyst_name}, fetch=True)
 
         if projects:
+
             for project in projects:
                 lock_status = "Locked" if project["locked"] else "Unlocked"
                 print(f"Project: {project['project']}, Owner: {project['owner']}, Status: {lock_status}")
+            return projects
+
         else:
             print("No projects found.")
+            return None
 
     def _get_project_lock_status(self, project_name):
         """

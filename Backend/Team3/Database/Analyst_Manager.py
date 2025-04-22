@@ -42,4 +42,18 @@ class AnalystManager:
         except Exception as e:
             logging.error(f"Error getting analyst by initials: {e}")
             return None
-        
+    def get_analyst_initials_by_id(self, analyst_id: int):
+        """Get an analyst's initials by their ID"""
+        try:
+            result = self.db_manager.run_query(
+                "MATCH (a:Analyst) WHERE ID(a) = $id RETURN a.name AS initials",
+                {"id": analyst_id},
+                fetch=True
+            )
+
+            if result and len(result) > 0:
+                return result[0]['initials']
+            return None
+        except Exception as e:
+            logging.error(f"Error getting analyst initials by ID: {e}")
+            return None
