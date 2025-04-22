@@ -1,6 +1,6 @@
 <script> //deleted projects page
     import { onMount } from 'svelte';
-    import { Trash2, MoreHorizontal, ClockFading } from 'lucide-svelte';
+    import { Trash2, MoreHorizontal, ArchiveRestore } from 'lucide-svelte';
     import Alert from '$lib/components/ui/alert/Alert.svelte';
 
     let projects = [];
@@ -166,8 +166,8 @@
 
 
             {#each projects as project (project.id)}
-                <div class="grid grid-cols-4 items-center bg-card rounded-2xl px-6 py-4 shadow-sm border border-border">
-                    <!-- Project Info -->
+                <div class="grid grid-cols-4 items-center rounded-2xl px-6 py-4 shadow-sm" style="background-color: var(--background1);">
+                <!-- Project Info -->
 
                     <!-- Project Name -->
                     <div class="text-sm font-medium">{project.name}</div>
@@ -192,7 +192,7 @@
                                             class="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-muted-foreground hover:bg-gray-100 dark:hover:bg-gray-700"
                                             on:click={() =>(confirmRestore(project))}
                                     >
-                                        <ClockFading class="w-4 h-4" />
+                                        <ArchiveRestore  class="w-4 h-4" />
                                         Restore
                                     </button>
                                     <button

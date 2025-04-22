@@ -296,8 +296,8 @@
 
 
             {#each projects as project (project.id)}
-                <div class="grid grid-cols-4 items-center bg-card rounded-2xl px-6 py-4 shadow-sm border border-border">
-                    <!-- Project Info -->
+                <div class="grid grid-cols-4 items-center rounded-2xl px-6 py-4 shadow-sm" style="background-color: var(--background1);">
+                <!-- Project Info -->
                     <div class="flex items-center gap-4">
                         <!-- Colored status bar -->
                         <div
