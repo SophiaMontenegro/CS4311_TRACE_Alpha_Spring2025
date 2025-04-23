@@ -22,8 +22,8 @@ This repo sets up a local Docker-based testing environment using:
 ### 1. Clone or download this repo and navigate to testing folder.
 
 ```bash
-git clone https://github.com/SophiaMontenegro/TRACE_Team_1_3_7.git
-cd docker-dvwa-stack
+git clone https://github.com/SophiaMontenegro/CS4311_TRACE_Alpha_Spring2025.git
+cd docker-compose-demo
 ```
 
 ### 2. Start Docker
