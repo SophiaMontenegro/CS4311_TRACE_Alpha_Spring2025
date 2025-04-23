@@ -49,7 +49,7 @@
         error = null;
 
         try {
-            const response = await fetch(`http://127.0.0.1:8000/team3/projects_deleted/analyst/${analystInitials}`);
+            const response = await fetch(`http://127.0.0.1:8000/team3/projects_deleted/analyst/${analystId}`);
             if (!response.ok) throw new Error('Failed to load projects');
             const data = await response.json();
             projects = data.projects || [];
@@ -73,11 +73,11 @@
         showDeleteDialog = true;
     }
 
-    async function deleteProject() {
+    async function deleteProject(name) {
         if (!projectToDelete) return;
 
         try {
-            const response = await fetch(`http://127.0.0.1:8000/team3/projects/${encodeURIComponent(projectToDelete)}/permanently_delete?analyst_initials=${analystInitials}`, {
+            const response = await fetch(`http://127.0.0.1:8000/team3/projects/${encodeURIComponent(name)}/permanently_delete?analyst_initials=${analystInitials}`, {
                 method: 'PUT'
             });
 
@@ -107,7 +107,7 @@
     async function handleConfirmedDelete() {
         console.log("message from handle confirmed delete: Project", projectToDelete.name); // Not working
         if (projectToDelete) {
-            await deleteProject();
+            await deleteProject(projectToDelete.name);
             showDeleteDialog = false;
             projectToDelete = null;
         }
@@ -118,10 +118,10 @@
         showRestoreDialog = true;
     }
 
-    async function restoreProject() {
+    async function restoreProject(name) {
         if (!projectToRestore) return;
         try {
-            const response = await fetch(`http://127.0.0.1:8000/team3/projects/${encodeURIComponent(projectToRestore)}/restore?analyst_initials=${analystInitials}`, {
+            const response = await fetch(`http://127.0.0.1:8000/team3/projects/${encodeURIComponent(name)}/restore?analyst_initials=${analystInitials}`, {
                 method: 'PUT'
             });
 
@@ -151,7 +151,7 @@
     async function handleConfirmedRestore() {
         console.log("message from handle confirmed restore: Project", projectToRestore.name); // Not working
         if (projectToRestore) {
-            await restoreProject();
+            await restoreProject(projectToRestore.name);
             showRestoreDialog = false;
             projectToRestore = null;
         }
@@ -190,7 +190,7 @@
             <!-- Column Headers -->
             <div class="grid grid-cols-4 px-6 py-2 text-sm font-semibold text-muted-foreground">
                 <div>Project Name</div>
-                <div>Deleted Date</div>
+                <div>Last Edited</div>
                 <div>Lead Analyst</div>
                 <div class="text-right pr-4"></div> <!-- delete maybe-->
             </div>
@@ -204,7 +204,7 @@
                     <div class="text-sm font-medium">{project.name}</div>
 
                     <!-- deleted Date -->
-                    <div class="text-sm text-muted-foreground">{project.timestamp || 'N/A'}</div>
+                    <div class="text-sm text-muted-foreground">{project.last_edited || 'N/A'}</div>
 
                     <!-- Lead Analyst -->
                     <div class="text-sm text-muted-foreground">{analystInitials}</div>
