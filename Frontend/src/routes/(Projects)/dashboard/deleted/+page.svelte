@@ -160,7 +160,7 @@
 
 <div class="p-6">
     <header class="flex justify-between items-center mb-8">
-        <h1 class="text-3xl font-bold">Deleted Projects</h1>
+        <h1 class="text-3xl font-bold">Project Selection</h1>
         <div class="flex items-center gap-4">
             <span class="text-sm text-muted-foreground">Analyst: {analystInitials}</span>
             <button
@@ -173,7 +173,7 @@
     </header>
 
     <div class="flex justify-between items-center mb-6">
-        <!--<h2 class="text-2xl font-semibold">Deleted Projects</h2>-->
+        <h2 class="text-2xl font-semibold">Deleted Projects</h2>
         <!-- Add search bar -->
     </div>
 
@@ -188,58 +188,54 @@
     {:else}
         <div class="space-y-4">
             <!-- Column Headers -->
-            <div class="grid grid-cols-4 px-6 py-2 text-sm font-semibold text-muted-foreground">
+            <div class="grid grid-cols-[1fr_1fr_1fr_auto] px-6 py-2 text-sm font-semibold text-muted-foreground">
                 <div>Project Name</div>
                 <div>Last Edited</div>
                 <div>Lead Analyst</div>
-                <div class="text-right pr-4"></div> <!-- delete maybe-->
+                <div class="text-right pr-4"></div> <!-- aligns with dropdown -->
             </div>
 
-
             {#each projects as project (project.id)}
-                <div class="grid grid-cols-4 items-center rounded-2xl px-6 py-4 shadow-sm" style="background-color: var(--background1);">
-                <!-- Project Info -->
-
+                <div class="grid grid-cols-[1fr_1fr_1fr_auto] items-center rounded-2xl px-6 py-4 shadow-sm" style="background-color: var(--background1);">
                     <!-- Project Name -->
                     <div class="text-sm font-medium">{project.name}</div>
 
-                    <!-- deleted Date -->
+                    <!-- Last Edited -->
                     <div class="text-sm text-muted-foreground">{project.last_edited || 'N/A'}</div>
 
                     <!-- Lead Analyst -->
                     <div class="text-sm text-muted-foreground">{analystInitials}</div>
 
-                        <!-- Drop Down: Delete Forever, and Restore -->
-                        <div class="relative options-wrapper">
+                    <!-- Dropdown Button -->
+                    <div class="relative justify-self-end">
+                        <button
+                                class="p-1 hover:bg-muted rounded"
+                                on:click|stopPropagation={() => toggleDropdown(project.id)}
+                        >
+                            <MoreHorizontal class="w-5 h-5" />
+                        </button>
+                        {#if openDropdownId === project.id}
+                            <div class="absolute right-0 bottom-full mb-2 w-32 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-md z-50">
                             <button
-                                    class="options-btn p-1 hover:bg-muted rounded"
-                                    on:click|stopPropagation={() => toggleDropdown(project.id)}
-                            >
-                                <MoreHorizontal class="w-5 h-5" />
-                            </button>
-                            {#if openDropdownId === project.id}
-                                <div class="absolute right-0 mt-2 w-32 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-md z-50">
-                                    <button
-                                            class="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-muted-foreground hover:bg-gray-100 dark:hover:bg-gray-700"
-                                            on:click={() =>(confirmRestore(project))}
-                                    >
-                                        <ArchiveRestore  class="w-4 h-4" />
-                                        Restore
-                                    </button>
-                                    <button
-                                            class="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-muted-foreground hover:bg-gray-100 dark:hover:bg-gray-700"
-                                            on:click={() =>(confirmDelete(project))}
-                                    >
-                                        <Trash2 class="w-4 h-4" />
-                                        Delete
-                                    </button>
-
-                                </div>
-                            {/if}
-
-                        </div>
+                                        class="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-muted-foreground hover:bg-gray-100 dark:hover:bg-gray-700"
+                                        on:click={() => confirmRestore(project)}
+                                >
+                                    <ArchiveRestore class="w-4 h-4" />
+                                    Restore
+                                </button>
+                                <button
+                                        class="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-muted-foreground hover:bg-gray-100 dark:hover:bg-gray-700"
+                                        on:click={() => confirmDelete(project)}
+                                >
+                                    <Trash2 class="w-4 h-4" />
+                                    Delete
+                                </button>
+                            </div>
+                        {/if}
+                    </div>
                 </div>
             {/each}
+
         </div>
     {/if}
 
