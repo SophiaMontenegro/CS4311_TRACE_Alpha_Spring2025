@@ -1,0 +1,105 @@
+[
+  {
+    "node_id": "0.0.0.0",
+    "name": "/about/company",
+    "severity": "unknown",
+    "children": [],
+    "hidden": null
+  },
+  {
+    "node_id": "198.51.100.1",
+    "name": "/",
+    "severity": "low",
+    "children": [
+      {
+        "node_id": "198.51.100.1",
+        "name": "/.env",
+        "severity": "low",
+        "children": [],
+        "hidden": false
+      },
+      {
+        "node_id": "0.0.0.0",
+        "name": "/profile",
+        "severity": "unknown",
+        "children": [
+          {
+            "node_id": "198.51.100.1",
+            "name": "/profile/edit",
+            "severity": "low",
+            "children": [],
+            "hidden": false
+          }
+        ],
+        "hidden": null
+      },
+      {
+        "node_id": "0.0.0.0",
+        "name": "/account",
+        "severity": "unknown",
+        "children": [
+          {
+            "node_id": "198.51.100.1",
+            "name": "/account/settings",
+            "severity": "medium",
+            "children": [],
+            "hidden": false
+          }
+        ],
+        "hidden": null
+      },
+      {
+        "node_id": "0.0.0.0",
+        "name": "/login",
+        "severity": "unknown",
+        "children": [],
+        "hidden": null
+      },
+      {
+        "node_id": "0.0.0.0",
+        "name": "/register",
+        "severity": "unknown",
+        "children": [],
+        "hidden": null
+      },
+      {
+        "node_id": "198.51.100.3",
+        "name": "/help",
+        "severity": "low",
+        "children": [],
+        "hidden": false
+      },
+      {
+        "node_id": "198.51.100.1",
+        "name": "/home",
+        "severity": "low",
+        "children": [
+          {
+            "node_id": "198.51.100.1",
+            "name": "/home/dashboard",
+            "severity": "medium",
+            "children": [
+              {
+                "node_id": "198.51.100.1",
+                "name": "/home/dashboard/metrics",
+                "severity": "medium",
+                "children": [],
+                "hidden": false
+              }
+            ],
+            "hidden": false
+          }
+        ],
+        "hidden": false
+      },
+      {
+        "node_id": "198.51.100.1",
+        "name": "/admin",
+        "severity": "high",
+        "children": [],
+        "hidden": false
+      }
+    ],
+    "hidden": false
+  }
+]
