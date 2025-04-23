@@ -3,7 +3,7 @@
     import CreateProjectModal from '$lib/components/ui/project_management/CreateProjectModal.svelte';
     import ImportProjectModal from '$lib/components/ui/project_management/ImportProjectModal.svelte';
     import EditProjectDialog from '$lib/components/ui/project_management/EditProjectDialog.svelte';
-    import {Lock, Settings2, MoreHorizontal, Trash2, Import } from 'lucide-svelte';
+    import {Lock, Settings2, MoreHorizontal, Trash2, Import, Search } from 'lucide-svelte';
     import { goto } from '$app/navigation';
     import { Button } from '$lib/components/ui/button';
     import Alert from '$lib/components/ui/alert/Alert.svelte';
@@ -21,6 +21,12 @@
 
     let projectToDelete = null;
     let showDeleteDialog = false; //come back
+
+    let searchQuery = '';
+
+    $: filteredProjects = projects.filter(p =>
+        p.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
     onMount(async () => {
         analystInitials = localStorage.getItem('analyst_initials') || '';
@@ -251,27 +257,46 @@
 
     <div class="flex justify-between items-center mb-6">
         <h2 class="text-2xl font-semibold">Your Projects</h2>
-        <!-- Button container -->
-        <div class="flex items-center gap-2">
-            <button
-                    class="bg-[var(--accent)] text-[var(--accent-foreground)] text-sm font-medium px-4 py-2 rounded-md shadow hover:bg-[var(--accent3)]"
-                    on:click={openCreateModal}
-            >
-                Create New Project
-            </button>
 
-            <Button
-                    on:click={() => showImportModal()}
-                    type="button"
-                    size="icon"
-                    title="Import Project"
-                    aria-label="Import Project"
-                    class="w-10 h-10 rounded-md bg-[var(--secondary)] text-[var(--muted)] hover:bg-[color:var(--secondary)/90] flex items-center justify-center"
+        <!-- Right side container (buttons) -->
+        <div class="flex flex-col items-end gap-4">
+            <!-- Buttons -->
+            <div class="flex items-center gap-2">
+                <button
+                        class="bg-[var(--accent)] text-[var(--accent-foreground)] text-sm font-medium px-4 py-2 rounded-md shadow hover:bg-[var(--accent3)]"
+                        on:click={openCreateModal}
+                >
+                    Create New Project
+                </button>
+
+                <Button
+                        on:click={() => showImportModal()}
+                        type="button"
+                        size="icon"
+                        title="Import Project"
+                        aria-label="Import Project"
+                        class="w-10 h-10 rounded-md bg-[var(--secondary)] text-[var(--muted)] hover:bg-[color:var(--secondary)/90] flex items-center justify-center"
+                >
+                    <Import class="w-5 h-5 text--muted" />
+                </Button>
+            </div>
+
+            <!-- Search bar under the buttons -->
+            <div
+                    class="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-gray-300 text-sm"
+                    style="background-color: var(--background1); max-width: 300px;"
             >
-                <Import class="w-5 h-5 text--muted" />
-            </Button>
+                <Search class="w-4 h-4 text-muted-foreground" />
+                <input
+                        type="text"
+                        placeholder="Search projects"
+                        bind:value={searchQuery}
+                        class="w-full bg-transparent outline-none text-sm placeholder:text-muted-foreground"
+                />
+            </div>
         </div>
     </div>
+
 
     {#if isLoading }
         <div class="text-gray-500">Loading projects...</div>
@@ -298,7 +323,7 @@
             </div>
 
 
-            {#each projects as project (project.id)}
+            {#each filteredProjects as project (project.id)}
                 <div class="grid grid-cols-4 items-center rounded-2xl px-6 py-4 shadow-sm" style="background-color: var(--background1);">
                 <!-- Project Info -->
                     <div class="flex items-center gap-4">

@@ -1,6 +1,6 @@
 <script> //deleted projects page
     import { onMount } from 'svelte';
-    import { Trash2, MoreHorizontal, ArchiveRestore } from 'lucide-svelte';
+    import { Trash2, MoreHorizontal, ArchiveRestore, Search  } from 'lucide-svelte';
     import Alert from '$lib/components/ui/alert/Alert.svelte';
 
     let projects = [];
@@ -13,6 +13,13 @@
     let isLoading = true;
     let error = null;
     let openDropdownId = null;
+
+    let searchQuery = '';
+
+    $: filteredProjects = projects.filter(p =>
+        p.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
 
     onMount(async () => {
         analystInitials = localStorage.getItem('analyst_initials') || '';
@@ -175,6 +182,20 @@
     <div class="flex justify-between items-center mb-6">
         <h2 class="text-2xl font-semibold">Deleted Projects</h2>
         <!-- Add search bar -->
+        <div
+                class="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-gray-300 text-sm"
+                style="background-color: var(--background1); max-width: 300px;"
+        >
+            <Search class="w-4 h-4 text-muted-foreground" />
+            <input
+                    type="text"
+                    placeholder="Search projects"
+                    bind:value={searchQuery}
+                    class="w-full bg-transparent outline-none text-sm placeholder:text-muted-foreground"
+            />
+        </div>
+
+
     </div>
 
     {#if isLoading }
@@ -195,7 +216,7 @@
                 <div class="text-right pr-4"></div> <!-- aligns with dropdown -->
             </div>
 
-            {#each projects as project (project.id)}
+            {#each filteredProjects as project (project.id)}
                 <div class="grid grid-cols-[1fr_1fr_1fr_auto] items-center rounded-2xl px-6 py-4 shadow-sm" style="background-color: var(--background1);">
                     <!-- Project Name -->
                     <div class="text-sm font-medium">{project.name}</div>

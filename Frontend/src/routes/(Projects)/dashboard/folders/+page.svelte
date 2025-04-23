@@ -1,7 +1,7 @@
 <script>
     import { onMount, tick } from 'svelte';
     import { goto } from '$app/navigation';
-    import { Lock } from 'lucide-svelte';
+    import { Lock, Search } from 'lucide-svelte';
     import { Button } from '$lib/components/ui/button';
 
     let projects = [];
@@ -9,6 +9,12 @@
     let error = null;
     let analystInitials = '';
     let analystId = '';
+
+    let searchQuery = '';
+
+    $: filteredProjects = projects.filter(p =>
+        p.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
 
     onMount(async () => {
@@ -72,6 +78,19 @@
 
     <div class="flex justify-between items-center mb-6">
         <h2 class="text-2xl font-semibold">Shared Projects</h2>
+        <!-- Add search bar -->
+        <div
+                class="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-gray-300 text-sm"
+                style="background-color: var(--background1); max-width: 300px;"
+        >
+            <Search class="w-4 h-4 text-muted-foreground" />
+            <input
+                    type="text"
+                    placeholder="Search projects"
+                    bind:value={searchQuery}
+                    class="w-full bg-transparent outline-none text-sm placeholder:text-muted-foreground"
+            />
+        </div>
     </div>
 
     {#if isLoading }
@@ -95,7 +114,7 @@
             </div>
 
 
-            {#each projects as project (project.id)}
+            {#each filteredProjects as project (project.id)}
                 <div class="grid grid-cols-4 items-center rounded-2xl px-6 py-4 shadow-sm" style="background-color: var(--background1);">
                     <!-- Project Info -->
                     <div class="flex items-center gap-4">
