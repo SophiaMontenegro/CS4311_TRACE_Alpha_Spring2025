@@ -397,6 +397,7 @@
     {#if showCreateModal}
         <CreateProjectModal
                 analystId={analystId}
+                analystInitials={analystInitials}
                 on:close={closeCreateModal}
                 on:create={handleProjectCreated}
         />

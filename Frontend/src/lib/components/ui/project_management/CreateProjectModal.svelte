@@ -23,6 +23,9 @@
 
     let userList: string[] = [];
     let newUser = '';
+    let userError = '';
+    let isVerifying = false;
+
 
     let errors = {
         projectName: '',
@@ -65,11 +68,57 @@
         return valid;
     }
 
-    function addUser() {
-        const trimmed = newUser.trim();
-        if (trimmed && !userList.includes(trimmed)) {
-            userList = [...userList, trimmed];
-            newUser = '';
+    async function addUser() {
+        const trimmed = newUser.trim().toUpperCase();
+        userError = '';
+
+        if (!trimmed) return; // empty
+
+        console.log("user", analystInitials)
+
+        // Check if already added
+        if (userList.includes(trimmed)) {
+            userError = `User "${trimmed}" is already added.`;
+            return;
+        }
+        // Check if trying to add self
+        if (analystInitials === trimmed) {
+            userError = `User "${trimmed}" is yourself.`;
+            return;
+        }
+
+        isVerifying = true;
+
+        try {
+            const response = await fetch(`http://127.0.0.1:8000/team3/analysts/verify`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ initials: trimmed }),
+            });
+
+            if (!response.ok) {
+                userError = `User "${trimmed}" is not valid.`;
+                return;
+            }
+
+            const data = await response.json();
+            console.log('Backend response:', data);
+
+            // Assuming your backend returns { valid: true/false }
+            if (data.analyst_id) {
+                userList = [...userList, trimmed];
+                console.log('Added user:', trimmed);
+                newUser = '';
+            } else {
+                userError = `User "${trimmed}" is not valid.`;
+            }
+
+        } catch (error) {
+            userError = `Network error: ${error.message}`;
+        } finally {
+            isVerifying = false;
         }
     }
 
@@ -183,22 +232,33 @@
                 <label class="text-sm font-medium">Team Members</label>
                 <div class="flex gap-2">
                     <Input type="text" class="input-class" bind:value={newUser} placeholder="Enter initials" />
-                    <Button class="btn-class" variant="default" size="sm" on:click={addUser}>
+                    <button class="flex items-center bg-[var(--accent)] text-[var(--accent-foreground)] text-sm font-small px-4 py-2 rounded-md shadow hover:bg-[var(--accent3)]"
+                            on:click={addUser}>
                         <UserPlus class="w-4 h-4 mr-1" /> Add
-                    </Button>
+                    </button>
                 </div>
-                <ul class="space-y-1 mt-2">
+                <div class="flex flex-wrap gap-2 mt-2">
                     {#each userList as user, i}
-                        <li class="flex items-center justify-between bg-muted px-3 py-2 rounded-md text-sm">
-                            <span><Mail class="inline-block w-4 h-4 mr-1" /> {user}</span>
-                            <button type="button" on:click={() => removeUser(i)}>
-                                <Trash2 class="w-4 h-4 text-destructive" />
+                        <div class="flex items-center bg-muted text-sm px-3 py-1 rounded-full">
+                            <div class="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center mr-2 text-xs font-bold">
+                                {user}
+                            </div>
+                            <button type="button" on:click={() => removeUser(i)} class="text-gray-500 hover:text-red-500 ml-1">
+                                <X class="w-4 h-4" />
                             </button>
-                        </li>
+                        </div>
                     {/each}
-                </ul>
+                </div>
             </div>
         </div>
+
+        {#if userError}
+            <p class="text-sm text-red-500 mt-2">{userError}</p>
+        {/if}
+
+        {#if isVerifying}
+            <p class="text-sm text-gray-500 mt-2">Verifying...</p>
+        {/if}
 
         <!-- Action Buttons -->
         <div class="flex justify-end gap-2">
