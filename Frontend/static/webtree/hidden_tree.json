@@ -1,0 +1,23 @@
+[
+  {
+    "node_id": "198.51.100.1",
+    "name": "/about/company/history",
+    "severity": "low",
+    "children": [],
+    "hidden": true
+  },
+  {
+    "node_id": "198.51.100.1",
+    "name": "/login/reset",
+    "severity": "high",
+    "children": [],
+    "hidden": true
+  },
+  {
+    "node_id": "198.51.100.1",
+    "name": "/register/validate",
+    "severity": "low",
+    "children": [],
+    "hidden": true
+  }
+]
