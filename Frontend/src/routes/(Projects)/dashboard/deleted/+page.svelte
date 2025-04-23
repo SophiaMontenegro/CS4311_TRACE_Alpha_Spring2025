@@ -49,7 +49,7 @@
         error = null;
 
         try {
-            const response = await fetch(``); // add link :)
+            const response = await fetch(`http://127.0.0.1:8000/team3/projects_deleted/analyst/${analystInitials}`);
             if (!response.ok) throw new Error('Failed to load projects');
             const data = await response.json();
             projects = data.projects || [];
@@ -75,10 +75,26 @@
 
     async function deleteProject() {
         if (!projectToDelete) return;
-        await fetch(`/api/projects/${projectToDelete.id}`, { method: 'DELETE' });
+
+        try {
+            const response = await fetch(`http://127.0.0.1:8000/team3/projects/${encodeURIComponent(projectToDelete)}/permanently_delete?analyst_initials=${analystInitials}`, {
+                method: 'PUT'
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.detail || 'Failed to Permanently Delete Project');
+            }
+
+            await loadProjects(); // Refresh projects list
+        } catch (err) {
+            console.error('Error permanently deleting project', err);
+            error = err.message;
+        }
 
         // Remove it from local list
-        projects = projects.filter(p => p.id !== projectToDelete.id);
+        projects = projects.filter(p => p.id !== projectToDelete.id); // may not be necessary
         showDeleteDialog = false;
         projectToDelete = null;
     }
@@ -104,10 +120,25 @@
 
     async function restoreProject() {
         if (!projectToRestore) return;
-        await fetch(`/api/projects/${projectToDelete.id}`, { method: 'POST' }); //fix
+        try {
+            const response = await fetch(`http://127.0.0.1:8000/team3/projects/${encodeURIComponent(projectToRestore)}/restore?analyst_initials=${analystInitials}`, {
+                method: 'PUT'
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.detail || 'Failed to restore project', projectToRestore);
+            }
+
+            await loadProjects(); // Refresh projects list
+        } catch (err) {
+            console.error('Error restoring project:', err);
+            error = err.message;
+        }
 
         // Remove it from local list
-        projects = projects.filter(p => p.id !== projectToRestore.id);
+        projects = projects.filter(p => p.id !== projectToRestore.id); // may not need
         showRestoreDialog = false;
         projectToRestore = null;
     }

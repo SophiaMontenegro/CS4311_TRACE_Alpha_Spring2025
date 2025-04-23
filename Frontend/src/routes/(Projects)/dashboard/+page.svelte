@@ -148,7 +148,7 @@
         console.log("Deleting project:", name); // Not working
         try {
             showDeleteDialog = false;
-            const response = await fetch(`http://127.0.0.1:8000/team3/projects/${encodeURIComponent(name)}/delete?analyst_id=${analystId}`, {
+            const response = await fetch(`http://127.0.0.1:8000/team3/projects/${encodeURIComponent(name)}/delete?analyst_id=${analystInitials}`, {
                 method: 'DELETE'
             });
 

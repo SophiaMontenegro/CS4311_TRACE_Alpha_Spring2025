@@ -68,7 +68,7 @@ async def lock_project(project_name: str, analyst_id: str):
         raise HTTPException(status_code=404, detail="Project not found")
     return {"message": "Project lock state changed successfully", "locked": success}
 
-# ✅ Delete a project (only if unlocked)
+# ✅ Delete a project (only if unlocked) -> Move to deleted projects database
 @team3_router.delete("/projects/{project_name}/delete")
 async def delete_project(project_name: str, analyst_id: str):
     print(f"Delete {project_name} by analyst {analyst_id}")
@@ -76,6 +76,24 @@ async def delete_project(project_name: str, analyst_id: str):
     if success is None:
         raise HTTPException(status_code=403, detail="Project is locked or does not exist")
     return {"message": "Project deleted successfully"}
+
+# ✅ Restore a project
+@team3_router.put("/projects/{project_name}/restore")
+async def restore_project(project_name: str, analyst_initials: str):
+    print(f"Restoring {project_name} by analyst {analyst_initials}")
+    success = project_manager.restore_project(project_name, analyst_initials)
+    if success is None:
+        raise HTTPException(status_code=404, detail="Project not found")
+    return {"message": "Project restored successfully"}
+
+# ✅ Permanently delete  a project
+@team3_router.put("/projects/{project_name}/permanently_delete")
+async def fully_delete_project(project_name: str, analyst_initials: str):
+    print(f"Permanently deleting {project_name} by analyst {analyst_initials}")
+    success = project_manager.fully_delete_project(project_name, analyst_initials)
+    if success is None:
+        raise HTTPException(status_code=404, detail="Project not found")
+    return {"message": "Project permanently deleted successfully"}
 
 # Analyst verification model
 class AnalystVerify(BaseModel):
@@ -216,6 +234,45 @@ async def get_analyst_shared_projects(analyst_id: str):
         projects = project_manager.db_manager.run_query(
             """
             MATCH (a:Analyst {name: $analyst_id})-[:PART_OF]->(p:Project)
+            RETURN p
+            ORDER BY p.created_at DESC
+            """,
+            {"analyst_id": analyst_id},
+            fetch=True
+        )
+
+        if projects is None:
+            projects = []
+
+        # Format the projects for the frontend
+        formatted_projects = []
+        for project_record in projects:
+            project = project_record['p']
+            formatted_projects.append({
+                "id": project.get("id"),
+                "name": project.get("name"),
+                "lead_analyst": project.get("lead_analyst", ""),
+                "description": project.get("description", ""),
+                "start_date": format_date(project.get("start_date")),
+                "end_date": format_date(project.get("end_date")),
+                "locked": project.get("locked", False),
+                "created_at": format_date(project.get("created_at")),
+                "last_edited": format_date(project.get("last_edited"))
+            })
+
+        return {"projects": formatted_projects}
+    except Exception as e:
+        logging.error(f"Error fetching analyst projects: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+# Get deleted projects by analyst ID
+@team3_router.get("/projects_deleted/analyst/{analyst_id}")
+async def get_deleted_projects(analyst_id: str):
+    try:
+        # Query projects owned by this analyst
+        projects = project_manager.db_manager.run_query(
+            """
+            MATCH (a:Analyst {id: $analyst_id})-[:OWNS]->(p:Deleted)
             RETURN p
             ORDER BY p.created_at DESC
             """,

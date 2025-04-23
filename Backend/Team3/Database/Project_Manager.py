@@ -219,17 +219,14 @@ class ProjectManager:
         """
         Deletes a project only if the analyst is a Lead Analyst and the project is not locked.
         """
-
-        # Verify if the analyst is a Lead Analyst
         if not self.analyst_manager.check_if_lead(analyst, project_name):
             print(f"Error: Analyst '{analyst}' does not have permission to delete project '{project_name}'. Only a Lead Analyst can delete a project.")
             return None
 
-        # Check if the project exists and retrieve its lock status
         query_check_lock = """
-            MATCH (p:Project {name: $project_name})
-            RETURN p.name AS name, p.locked AS locked
-        """
+                MATCH (p:Project {name: $project_name})
+                RETURN p.name AS name, p.locked AS locked
+            """
         params = {"project_name": project_name}
         result = self.db_manager.run_query(query_check_lock, params, fetch=True)
 
@@ -248,12 +245,75 @@ class ProjectManager:
 
         # Proceed with project deletion
         query_delete = """
-            MATCH (p:Project {name: $project_name})
-            DETACH DELETE p
-        """
+                MATCH (p:Project {name: $project_name})
+                REMOVE p:Project
+                SET p:Deleted
+            """
         self.db_manager.run_query(query_delete, params)
 
         print(f"Project '{project_name}' has been deleted successfully by {analyst}.")
+        return True
+
+    def restore_project(self, project, analyst):
+
+        check_if_exists = """
+            MATCH (d:Deleted {name: $project})
+            RETURN d.name AS name
+            """
+        result = self.db_manager.run_query(check_if_exists, {"project": project}, fetch=True)
+
+        if not result:
+            print(f"Project '{project}' doesn't exists in Deleted")
+            return None
+
+        query = """
+            MATCH (a:Analyst)-[:OWNS]->(d:Deleted)
+            WHERE a.name = $analyst_name AND d.name = $project_name
+            RETURN COUNT(*) > 0 AS is_owner
+            """
+        result = self.db_manager.run_query(query, {"analyst_name": analyst, "project_name": project}, fetch=True)
+
+        if not result[0]["is_owner"]:
+            print(f"Analyst provided doesn't exist or isn't the owner of the project.")
+            return None
+
+        recover = """
+            MATCH (p:Deleted {name: $project_name})
+            REMOVE p:Deleted
+            SET p:Project
+            """
+        result = self.db_manager.run_query(recover, {"project_name":project})
+        print(f"Project '{project}' successfully restored.")
+        return True
+
+    def fully_delete_project(self, project, analyst):
+
+        # check if the deleted project exists and own by the analyst
+
+        query = """
+              MATCH (a:Analyst {name: $analyst_name})-[:OWNS]->(p:Deleted {name: $project_name})
+              RETURN COUNT(*) > 0 AS is_owner
+              """
+
+        result = self.db_manager.run_query(query, {"analyst_name": analyst, "project_name": project}, fetch=True)
+
+        if not result or not result[0]["is_owner"]:
+            print("Project does not exist in Deleted or the analyst is not the owner.")
+            return None
+
+        # to fully delete the project connected to the analyst
+
+        delete_query = """
+    
+              MATCH (a:Analyst {name: $analyst_name})-[:OWNS]->(p:Deleted {name: $project_name})
+    
+              DETACH DELETE p
+    
+              """
+
+        self.db_manager.run_query(delete_query, {"analyst_name": analyst, "project_name": project})
+
+        print(f"Project '{project}' has been permanently deleted.")
         return True
 
 
