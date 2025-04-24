@@ -4,18 +4,20 @@
 	import { Hammer, Network, FileCheck, Brain, Settings } from 'lucide-svelte';
 	import { toggleMode, mode } from 'mode-watcher';
 	import { goto } from '$app/navigation';
+	import Modal from '$lib/components/ui/modal/Modal.svelte';
 
 	let selectedIndex;
+	let showSettingsModal = false;
 
 	function isSelected(index, route) {
 		selectedIndex = index;
 		localStorage.setItem('selectedIndex', index);
-		goto(route || '/tool-dashboard');
+		goto(route || '/dashboard');
 	}
 
 	const menuItems = [
-		{ icon: Hammer, tooltip: 'Tools', route: '/tool-dashboard' },
-		{ icon: Network, tooltip: 'Network', route: '/web-tree' },
+		{ icon: Hammer, tooltip: 'Tools', route: '/dashboard' },
+		{ icon: Network, tooltip: 'Network' },
 		{ icon: FileCheck, tooltip: 'Results' },
 		{ icon: Brain, tooltip: 'AI Model', route: '/credGenAI/config' },
 	];
@@ -42,7 +44,7 @@
 <div class="sidebar">
 	<div class="home-button">
 		<Button
-			onclick={() => isSelected(0, '/tool-dashboard')}
+			onclick={() => isSelected(0, '/dashboard')}
 			variant="ghost"
 			size="icon"
 			type="button"
@@ -79,11 +81,13 @@
 		{/each}
 	</div>
 	<div class="settings-button">
-		<Button onclick={toggleMode} variant="circle" size="circle" type="button" title="Settings">
+		<Button onclick={() => (showSettingsModal = true)} variant="circle" size="circle" type="button" title="Settings">
 			<Settings style="width: 20px; height: 20px;" />
 		</Button>
 	</div>
 </div>
+
+<Modal isOpen={showSettingsModal} onClose={() => (showSettingsModal = false)} />
 
 <style>
 	.sidebar {
