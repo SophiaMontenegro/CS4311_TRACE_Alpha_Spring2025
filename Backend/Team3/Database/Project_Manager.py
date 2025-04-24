@@ -20,9 +20,6 @@ class ProjectManager:
             # Generate a unique ID for the project
             project_id = str(uuid.uuid4())
 
-            # Getting lead Analyst initials
-            # lead_analyst = self.analyst_manager.get_analyst_initials_by_id(analyst_id)
-
             # Create project with the unique ID
             query = """
             MATCH (a:Analyst {name: $analyst_id})
@@ -99,6 +96,24 @@ class ProjectManager:
         except Exception as e:
             logging.error(f"Error in create_project: {e}", exc_info=True)
             return None
+
+    def verify_project_name(self, project_name: str, analyst_initials: str):
+        # Check if the analyst already owns a project with the given name
+        existing_project = self.db_manager.run_query(
+            """
+            MATCH (a:Analyst {name: $analyst_initials})-[:OWNS]->(p:Project {name: $name})
+            RETURN p
+            """,
+            {"analyst_initials": analyst_initials, "name": project_name},
+            fetch=True  # <- This is the fix
+        )
+
+        print("Exist: ", existing_project)
+
+        if existing_project:
+            print(f"Analyst already owns a project named '{project_name}'")
+            return False
+        return True
 
     def show_projects(self):
         """

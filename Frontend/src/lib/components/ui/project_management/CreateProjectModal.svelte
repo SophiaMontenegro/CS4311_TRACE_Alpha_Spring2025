@@ -45,13 +45,63 @@
         files = [...files];
     }
 
-    function validateForm(): boolean {
-        let valid = true;
-        errors = { projectName: '', startDate: '', endDate: '' };
+    async function check_name(name) {
 
-        if (!projectName.trim()) {
+        try {
+            const response = await fetch('http://127.0.0.1:8000/team3/project_name/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    project_name: name,
+                    analyst_initials: analystInitials,
+                })
+            });
+
+            const responseData = await response.json();
+
+            if (!response.ok) {
+                let errorMessage = 'Failed to verify project name';
+                if (responseData.detail) {
+                    errorMessage = typeof responseData.detail === 'string'
+                        ? responseData.detail
+                        : JSON.stringify(responseData.detail);
+                } else if (typeof responseData === 'object') {
+                    errorMessage = JSON.stringify(responseData);
+                }
+
+                throw new Error(errorMessage);
+            }
+
+            // Check if name is taken
+            if (responseData.status === "taken") {
+                return false;
+            }
+
+            return true;
+        } catch (err) {
+            console.error("check_name error:", err);
+            return false;
+        }
+    }
+
+
+    async function validateForm(): boolean {
+        let valid = true;
+        // Force a reactive reset
+        errors = { ...errors, projectName: '', startDate: '', endDate: '' };
+
+        const trimmedName = projectName.trim();
+
+        if (!trimmedName) {
             errors.projectName = 'Project name is required';
             valid = false;
+        } else {
+            const verify_name = await check_name(trimmedName); // ✅ await async call
+
+            if (verify_name === false) {
+                errors.projectName = 'Project name already exists';
+                valid = false;
+            }
         }
 
         if (!startDate) {
@@ -73,8 +123,6 @@
         userError = '';
 
         if (!trimmed) return; // empty
-
-        console.log("user", analystInitials)
 
         // Check if already added
         if (userList.includes(trimmed)) {
@@ -104,12 +152,9 @@
             }
 
             const data = await response.json();
-            console.log('Backend response:', data);
 
             // Assuming your backend returns { valid: true/false }
             if (data.analyst_id) {
-                userList = [...userList, trimmed];
-                console.log('Added user:', trimmed);
                 newUser = '';
             } else {
                 userError = `User "${trimmed}" is not valid.`;
@@ -127,8 +172,10 @@
         userList = [...userList];
     }
 
-    function handleSubmit() {
-        if (validateForm()) {
+    async function handleSubmit() {
+        const isValid = await validateForm();
+
+        if (isValid) {
             const projectData = {
                 projectName,
                 description,
@@ -139,7 +186,6 @@
                 analystInitials
             };
 
-            console.log('Submitting project data:', projectData);
             dispatch('create', projectData);
             handleClose();
         }
@@ -264,12 +310,13 @@
         <div class="flex justify-end gap-2">
             <Button class="btn-class" variant="ghost" size="sm" onclick={handleClose}>Cancel</Button>
             <!-- Not in a form -->
-            <Button class="btn-class" variant="default" size="sm" onclick={() => {
+            <Button class="btn-class" variant="default" size="sm" onclick={async () => {
                 console.log("Button clicked!");
-                handleSubmit();
-                }}>
+                await handleSubmit();
+            }}>
                 Create
             </Button>
+
 
         </div>
     </div>

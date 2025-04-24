@@ -49,7 +49,11 @@ async def create_project(project: ProjectCreate):
         )
         
         logging.debug(f"Project creation result: {success}")
-
+        """
+        if success is False:
+            logging.error("A project with this name already exists.")
+            raise HTTPException(status_code=409, detail="A project with this name already exists.")
+        """
         if success is None:
             logging.error("Project creation failed")
             raise HTTPException(status_code=500, detail="Project creation failed")
@@ -58,6 +62,24 @@ async def create_project(project: ProjectCreate):
     except Exception as e:
         logging.error(f"Error creating project: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+class ProjectNameCheckRequest(BaseModel):
+    project_name: str
+    analyst_initials: str
+
+@team3_router.post("/project_name/")
+async def verify_project_name(data: ProjectNameCheckRequest):
+    try:
+        logging.debug(f"Received project creation request: {data.project_name}")
+        success = project_manager.verify_project_name(data.project_name, data.analyst_initials)
+        print("LOOOOOOK: ", success)
+        if not success:
+            return {"status": "taken"}
+        return {"status": "available"}
+    except Exception as e:
+        logging.error(f"Error in verifying project name: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 # ✅ Lock/Unlock a project
 @team3_router.put("/projects/{project_name}/lock")
