@@ -297,8 +297,8 @@
                     </Button>
                 </div>
 
-                {#if errors.projectName}
-                    <p class="text-red-500 text-sm">{errors.projectName}</p>
+                {#if projectName_error}
+                    <p class="text-red-500 text-sm">{projectName_error}</p>
                 {/if}
             </div>
 
@@ -313,8 +313,8 @@
             <div class="space-y-2">
                 <label class="text-sm font-medium">End Date *</label>
                 <Input type="date" bind:value={new_endDate} class="pr-10" />
-                {#if errors.endDate}
-                    <p class="text-red-500 text-sm">{errors.endDate}</p>
+                {#if endDate_error}
+                    <p class="text-red-500 text-sm">{endDate_error}</p>
                 {/if}
             </div>
 
