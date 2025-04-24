@@ -8,7 +8,7 @@ router = APIRouter()
 tree_builder = WebTreeBuilder(
     uri="bolt://localhost:7687",
     user="neo4j",
-    password="chrischris21"  # <- your password here
+    password="tree-test"
 )
 controller = WebTreeController(tree_builder)
 
