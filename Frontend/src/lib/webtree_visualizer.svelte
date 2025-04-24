@@ -8,13 +8,27 @@
 	let zoomBehavior;
 	let currentZoom = 1;
 
+	let showToast = false;
+	let toastMessage = '';
+	let toastType = 'success';
+	let toasts = [];
+
+	function showToastMessage(message, type = 'success') {
+		const id = Date.now() + Math.random(); // unique id
+		toasts = [...toasts, { id, message, type }];
+
+		setTimeout(() => {
+			toasts = toasts.filter((t) => t.id !== id);
+		}, 3000);
+	}
+
 	async function loadTreeData() {
 		const visibleRes = await fetch('/webtree/dummy_tree.json');
 		const hiddenRes = await fetch('/webtree/hidden_tree.json');
 
 		const visibleData = await visibleRes.json();
 		const hiddenData = await hiddenRes.json();
-		
+
 		const combined = [...visibleData, ...hiddenData];
 		if (JSON.stringify(combined) !== JSON.stringify(treeData)) {
 			treeData = combined;
@@ -189,17 +203,17 @@
 		})
 			.then((res) => {
 				if (res.ok) {
-					alert('Severity updated!');
+					showToastMessage('Severity updated!', 'success');
 					selectedNode = null;
 					newSeverity = '';
 					loadTreeData(); // Refresh UI
 				} else {
-					alert('Server error: ' + res.status);
+					showToastMessage('Server error: ' + res.status, 'error');
 				}
 			})
 			.catch((err) => {
 				console.error('Fetch error:', err);
-				alert('Network error: ' + err.message);
+				showToastMessage('Network error: ' + err.message, 'error');
 			});
 	}
 </script>
@@ -233,6 +247,12 @@
 		</div>
 	</div>
 {/if}
+
+<div class="toast-container">
+	{#each toasts as toast (toast.id)}
+		<div class="toast {toast.type}">{toast.message}</div>
+	{/each}
+</div>
 
 <style>
 	#tree {
@@ -306,5 +326,32 @@
 
 	.popup-content button:hover {
 		background-color: #2563eb;
+	}
+
+	.toast-container {
+		position: fixed;
+		top: 20px;
+		right: 20px;
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+		z-index: 9999;
+	}
+
+	.toast {
+		background: #4ade80;
+		color: white;
+		padding: 12px 20px;
+		border-radius: 8px;
+		font-weight: bold;
+		box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+	}
+
+	.toast.success {
+		background-color: #4ade80;
+	}
+
+	.toast.error {
+		background-color: #ef4444;
 	}
 </style>
