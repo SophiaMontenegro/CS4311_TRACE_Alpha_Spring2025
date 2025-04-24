@@ -26,11 +26,14 @@
     let userError = '';
     let isVerifying = false;
 
+    let directoryPath: string = '';
+
 
     let errors = {
         projectName: '',
         startDate: '',
-        endDate: ''
+        endDate: '',
+        saveDirectory: ''
     };
 
     function handleFileUpload(event: Event) {
@@ -88,7 +91,7 @@
     async function validateForm(): boolean {
         let valid = true;
         // Force a reactive reset
-        errors = { ...errors, projectName: '', startDate: '', endDate: '' };
+        errors = { ...errors, projectName: '', startDate: '', endDate: '', saveDirectory: '' };
 
         const trimmedName = projectName.trim();
 
@@ -115,7 +118,17 @@
             valid = false;
         }
 
+        if (!directoryPath) {
+            errors.saveDirectory = 'Directory needs to be added.';
+            valid = false;
+        }
+
         return valid;
+    }
+
+    function validate_DirectorySelection() {
+        // implement later
+        return True
     }
 
     async function addUser() {
@@ -272,6 +285,34 @@
                     {/each}
                 </div>
             </div>
+            <!-- Save Directory Selection -->
+            <div class="space-y-2 md:col-span-2">
+                <label class="text-sm font-medium">Save Directory Path *</label>
+
+                <Input
+                        type="text"
+                        class="input-class"
+                        placeholder="Enter full directory path..."
+                        bind:value={directoryPath}
+                />
+
+                {#if directoryPath}
+                    <div class="space-y-1 mt-2">
+                        <div class="flex items-center justify-between bg-muted px-3 py-2 rounded-md text-sm">
+                            <div class="flex items-center gap-2">
+                                <Check class="w-4 h-4 text-green-500" />
+                                <span class="break-all">{directoryPath}</span>
+                            </div>
+                            <button type="button" on:click={() => (directoryPath = '')}>
+                                <Trash2 class="w-4 h-4 text-destructive" />
+                            </button>
+                        </div>
+                    </div>
+                {/if}
+            </div>
+
+
+
 
             <!-- Team Members -->
             <div class="space-y-2 md:col-span-2">
