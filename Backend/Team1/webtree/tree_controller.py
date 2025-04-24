@@ -32,9 +32,17 @@ class WebTreeController:
 
     def build_tree_structure(self, data):
         visible_tree = []
-        hidden_tree = []
+        hidden_root = {
+            "node_id": "hidden",
+            "name": "Hidden",
+            "severity": "low",
+            "hidden": True,
+            "children": []
+        }
+
         nodes = {}
 
+        # Build node map
         for item in data:
             path = item["path"]
             name = path
@@ -52,27 +60,33 @@ class WebTreeController:
 
             nodes[path] = node
 
+        # Build tree structure
         for path, node in nodes.items():
-            if node["hidden"]:
-                hidden_tree.append(node)
-                continue
-
-            if path == "/":
-                visible_tree.append(node)
-                continue
-
             parent_path = "/".join(path.strip("/").split("/")[:-1])
             parent_path = f"/{parent_path}" if parent_path else "/"
+            parent = nodes.get(parent_path)
 
-            if parent_path in nodes:
-                nodes[parent_path]["children"].append(node)
+            if node["hidden"]:
+                # Nest under hidden parent, or under the synthetic hidden root
+                if parent and parent.get("hidden") == True:
+                    parent["children"].append(node)
+                else:
+                    hidden_root["children"].append(node)
             else:
-                visible_tree.append(node)
+                if path == "/":
+                    visible_tree.append(node)
+                elif parent:
+                    parent["children"].append(node)
+                else:
+                    visible_tree.append(node)
 
         return {
             "visible": visible_tree,
-            "hidden": hidden_tree
+            "hidden": [hidden_root] if hidden_root["children"] else []
         }
+
+
+
 
     def find_node_by_path(self, tree, path):
         for node in tree:

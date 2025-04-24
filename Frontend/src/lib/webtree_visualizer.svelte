@@ -9,10 +9,15 @@
 	let currentZoom = 1;
 
 	async function loadTreeData() {
-		const res = await fetch('/webtree/dummy_tree.json');
-		const newData = await res.json();
-		if (JSON.stringify(newData) !== JSON.stringify(treeData)) {
-			treeData = newData;
+		const visibleRes = await fetch('/webtree/dummy_tree.json');
+		const hiddenRes = await fetch('/webtree/hidden_tree.json');
+
+		const visibleData = await visibleRes.json();
+		const hiddenData = await hiddenRes.json();
+		
+		const combined = [...visibleData, ...hiddenData];
+		if (JSON.stringify(combined) !== JSON.stringify(treeData)) {
+			treeData = combined;
 			renderTreeGraph();
 		}
 	}
@@ -91,7 +96,7 @@
 			}
 
 			// Apply vertical offset based on index to stack roots vertically
-			const isHiddenGroup = treeRoot.node_id === 'hidden';
+			const isHiddenGroup = treeRoot.hidden === true;
 			root.descendants().forEach((d) => {
 				d.x = (d.x - 50) * 3;
 				d.y = d.depth * 180 + (isHiddenGroup ? 800 : 0); // Push hidden nodes down
