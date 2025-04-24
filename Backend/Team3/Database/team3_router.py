@@ -325,3 +325,38 @@ async def get_deleted_projects(analyst_id: str):
     except Exception as e:
         logging.error(f"Error fetching analyst projects: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+# Get all users in a project
+@team3_router.get("/projects/get_analyst/{project_name}")
+async def get_analysts(project_name: str):
+    try:
+        # Query analysts part of a project
+        analysts = project_manager.db_manager.run_query(
+            """
+            MATCH (a:Analyst)-[:PART_OF]->(p:Project {name: $project_name})
+            RETURN a.name""",
+            {"project_name": project_name},
+            fetch=True
+        )
+
+        # Extract just the names
+        analysts = [record["a.name"] for record in analysts] if analysts else []
+
+        return {"analysts": analysts}
+    except Exception as e:
+        logging.error(f"Error fetching analysts: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@team3_router.put("/projects/{project_name}/member_added")
+async def add_project_member(project_name: str, new_user: str, lead_analyst: str):
+    success = project_manager.edit_project_members(project_name, "add", new_user, lead_analyst)
+    if success is None:
+        raise HTTPException(status_code=404, detail="Analyst doesn't exist")
+    return {"message": "Analyst added successfully"}
+
+@team3_router.put("/projects/{project_name}/member_removed")
+async def remove_project_member(project_name: str, new_user: str, lead_analyst: str):
+    success = project_manager.edit_project_members(project_name, "remove", new_user, lead_analyst)
+    if success is None:
+        raise HTTPException(status_code=404, detail="Analyst doesn't exist")
+    return {"message": "Analyst removed successfully"}

@@ -383,7 +383,7 @@ class ProjectManager:
         # Check if the analyst has the correct role (Lead or member) for the project
         if not self.analyst_manager.check_if_lead(analyst_name, project_name):
             print(f"Error: Analyst '{analyst_name}' isn't part of the current project or doesn't have permission.")
-            return
+            return None
     
         project_exists_query = """
         MATCH (p:Project {name: $project_name})
@@ -393,7 +393,7 @@ class ProjectManager:
         
         if not result or not result[0]["project_exists"]:
             print(f"Error: Project '{project_name}' not found.")
-            return
+            return None
         
         project_id = result[0]["project_id"]
     
@@ -414,10 +414,11 @@ class ProjectManager:
     
             if existing_relation and existing_relation[0]["is_part_of_project"]:
                 print(f"User '{participant_name}' is already part of the project '{project_name}'. No action taken.")
-                return
+                return None
 
             self.db_manager.create_relationship("Analyst", {"name": participant_name}, "Project", {"id": project_id}, "PART_OF")
             print(f"User '{participant_name}' added to project '{project_name}'.")
+            return True
     
         elif action == "remove":
 
@@ -431,7 +432,7 @@ class ProjectManager:
     
             if not existing_relation or not existing_relation[0]["is_part_of_project"]:
                 print(f"Error: User '{participant_name}' is not part of the project '{project_name}'.")
-                return
+                return None
 
             delete_query = """
             MATCH (a:Analyst {name: $participant_name})-[r:PART_OF]->(p:Project {id: $project_id})
@@ -439,9 +440,11 @@ class ProjectManager:
             """
             self.db_manager.run_query(delete_query, {"participant_name": participant_name, "project_id": project_id})
             print(f"User '{participant_name}' removed from project '{project_name}'.")
+            return True
     
         else:
             print("Invalid action. Use 'add' or 'remove'.")
+            return None
 
 
     def change_project_name(self, current_name, new_name, analyst_name):

@@ -438,6 +438,7 @@
     {#if editDialogOpen}
         <EditProjectDialog
             project={currentProject}
+            analystInitials={analystInitials}
             on:save={handleSave}
             on:cancel={handleCancel}
         />
