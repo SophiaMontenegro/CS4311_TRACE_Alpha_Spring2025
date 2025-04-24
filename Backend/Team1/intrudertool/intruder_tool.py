@@ -183,7 +183,7 @@ class IntruderTool:
                 self.results.append({
                     "payload": payload,
                     "status_code": None,
-                    "length": 0,
+                    "length": len(short_error),
                     "error": short_error
                 })
 
