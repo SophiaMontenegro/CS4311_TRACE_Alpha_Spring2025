@@ -5,6 +5,14 @@
     "severity": "low",
     "children": [
       {
+        "node_id": "0.0.0.0",
+        "name": "/register",
+        "severity": "unknown",
+        "children": [],
+        "hidden": false,
+        "url": "https://example.com/register"
+      },
+      {
         "node_id": "198.51.100.1",
         "name": "/home",
         "severity": "low",
@@ -14,10 +22,12 @@
             "name": "/home/dashboard",
             "severity": "medium",
             "children": [],
-            "hidden": false
+            "hidden": false,
+            "url": "https://example.com/home/dashboard"
           }
         ],
-        "hidden": false
+        "hidden": false,
+        "url": "https://example.com/home"
       },
       {
         "node_id": "0.0.0.0",
@@ -29,19 +39,23 @@
             "name": "/about/team",
             "severity": "low",
             "children": [],
-            "hidden": false
+            "hidden": false,
+            "url": "https://example.com/about/team"
           }
         ],
-        "hidden": null
+        "hidden": false,
+        "url": "https://example.com/about"
       },
       {
         "node_id": "0.0.0.0",
         "name": "/login",
         "severity": "unknown",
         "children": [],
-        "hidden": null
+        "hidden": false,
+        "url": "https://example.com/login"
       }
     ],
-    "hidden": false
+    "hidden": false,
+    "url": "https://example.com/"
   }
 ]

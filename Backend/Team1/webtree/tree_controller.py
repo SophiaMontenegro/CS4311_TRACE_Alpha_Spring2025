@@ -14,17 +14,22 @@ class WebTreeController:
         return True
 
     def determine_operation(self, json_data, current_tree):
-        # Determines whether the node should be added or updated.
         for node in current_tree:
-            if node["path"] == json_data["path"]:
-                if node["severity"] != json_data["severity"]:  # Severity changed
-                    json_data["operation"] = "update"
-                else:
-                    return None  # No change needed
-                return json_data
+            if node.get("path") == json_data.get("path"):
+                current_sev = node.get("severity", "unknown")
+                incoming_sev = json_data.get("severity", "unknown")
 
+                print(f"Comparing for {node['path']}: current='{current_sev}', incoming='{incoming_sev}'")
+
+                if current_sev != incoming_sev:
+                    json_data["operation"] = "update"
+                    return json_data
+                else:
+                    return None
         json_data["operation"] = "add"
         return json_data
+
+
     
     def extract_path_from_url(self, url):
         parsed = urlparse(url)
@@ -42,6 +47,20 @@ class WebTreeController:
 
         nodes = {}
 
+        # Preload root node if it's in the data to allow child inference
+        for item in data:
+            if item["path"] == "/":
+                nodes["/"] = {
+                    "node_id": item.get("ip", "0.0.0.0"),
+                    "name": "/",
+                    "severity": item.get("severity", "unknown"),
+                    "children": [],
+                    "hidden": item.get("hidden", False),
+                    "url": item.get("url", "")
+                }
+                break
+
+
         # Build node map
         for item in data:
             path = item["path"]
@@ -49,13 +68,15 @@ class WebTreeController:
             ip = item.get("ip", "0.0.0.0")
             node_id = ip
             hidden = item.get("hidden", False)
+            url = item.get("url") or self.infer_url(path, nodes)
 
             node = {
                 "node_id": node_id,
                 "name": name,
-                "severity": item["severity"],
+                "severity": item.get("severity", "unknown"),
                 "children": [],
-                "hidden": hidden
+                "hidden": hidden,
+                "url": url
             }
 
             nodes[path] = node
@@ -84,10 +105,24 @@ class WebTreeController:
             "visible": visible_tree,
             "hidden": [hidden_root] if hidden_root["children"] else []
         }
+    
+    def infer_url(self, path, nodes):
+        parent_path = "/".join(path.strip("/").split("/")[:-1])
+        parent_path = f"/{parent_path}" if parent_path else "/"
+        parent_node = nodes.get(parent_path)
+
+        if parent_node and parent_node.get("url"):
+            base = parent_node["url"].rstrip("/")
+            suffix = path.split("/")[-1]
+            inferred = f"{base}/{suffix}"
+            print(f"Inferred URL for {path}: {inferred}")
+            return inferred
+
+        print(f"No URL found for {path}")
+        return ""
 
 
-
-
+    
     def find_node_by_path(self, tree, path):
         for node in tree:
             if node["path"] == path:
@@ -100,13 +135,19 @@ class WebTreeController:
             for json_data in data_list:
                 self.validate_json(json_data)
 
-                # Normalize path from URL or plain path
+                current_tree = self.tree_builder.fetch_tree()
+                update_data = self.determine_operation(json_data, current_tree)
+
+                # Only parse the path *after* checking severity
                 parsed = urlparse(json_data["path"])
                 if parsed.scheme and parsed.netloc:
                     json_data["path"] = parsed.path or "/"
 
+
                 current_tree = self.tree_builder.fetch_tree()
                 update_data = self.determine_operation(json_data, current_tree)
+                print("Resolved operation:", update_data.get("operation") if update_data else "none")
+
 
                 if update_data:
                     self.tree_builder.process_update(json.dumps(update_data))   
@@ -118,6 +159,9 @@ class WebTreeController:
                         if node_found:
                             self.tree_builder.update_severity(json_data["path"], json_data["severity"])
                             print(f"Severity updated for {json_data['path']}")
+
+            # Refresh and save updated tree to file (always)
+            self.tree_builder.backfill_missing_urls()
 
             # Refresh and save updated tree to file (always)
             updated_tree = self.tree_builder.fetch_tree()

@@ -220,6 +220,7 @@
 			<h3>Node Details</h3>
 			<p><strong>ID:</strong> {selectedNode.node_id}</p>
 			<p><strong>Name:</strong> {selectedNode.name}</p>
+			<p><strong>URL:</strong> {selectedNode.url}</p>
 			<select bind:value={newSeverity} on:change={() => console.log(newSeverity)}>
 				<option value="" disabled selected>Change severity</option>
 				<option value="low">Low</option>

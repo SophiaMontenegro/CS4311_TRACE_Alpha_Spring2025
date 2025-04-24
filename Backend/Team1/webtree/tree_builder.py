@@ -12,12 +12,13 @@ class WebTreeBuilder:
     def fetch_tree(self):
         """ Fetches the full tree structure from Neo4j. """
         with self.driver.session() as session:
-            result = session.run("MATCH (n:Node) RETURN n.path AS path, n.severity AS severity, n.ip AS ip, n.hidden AS hidden")
+            result = session.run("MATCH (n:Node) RETURN n.path AS path, n.severity AS severity, n.ip AS ip, n.hidden AS hidden, n.url AS url")
             tree = [{
                 "path": r["path"],
                 "severity": r["severity"],
                 "ip": r.get("ip", "0.0.0.0"),
-                "hidden": r.get("hidden", False)
+                "hidden": r.get("hidden", False),
+                "url": r.get("url", "")
             } for r in result]
 
         return tree
@@ -36,6 +37,8 @@ class WebTreeBuilder:
 
             severity = data.get("severity") or self.assign_severity(node_path, ip_address)
             operation = data.get("operation")
+            print(f"Processing '{operation}' for path: {node_path}, severity: {severity}")
+
 
             # === Re-validate parent path for adding/updating ===
             if node_path == "/":
@@ -60,6 +63,7 @@ class WebTreeBuilder:
             print("Error: Invalid JSON format.")
             return None
         
+ 
     def add_node(self, path, severity, parent_path=None, ip=None, status_code=None, url=None, hidden=False):
         with self.driver.session() as session:
             # Always ensure the root node `/` exists
@@ -76,14 +80,13 @@ class WebTreeBuilder:
                 path=path, severity=severity, ip=ip, status_code=status_code, url=url, hidden=hidden
             )
 
-
-            # Determine parent if not explicitly given
+            # Determine parent path if not explicitly given
             if path == "/":
                 parent_path = None
             elif not parent_path:
                 parent_path = "/" if path.count("/") == 1 else "/".join(path.split("/")[:-1])
 
-            # Create or merge the actual node
+            # Create or merge the node (redundant MERGE is okay here for safety)
             session.run(
                 """
                 MERGE (n:Node {path: $path})
@@ -92,17 +95,20 @@ class WebTreeBuilder:
                 path=path, severity=severity, ip=ip
             )
 
-            # If node has a parent (and it’s not root itself), ensure parent exists
+            # Ensure parent exists (with safe default values — no URL guessing)
             if parent_path and parent_path != "/":
                 session.run(
                     """
                     MERGE (parent:Node {path: $parent_path})
-                    ON CREATE SET parent.severity = "unknown", parent.ip = "0.0.0.0"
+                    ON CREATE SET 
+                        parent.severity = "unknown", 
+                        parent.ip = "0.0.0.0",
+                        parent.hidden = false
                     """,
                     parent_path=parent_path
                 )
 
-            # Link to parent (including making `/home` a child of `/`)
+            # Link to parent
             if parent_path:
                 session.run(
                     """
@@ -114,6 +120,7 @@ class WebTreeBuilder:
                 )
 
             print(f"Node {path} added (Parent: {parent_path if parent_path else 'None'})")
+
 
     def update_node(self, path, severity, ip=None, status_code=None, url=None, hidden=False):
         """ Updates an existing node's severity and status code. """
@@ -130,6 +137,15 @@ class WebTreeBuilder:
                 path=path, severity=severity, ip=ip, status_code=status_code, url=url, hidden=hidden
             )
         print(f"Node updated: {path} | severity: {severity} | status_code: {status_code}")
+        # Update in-memory tree copy so it reflects in JSON output
+        for node in self.tree:
+            if node.get("path") == path:
+                node["severity"] = severity
+                node["ip"] = ip
+                node["status_code"] = status_code
+                node["url"] = url
+                node["hidden"] = hidden
+
 
 
     def assign_severity(self, path, ip):
@@ -164,3 +180,26 @@ class WebTreeBuilder:
         elif code in [400, 503]:
             return "low"
         return "unknown"
+    
+    def backfill_missing_urls(self):
+        with self.driver.session() as session:
+            result = session.run("MATCH (n:Node) RETURN n.path AS path, n.url AS url")
+            path_to_url = {}
+
+            # First pass: build path-url map
+            for r in result:
+                path_to_url[r["path"]] = r["url"]
+
+            updates = []
+            for path, url in path_to_url.items():
+                if not url:
+                    parent_path = "/".join(path.strip("/").split("/")[:-1])
+                    parent_path = f"/{parent_path}" if parent_path else "/"
+                    parent_url = path_to_url.get(parent_path)
+                    if parent_url:
+                        inferred = f"{parent_url.rstrip('/')}/{path.split('/')[-1]}"
+                        updates.append((path, inferred))
+
+            for path, url in updates:
+                session.run("MATCH (n:Node {path: $path}) SET n.url = $url", path=path, url=url)
+                print(f"Updated {path} with inferred URL {url}")
