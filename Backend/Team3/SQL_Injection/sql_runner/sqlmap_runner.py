@@ -9,6 +9,7 @@ import shlex
 import threading
 import platform
 import signal
+import csv
 
 # Windows-specific (conditionally used)
 if platform.system() == "Windows":
@@ -142,35 +143,59 @@ def extract_useful_info(output_path, summary_path):
 
 def extract_essential_results(output_dir):
     summary = []
+    csv_rows = []
 
-    # Step 1: Try to extract injection point and DBMS info from output.txt
     output_file = os.path.join(output_dir, "output.txt")
     if os.path.exists(output_file):
         with open(output_file, "r", encoding="utf-8", errors="ignore") as f:
             for line in f:
                 if "parameter" in line.lower() and "injectable" in line.lower():
-                    summary.append(f"[Injection Point] {line.strip()}")
+                    msg = f"[Injection Point] {line.strip()}"
+                    summary.append(msg)
+                    csv_rows.append(["Injection Point", line.strip()])
                 if "back-end DBMS is" in line:
-                    summary.append(f"[DBMS Info] {line.strip()}")
+                    msg = f"[DBMS Info] {line.strip()}"
+                    summary.append(msg)
+                    csv_rows.append(["DBMS Info", line.strip()])
 
-    # Step 2: Walk through sqlmap subfolders to extract database/table dumps
+    # Search for .csv dumped data
     for root, dirs, files in os.walk(output_dir):
         for file in files:
             if file.endswith(".csv"):
                 parts = os.path.normpath(root).split(os.sep)
                 db_name = parts[-2] if len(parts) >= 2 else "unknown_db"
                 table_name = parts[-1]
-                summary.append(f"\n[Dumped Data] Database: {db_name}, Table: {table_name}")
+                section_title = f"[Dumped Data] Database: {db_name}, Table: {table_name}"
+                summary.append(f"\n{section_title}")
+                csv_rows.append(["Dump Info", f"Database: {db_name}, Table: {table_name}"])
+
                 csv_path = os.path.join(root, file)
                 try:
                     with open(csv_path, "r", encoding="utf-8", errors="ignore") as csvfile:
-                        rows = csvfile.readlines()
-                        summary.extend([line.strip() for line in rows])
+                        reader = csv.reader(csvfile)
+                        for row in reader:
+                            line = ",".join(row)
+                            summary.append(line)
+                            csv_rows.append(["Dump Row", line])
                 except Exception as e:
-                    summary.append(f"[!] Failed to read dump: {e}")
+                    error_msg = f"[!] Failed to read dump: {e}"
+                    summary.append(error_msg)
+                    csv_rows.append(["Error", error_msg])
+
+    # Save CSV
+    csv_out_path = os.path.join(output_dir, "results.csv")
+    try:
+        with open(csv_out_path, "w", newline='', encoding="utf-8") as f:
+            writer = csv.writer(f)
+            writer.writerow(["Type", "Message"])
+            writer.writerows(csv_rows)
+        print(f"[+] CSV log saved: {csv_out_path}")
+    except Exception as e:
+        print(f"[-] Failed to save CSV: {e}")
 
     if not summary:
         summary.append("[!] No significant results found.")
+        csv_rows.append(["Info", "No significant results found."])
 
     return "\n".join(summary)
 
@@ -229,9 +254,19 @@ def run_sqlmap():
 
     print(f"\n[+] Final Target: {base_url}")
 
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    output_dir = os.path.join("sqlmap_results", timestamp)
+    # Create base Job ID folder
+    job_base_dir = os.path.join("sqlmap_results", "Job ID")
+    os.makedirs(job_base_dir, exist_ok=True)
+
+    # Determine next job number
+    existing = [int(name) for name in os.listdir(job_base_dir) if name.isdigit()]
+    next_job_id = max(existing, default=6999) + 1  # Start at 7000
+
+    # Create the new result folder for this job
+    output_dir = os.path.join(job_base_dir, str(next_job_id))
     os.makedirs(output_dir, exist_ok=True)
+
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
     script_dir = os.path.dirname(__file__)
     sqlmap_path = os.path.abspath(os.path.join(script_dir, "..", "sqlmap1", "sqlmap.py"))
