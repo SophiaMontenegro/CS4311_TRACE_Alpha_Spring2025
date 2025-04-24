@@ -10,7 +10,6 @@ import random
 
 from Team7.src.modules.fuzzer.fuzzer_manager import FuzzerManager
 
-
 # set up the logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
