@@ -3,7 +3,8 @@ import os
 import csv
 from typing import List, Tuple
 import re
-from google import genai
+# NOTE: 'genai' comes from 'google-generativeai', not 'google'
+import google.generativeai as genai
 
 from .credential_mdp import CredentialMDP
 
