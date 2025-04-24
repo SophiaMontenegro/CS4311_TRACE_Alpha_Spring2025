@@ -7,16 +7,8 @@
     "children": [
       {
         "node_id": "198.51.100.1",
-        "name": "/register/validate",
-        "severity": "low",
-        "children": [],
-        "hidden": true,
-        "url": "https://example.com/register/validate"
-      },
-      {
-        "node_id": "198.51.100.1",
         "name": "/login/reset",
-        "severity": "high",
+        "severity": "low",
         "children": [
           {
             "node_id": "198.51.100.1",
@@ -38,6 +30,14 @@
         ],
         "hidden": true,
         "url": "https://example.com/login/reset"
+      },
+      {
+        "node_id": "198.51.100.1",
+        "name": "/register/validate",
+        "severity": "low",
+        "children": [],
+        "hidden": true,
+        "url": "https://example.com/register/validate"
       }
     ]
   }

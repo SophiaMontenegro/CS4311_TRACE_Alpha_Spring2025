@@ -8,7 +8,7 @@ router = APIRouter()
 tree_builder = WebTreeBuilder(
     uri="bolt://localhost:7687",
     user="neo4j",
-    password=""  # <- your password here
+    password="tree-test"  # <- your password here
 )
 controller = WebTreeController(tree_builder)
 
@@ -31,6 +31,7 @@ async def update_node(payload: dict):
         "path": path,
         "status_code": response_code,
         "hidden": hidden,
+        "severity": payload.get("severity"),
         "operation": "update"
     }
 

@@ -5,22 +5,14 @@
     "severity": "low",
     "children": [
       {
-        "node_id": "0.0.0.0",
-        "name": "/register",
-        "severity": "unknown",
-        "children": [],
-        "hidden": false,
-        "url": "https://example.com/register"
-      },
-      {
         "node_id": "198.51.100.1",
         "name": "/home",
-        "severity": "low",
+        "severity": "high",
         "children": [
           {
             "node_id": "198.51.100.1",
             "name": "/home/dashboard",
-            "severity": "medium",
+            "severity": "low",
             "children": [],
             "hidden": false,
             "url": "https://example.com/home/dashboard"
@@ -32,12 +24,12 @@
       {
         "node_id": "0.0.0.0",
         "name": "/about",
-        "severity": "unknown",
+        "severity": "low",
         "children": [
           {
             "node_id": "198.51.100.1",
             "name": "/about/team",
-            "severity": "low",
+            "severity": "high",
             "children": [],
             "hidden": false,
             "url": "https://example.com/about/team"
@@ -49,10 +41,18 @@
       {
         "node_id": "0.0.0.0",
         "name": "/login",
-        "severity": "unknown",
+        "severity": "high",
         "children": [],
         "hidden": false,
         "url": "https://example.com/login"
+      },
+      {
+        "node_id": "0.0.0.0",
+        "name": "/register",
+        "severity": "high",
+        "children": [],
+        "hidden": false,
+        "url": "https://example.com/register"
       }
     ],
     "hidden": false,

@@ -1,6 +1,7 @@
 <script>
 	import { onMount } from 'svelte';
 	import * as d3 from 'd3';
+	import { mode } from 'mode-watcher';
 
 	let treeData = null;
 	let selectedNode = null;
@@ -13,6 +14,8 @@
 	let toastType = 'success';
 	let toasts = [];
 
+	let lastFocusPath = '/'; // or null if you prefer no default
+
 	function showToastMessage(message, type = 'success') {
 		const id = Date.now() + Math.random(); // unique id
 		toasts = [...toasts, { id, message, type }];
@@ -22,22 +25,23 @@
 		}, 3000);
 	}
 
-	async function loadTreeData() {
-		const visibleRes = await fetch('/webtree/dummy_tree.json');
-		const hiddenRes = await fetch('/webtree/hidden_tree.json');
+	async function loadTreeData(focusPath = null) {
+		const visibleRes = await fetch(`/webtree/dummy_tree.json?ts=${Date.now()}`);
+		const hiddenRes = await fetch(`/webtree/hidden_tree.json?ts=${Date.now()}`);
 
 		const visibleData = await visibleRes.json();
 		const hiddenData = await hiddenRes.json();
 
 		const combined = [...visibleData, ...hiddenData];
-		if (JSON.stringify(combined) !== JSON.stringify(treeData)) {
+		if (JSON.stringify(combined) !== JSON.stringify(treeData) || focusPath) {
 			treeData = combined;
-			renderTreeGraph();
+			lastFocusPath = focusPath || lastFocusPath;
+			renderTreeGraph(lastFocusPath);
 		}
 	}
 
 	onMount(() => {
-		loadTreeData();
+		loadTreeData('/');
 		const interval = setInterval(loadTreeData, 2000); // adjust timing as needed
 		return () => clearInterval(interval); // cleanup on unmount
 	});
@@ -56,15 +60,15 @@
 		svgElement.transition().duration(200).call(zoomBehavior.scaleTo, currentZoom);
 	}
 
-	function renderTreeGraph() {
+	function renderTreeGraph(focusPath = null) {
 		const width = window.innerWidth;
 		const height = window.innerHeight * 0.9;
 
 		d3.select('#tree').select('svg').remove();
 
 		svgElement = d3.select('#tree').append('svg').attr('width', width).attr('height', height);
-
 		const zoomGroup = svgElement.append('g');
+		const svg = zoomGroup.append('g');
 
 		zoomBehavior = d3.zoom().on('zoom', (event) => {
 			zoomGroup.attr('transform', event.transform);
@@ -72,17 +76,17 @@
 
 		svgElement.call(zoomBehavior).call(zoomBehavior.transform, d3.zoomIdentity.scale(currentZoom));
 
-		const svg = zoomGroup.append('g');
-
 		svg
 			.append('rect')
 			.attr('width', width)
 			.attr('height', height)
 			.attr('fill', 'transparent')
-			.lower() // This keeps it behind everything
+			.lower()
 			.on('click', () => {
 				selectedNode = null;
 			});
+
+		let allDescendants = [];
 
 		treeData.forEach((treeRoot, index) => {
 			const root = d3.hierarchy(treeRoot);
@@ -90,31 +94,16 @@
 				.tree()
 				.size([width, height])
 				.separation((a, b) => (a.parent === b.parent ? 2 : 1));
-
 			treeLayout(root);
 
-			const rootNode = root; // root node of this tree
-
-			if (treeRoot.path === '/') {
-				const centerX = width / 2 - root.x;
-				const centerY = height / 2 - root.y;
-
-				zoomGroup.attr('transform', `translate(${centerX}, ${centerY})`);
-				svgElement
-					.transition()
-					.duration(300)
-					.call(
-						zoomBehavior.transform,
-						d3.zoomIdentity.translate(centerX, centerY).scale(currentZoom)
-					);
-			}
-
-			// Apply vertical offset based on index to stack roots vertically
 			const isHiddenGroup = treeRoot.hidden === true;
+
 			root.descendants().forEach((d) => {
 				d.x = (d.x - 50) * 3;
 				d.y = d.depth * 180 + (isHiddenGroup ? 800 : 0); // Push hidden nodes down
 			});
+
+			allDescendants = allDescendants.concat(root.descendants());
 
 			const group = svg.append('g').attr('class', `root-group-${index}`);
 
@@ -149,8 +138,8 @@
 				.attr('y', -30)
 				.attr('rx', 8)
 				.attr('ry', 8)
-				.attr('fill', '#f3f4f6')
-				.attr('stroke', '#d1d5db')
+				.attr('fill', $mode === 'dark' ? '#1f2937' : '#f3f4f6')
+				.attr('stroke', $mode === 'dark' ? '#9ca3af' : '#d1d5db')
 				.attr('stroke-width', 2)
 				.style('stroke-dasharray', (d) => (treeRoot.node_id === 'hidden' ? '4,2' : null));
 
@@ -170,7 +159,7 @@
 				.attr('y', -5)
 				.attr('text-anchor', 'middle')
 				.attr('font-size', '12px')
-				.attr('fill', '#1f2937')
+				.attr('fill', $mode === 'dark' ? '#f3f4f6' : '#1f2937')
 				.text((d) => d.data.node_id);
 
 			nodeGroup
@@ -180,15 +169,34 @@
 				.attr('text-anchor', 'middle')
 				.attr('font-size', '14px')
 				.attr('font-weight', 'bold')
-				.attr('fill', '#111827')
+				.attr('fill', $mode === 'dark' ? '#f3f4f6' : '#1f2937')
 				.text((d) => d.data.name);
 		});
+
+		if (focusPath) {
+			const focusNode = allDescendants.find((d) => d.data.name === focusPath);
+			if (focusNode) {
+				const centerX = width / 2 - focusNode.x;
+				const centerY = height / 2 - focusNode.y;
+
+				zoomGroup.attr('transform', `translate(${centerX}, ${centerY})`);
+				svgElement
+					.transition()
+					.duration(300)
+					.call(
+						zoomBehavior.transform,
+						d3.zoomIdentity.translate(centerX, centerY).scale(currentZoom)
+					);
+			}
+		}
 	}
 
 	let newSeverity = '';
 
 	function updateSeverity() {
 		if (!selectedNode || !newSeverity) return;
+
+		const pathToCenter = selectedNode.name;
 
 		fetch('http://localhost:8000/api/tree/update', {
 			method: 'POST',
@@ -197,8 +205,12 @@
 			},
 			body: JSON.stringify({
 				ip: selectedNode.node_id,
-				path: selectedNode.name,
-				severity: newSeverity
+				url: selectedNode.url,
+				path: selectedNode.path,
+				status_code: selectedNode.status_code,
+				hidden: selectedNode.hidden,
+				severity: newSeverity,
+				operation: 'update'
 			})
 		})
 			.then((res) => {
@@ -206,8 +218,7 @@
 					showToastMessage('Severity updated!', 'success');
 					selectedNode = null;
 					newSeverity = '';
-					loadTreeData(); // Refresh UI
-				} else {
+					loadTreeData(pathToCenter);
 					showToastMessage('Server error: ' + res.status, 'error');
 				}
 			})
@@ -215,6 +226,10 @@
 				console.error('Fetch error:', err);
 				showToastMessage('Network error: ' + err.message, 'error');
 			});
+	}
+
+	$: if (treeData && $mode) {
+		renderTreeGraph(lastFocusPath);
 	}
 </script>
 
@@ -230,7 +245,7 @@
 <!-- Node Popup -->
 {#if selectedNode}
 	<div class="popup">
-		<div class="popup-content">
+		<div class="popup-content" class:dark={$mode === 'dark'}>
 			<h3>Node Details</h3>
 			<p><strong>ID:</strong> {selectedNode.node_id}</p>
 			<p><strong>Name:</strong> {selectedNode.name}</p>
@@ -353,5 +368,26 @@
 
 	.toast.error {
 		background-color: #ef4444;
+	}
+
+	.popup-content.dark {
+		background-color: #1f2937;
+		color: #f9fafb;
+	}
+
+	.popup-content.dark button {
+		background-color: #2563eb;
+		color: white;
+	}
+
+	.popup-content.dark button:hover {
+		background-color: #1d4ed8;
+	}
+
+	.popup-content.dark select,
+	.popup-content.dark option {
+		background-color: #374151;
+		color: #f9fafb;
+		border: 1px solid #4b5563;
 	}
 </style>

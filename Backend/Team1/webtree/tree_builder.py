@@ -138,13 +138,13 @@ class WebTreeBuilder:
             )
         print(f"Node updated: {path} | severity: {severity} | status_code: {status_code}")
         # Update in-memory tree copy so it reflects in JSON output
-        for node in self.tree:
-            if node.get("path") == path:
-                node["severity"] = severity
-                node["ip"] = ip
-                node["status_code"] = status_code
-                node["url"] = url
-                node["hidden"] = hidden
+        # for node in self.tree:
+        #     if node.get("path") == path:
+        #         node["severity"] = severity
+        #         node["ip"] = ip
+        #         node["status_code"] = status_code
+        #         node["url"] = url
+        #         node["hidden"] = hidden
 
 
 
