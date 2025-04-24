@@ -289,7 +289,7 @@
 
 	.popup {
 		position: fixed;
-		top: 20%;
+		top: 0%;
 		left: 50%;
 		transform: translateX(-50%);
 		background: rgba(0, 0, 0, 0.3);
@@ -300,7 +300,7 @@
 
 	.popup-content {
 		position: absolute;
-		top: 30%;
+		top: 40%;
 		left: 50%;
 		transform: translate(-50%, -30%);
 		background: white;
