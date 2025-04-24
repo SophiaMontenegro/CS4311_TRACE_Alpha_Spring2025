@@ -9,10 +9,8 @@ class WebTreeController:
         self.tree_builder = tree_builder
 
     def validate_json(self, json_data):
-        # Validates that the received JSON contains required fields.
-        required_fields = {"path", "severity"}
-        if not all(field in json_data for field in required_fields):
-            raise ValueError("Invalid JSON: Missing required fields (path, severity)")
+        if "path" not in json_data:
+            raise ValueError("Invalid JSON: Missing required field 'path'")
         return True
 
     def determine_operation(self, json_data, current_tree):
@@ -33,35 +31,34 @@ class WebTreeController:
         return parsed.path or "/"
 
     def build_tree_structure(self, data):
+        visible_tree = []
+        hidden_tree = []
         nodes = {}
-        tree = []
-
-        hidden_group = {
-            "node_id": "hidden",
-            "name": "Hidden Nodes",
-            "severity": "low",
-            "children": [],
-        }
-
 
         for item in data:
             path = item["path"]
-            name = path  # Full path as name
+            name = path
             ip = item.get("ip", "0.0.0.0")
             node_id = ip
+            hidden = item.get("hidden", False)
 
             node = {
                 "node_id": node_id,
                 "name": name,
                 "severity": item["severity"],
-                "children": []
+                "children": [],
+                "hidden": hidden
             }
 
             nodes[path] = node
 
         for path, node in nodes.items():
+            if node["hidden"]:
+                hidden_tree.append(node)
+                continue
+
             if path == "/":
-                tree.append(node)  # This is the root
+                visible_tree.append(node)
                 continue
 
             parent_path = "/".join(path.strip("/").split("/")[:-1])
@@ -70,12 +67,12 @@ class WebTreeController:
             if parent_path in nodes:
                 nodes[parent_path]["children"].append(node)
             else:
-                hidden_group["children"].append(node)
+                visible_tree.append(node)
 
-        if hidden_group["children"]:
-            tree.append(hidden_group)
-
-        return tree
+        return {
+            "visible": visible_tree,
+            "hidden": hidden_tree
+        }
 
     def find_node_by_path(self, tree, path):
         for node in tree:
@@ -111,10 +108,16 @@ class WebTreeController:
             # Refresh and save updated tree to file (always)
             updated_tree = self.tree_builder.fetch_tree()
             formatted_tree = self.build_tree_structure(updated_tree)
-            file_path = os.path.join(BASE_DIR, "../../../Frontend/static/webtree/dummy_tree.json")
-            with open(file_path, "w") as file:
-                json.dump(formatted_tree, file, indent=2)
-            print(f"Updated tree saved to {file_path}")
+
+            # Save visible
+            with open(os.path.join(BASE_DIR, "../../../Frontend/static/webtree/dummy_tree.json"), "w") as f:
+                json.dump(formatted_tree["visible"], f, indent=2)
+
+            # Save hidden
+            with open(os.path.join(BASE_DIR, "../../../Frontend/static/webtree/hidden_tree.json"), "w") as f:
+                json.dump(formatted_tree["hidden"], f, indent=2)
+
+            print("Updated trees saved.")
 
         except ValueError as e:
             print(f"Error: {e}")
