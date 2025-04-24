@@ -1,0 +1,47 @@
+[
+  {
+    "node_id": "198.51.100.1",
+    "name": "/",
+    "severity": "low",
+    "children": [
+      {
+        "node_id": "198.51.100.1",
+        "name": "/home",
+        "severity": "low",
+        "children": [
+          {
+            "node_id": "198.51.100.1",
+            "name": "/home/dashboard",
+            "severity": "medium",
+            "children": [],
+            "hidden": false
+          }
+        ],
+        "hidden": false
+      },
+      {
+        "node_id": "0.0.0.0",
+        "name": "/about",
+        "severity": "unknown",
+        "children": [
+          {
+            "node_id": "198.51.100.1",
+            "name": "/about/team",
+            "severity": "low",
+            "children": [],
+            "hidden": false
+          }
+        ],
+        "hidden": null
+      },
+      {
+        "node_id": "0.0.0.0",
+        "name": "/login",
+        "severity": "unknown",
+        "children": [],
+        "hidden": null
+      }
+    ],
+    "hidden": false
+  }
+]

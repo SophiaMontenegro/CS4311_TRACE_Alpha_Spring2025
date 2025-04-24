@@ -1,0 +1,9 @@
+[
+  {
+    "node_id": "198.51.100.1",
+    "name": "/login/reset",
+    "severity": "high",
+    "children": [],
+    "hidden": true
+  }
+]
