@@ -22,11 +22,18 @@
     let userError = '';
     let isVerifying = false
 
+    let projectName = ''; // updated
+
+    let errors = {
+        projectName: '',
+        endDate: ''
+    };
+
     console.log("EditProjectDialog mounted"); // ✅ Check this!
 
     onMount(async () => {
         name = project.name;
-        endDate = project.endDate || '';
+        endDate = project.end_date || '';
         description = project.description || '';
         await show_analysts()
         userList = [...currentAnalysts]; // ← Sync with fetched data!
@@ -129,17 +136,90 @@
         await show_analysts(); // reload
     }
 
+    async function check_name(name) {
+
+        try {
+            const response = await fetch('http://127.0.0.1:8000/team3/project_name/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    project_name: name,
+                    analyst_initials: analystInitials,
+                })
+            });
+
+            const responseData = await response.json();
+
+            if (!response.ok) {
+                let errorMessage = 'Failed to verify project name';
+                if (responseData.detail) {
+                    errorMessage = typeof responseData.detail === 'string'
+                        ? responseData.detail
+                        : JSON.stringify(responseData.detail);
+                } else if (typeof responseData === 'object') {
+                    errorMessage = JSON.stringify(responseData);
+                }
+
+                throw new Error(errorMessage);
+            }
+
+            // Check if name is taken
+            if (responseData.status === "taken") {
+                return false;
+            }
+
+            return true;
+        } catch (err) {
+            console.error("check_name error:", err);
+            return false;
+        }
+    }
+
+    async function validateForm(): boolean {
+        let valid = true;
+        // Force a reactive reset
+        errors = { ...errors, projectName: '', startDate: '', endDate: '', saveDirectory: '' };
+
+        const trimmedName = projectName.trim();
+
+        if (!trimmedName) {
+            errors.projectName = 'Project name is required';
+            valid = false;
+        } else {
+            const verify_name = await check_name(trimmedName); // ✅ await async call
+
+            if (verify_name === false) {
+                errors.projectName = 'Project name already exists';
+                valid = false;
+            }
+        }
+
+        if (!endDate) {
+            errors.endDate = 'End date is required';
+            valid = false;
+        } else if (new Date(endDate) < new Date(project.start_date)) {
+            errors.endDate = 'End date must be after start date';
+            valid = false;
+        }
+
+
+        return valid;
+    }
+
+
+
 
     async function handleSave() {
         console.log('Saving project:', project);
-        dispatch('save', {
-            ...project,
-            name,
-            endDate,
-            description,
-            userList
-        });
-        //modalOpen = false;
+        const verify = await validateForm();
+
+        if(verify){
+            // save project name
+
+            // save project description
+
+            //save project end date
+        }
     }
 
     async function handleCancel() {
@@ -153,6 +233,33 @@
         <DialogHeader>
             <DialogTitle>Edit Project</DialogTitle>
         </DialogHeader>
+
+        <!-- Project Name -->
+        <div class="space-y-2">
+            <label class="text-sm font-medium">Project Name *</label>
+            <Input type="text" class="input-class" bind:value={projectName} placeholder={name} />
+            {#if errors.projectName}
+                <p class="text-red-500 text-sm">{errors.projectName}</p>
+            {/if}
+        </div>
+
+        <!-- Project Description -->
+        <div class="space-y-2 md:col-span-2">
+            <label class="text-sm font-medium">Project Description</label>
+            <Textarea bind:value={description} class="h-24" placeholder={description} />
+        </div>
+
+        <!-- End Date -->
+        <div class="space-y-2">
+            <label class="text-sm font-medium">End Date *</label>
+            <div class="relative">
+                <Input type="date" bind:value={endDate} class="pr-10" />
+
+            </div>
+            {#if errors.endDate}
+                <p class="text-red-500 text-sm">{errors.endDate}</p>
+            {/if}
+        </div>
 
         <div class="mt-4">
             <div class="mb-2 font-semibold">Add Analysts</div>

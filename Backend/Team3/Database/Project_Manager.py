@@ -429,7 +429,7 @@ class ProjectManager:
             """
             existing_relation = self.db_manager.run_query(check_participant_query, 
                                                {"participant_name": participant_name, "project_id": project_id}, fetch=True)
-    
+
             if not existing_relation or not existing_relation[0]["is_part_of_project"]:
                 print(f"Error: User '{participant_name}' is not part of the project '{project_name}'.")
                 return None
@@ -450,6 +450,7 @@ class ProjectManager:
     def change_project_name(self, current_name, new_name, analyst_name):
         if not self.analyst_manager.check_if_lead(analyst_name, current_name):
             print(f"Error: Analyst '{analyst_name}' isn't part of the current project or doesn't have permission.")
+            return None
         
         check_query = """
         MATCH (p:Project)
@@ -460,7 +461,7 @@ class ProjectManager:
 
         if not result or not result[0]["project_exists"]:
             print(f"Error: Project '{current_name}' not found.")
-            return
+            return None
 
         update_query = """
         MATCH (p:Project)
@@ -470,6 +471,7 @@ class ProjectManager:
         self.db_manager.run_query(update_query, {"current_name": current_name, "new_name": new_name})
 
         print(f"Project name changed from '{current_name}' to '{new_name}'.")
+        return True
 
 
     def edit_timeline(self, project, analyst_name, end_date):
@@ -495,3 +497,25 @@ class ProjectManager:
         print(f"Successfully updated end date of '{project}' to {end_date}.")
         return True
 
+
+    def edit_last_edited(self, project):
+
+        check_query = """
+        MATCH (p:Project)
+        WHERE p.name = $project
+        RETURN COUNT(p) > 0 AS project_exists
+        """
+        result = self.db_manager.run_query(check_query, {"project": project}, fetch=True)
+        if not result or not result[0]["project_exists"]:
+            print(f"Error: Project '{project}' not found.")
+            return None
+
+
+        update_query = """
+        MATCH (p:Project)
+        WHERE p.name = $project
+        SET p.description = datetime()
+        """
+        self.db_manager.run_query(update_query, {"project": project})
+        print(f"Successfully updated last edited of '{project}'.")
+        return True

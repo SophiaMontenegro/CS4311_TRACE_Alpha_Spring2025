@@ -360,3 +360,27 @@ async def remove_project_member(project_name: str, new_user: str, lead_analyst: 
     if success is None:
         raise HTTPException(status_code=404, detail="Analyst doesn't exist")
     return {"message": "Analyst removed successfully"}
+
+# Change project name
+@team3_router.put("/projects/{project_name}/name")
+async def change_project_name(project_name: str, new_name: str, analyst_name: str):
+    success = project_manager.change_project_name(project_name, new_name, analyst_name)
+    if success is None:
+        raise HTTPException(status_code=404, detail="Analyst doesn't exist")
+    return {"message": f"Project name changed to {new_name} successfully"}
+
+# Edit end date/timeline
+@team3_router.put("/projects/{project_name}/timeline")
+async def edit_timeline(project_name: str, end_date: date, analyst_name: str):
+    success = project_manager.edit_timeline(project_name, analyst_name, end_date)
+    if success is None:
+        raise HTTPException(status_code=404, detail="Analyst doesn't exist")
+    return {"message": f"Project end date updated successfully to {end_date}"}
+
+# Edit last edited
+@team3_router.put("/projects/{project_name}/last_edited")
+async def edit_last_edited(project_name: str):
+    success = project_manager.edit_timeline(project_name)
+    if success is None:
+        raise HTTPException(status_code=404, detail="Project doesn't exist")
+    return {"message": f"Project updated last_edited sucessfully"}
