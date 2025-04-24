@@ -497,6 +497,29 @@ class ProjectManager:
         print(f"Successfully updated end date of '{project}' to {end_date}.")
         return True
 
+    def edit_description(self, project, analyst_name, description):
+        if not self.analyst_manager.check_if_lead(analyst_name, project):
+            print(f"Error: Analyst '{analyst_name}' isn't part of the current project or doesn't have permission.")
+            return None
+
+        check_query = """
+        MATCH (p:Project)
+        WHERE p.name = $project
+        RETURN COUNT(p) > 0 AS project_exists
+        """
+        result = self.db_manager.run_query(check_query, {"project": project}, fetch=True)
+        if not result or not result[0]["project_exists"]:
+            print(f"Error: Project '{project}' not found.")
+            return None
+        update_query = """
+        MATCH (p:Project)
+        WHERE p.name = $project
+        SET p.description = $description
+        """
+        self.db_manager.run_query(update_query, {"project": project, "description": description})
+        print(f"Successfully updated description of '{project}' to {description}.")
+        return True
+
 
     def edit_last_edited(self, project):
 

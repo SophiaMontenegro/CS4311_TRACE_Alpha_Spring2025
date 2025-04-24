@@ -377,10 +377,18 @@ async def edit_timeline(project_name: str, end_date: date, analyst_name: str):
         raise HTTPException(status_code=404, detail="Analyst doesn't exist")
     return {"message": f"Project end date updated successfully to {end_date}"}
 
+# Edit description
+@team3_router.put("/projects/{project_name}/description")
+async def edit_description(project_name: str, description: str, analyst_name: str):
+    success = project_manager.edit_description(project_name, analyst_name, description)
+    if success is None:
+        raise HTTPException(status_code=404, detail="Analyst doesn't exist")
+    return {"message": f"Project description updated successfully to {description}"}
+
 # Edit last edited
 @team3_router.put("/projects/{project_name}/last_edited")
 async def edit_last_edited(project_name: str):
-    success = project_manager.edit_timeline(project_name)
+    success = project_manager.edit_last_edited(project_name)
     if success is None:
         raise HTTPException(status_code=404, detail="Project doesn't exist")
     return {"message": f"Project updated last_edited sucessfully"}

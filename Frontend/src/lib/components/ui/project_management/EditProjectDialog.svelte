@@ -13,8 +13,8 @@
     let modalOpen = true;
 
     let name = '';
-    let endDate = '';
-    let description = '';
+    let og_endDate = '';
+    let og_description = '';
 
     let userList = [];
     let newUser = ''; //for manually added analysts
@@ -23,18 +23,19 @@
     let isVerifying = false
 
     let projectName = ''; // updated
+    let new_description = '';
+    let new_endDate = '';
+    let projectName_error = '';
+    let endDate_error = '';
 
-    let errors = {
-        projectName: '',
-        endDate: ''
-    };
+
 
     console.log("EditProjectDialog mounted"); // ✅ Check this!
 
     onMount(async () => {
         name = project.name;
-        endDate = project.end_date || '';
-        description = project.description || '';
+        og_endDate = project.end_date || '';
+        og_description = project.description || '';
         await show_analysts()
         userList = [...currentAnalysts]; // ← Sync with fetched data!
     });
@@ -177,33 +178,53 @@
 
     async function validateForm(): boolean {
         let valid = true;
-        // Force a reactive reset
-        errors = { ...errors, projectName: '', startDate: '', endDate: '', saveDirectory: '' };
+        endDate_error = '';
 
+        if (!new_endDate) {
+            errors.endDate = 'End date is required';
+            valid = false;
+        } else if (new Date(new_endDate) < new Date(project.start_date)) {
+            errors.endDate = 'End date must be after start date';
+            valid = false;
+        }
+
+        return valid;
+    }
+
+    async function changeProjectName() {
+        // Force a reactive reset
+        projectName_error = '';
         const trimmedName = projectName.trim();
+
+        if (trimmedName !== name){
+            errors.projectName = 'Project name is the same';
+            return;
+        }
 
         if (!trimmedName) {
             errors.projectName = 'Project name is required';
-            valid = false;
+            return;
+
         } else {
             const verify_name = await check_name(trimmedName); // ✅ await async call
 
             if (verify_name === false) {
                 errors.projectName = 'Project name already exists';
-                valid = false;
+                return;
             }
         }
+        try {
+            const baseURL = 'http://127.0.0.1:8000/team3';
 
-        if (!endDate) {
-            errors.endDate = 'End date is required';
-            valid = false;
-        } else if (new Date(endDate) < new Date(project.start_date)) {
-            errors.endDate = 'End date must be after start date';
-            valid = false;
+            const resName = await fetch(`${baseURL}/projects/${name}/name?new_name=${trimmedName}&analyst_name=${analystInitials}`, {
+                method: 'PUT'
+            });
+            if (!resName.ok) throw new Error('Failed to update project name');
+
+        } catch (err) {
+            console.error(err);
         }
 
-
-        return valid;
     }
 
 
@@ -213,12 +234,31 @@
         console.log('Saving project:', project);
         const verify = await validateForm();
 
-        if(verify){
-            // save project name
+        if (!verify) return; // NOT VALID
 
-            // save project description
+        try {
+            const baseURL = 'http://127.0.0.1:8000/team3';
 
-            //save project end date
+            //  Update Description
+            if (description !== og_description) {
+                const resDesc = await fetch(`${baseURL}/projects/${projectName}/description?description=${description}&analyst_name=${analystInitials}`, {
+                    method: 'PUT'
+                });
+                if (!resDesc.ok) throw new Error('Failed to update description');
+            }
+
+            // Update End Date
+            if (endDate !== og_EndDate) {
+                const resDate = await fetch(`${baseURL}/projects/${projectName}/timeline?end_date=${endDate}&analyst_name=${analystInitials}`, {
+                    method: 'PUT'
+                });
+                if (!resDate.ok) throw new Error('Failed to update end date');
+            }
+
+            alert("Project updated successfully!");
+        } catch (err) {
+            console.error(err);
+            alert("There was a problem saving the project.");
         }
     }
 
@@ -234,87 +274,106 @@
             <DialogTitle>Edit Project</DialogTitle>
         </DialogHeader>
 
-        <!-- Project Name -->
-        <div class="space-y-2">
-            <label class="text-sm font-medium">Project Name *</label>
-            <Input type="text" class="input-class" bind:value={projectName} placeholder={name} />
-            {#if errors.projectName}
-                <p class="text-red-500 text-sm">{errors.projectName}</p>
-            {/if}
-        </div>
+        <!-- Form Fields Stack -->
+        <div class="space-y-4">
+            <!-- Project Name -->
+            <!-- Project Name -->
+            <div class="space-y-2">
+                <label class="text-sm font-medium">Project Name *</label>
 
-        <!-- Project Description -->
-        <div class="space-y-2 md:col-span-2">
-            <label class="text-sm font-medium">Project Description</label>
-            <Textarea bind:value={description} class="h-24" placeholder={description} />
-        </div>
+                <!-- Input + Button wrapper -->
+                <div class="flex gap-2">
+                    <Input
+                            type="text"
+                            class="input-class flex-1"
+                            bind:value={projectName}
+                            placeholder={name}
+                    />
+                    <Button
+                            class="shrink-0 px-4"
+                            on:click={changeProjectName}
+                    >
+                        Change
+                    </Button>
+                </div>
 
-        <!-- End Date -->
-        <div class="space-y-2">
-            <label class="text-sm font-medium">End Date *</label>
-            <div class="relative">
-                <Input type="date" bind:value={endDate} class="pr-10" />
-
-            </div>
-            {#if errors.endDate}
-                <p class="text-red-500 text-sm">{errors.endDate}</p>
-            {/if}
-        </div>
-
-        <div class="mt-4">
-            <div class="mb-2 font-semibold">Add Analysts</div>
-
-            <!-- Input + Button -->
-            <div class="flex gap-2 items-center">
-                <Input
-                        type="text"
-                        class="input-class"
-                        bind:value={newUser}
-                        placeholder="Enter initials"
-                        disabled={isVerifying}
-                />
-                <button
-                        class="flex items-center bg-[var(--accent)] text-[var(--accent-foreground)] text-sm font-medium px-4 py-2 rounded-md shadow hover:bg-[var(--accent3)] disabled:opacity-60 disabled:cursor-not-allowed"
-                        on:click={addUser}
-                        disabled={isVerifying}
-                >
-                    {#if isVerifying}
-                        <Loader2 class="w-4 h-4 mr-1 animate-spin" />
-                    {:else}
-                        <UserPlus class="w-4 h-4 mr-1" />
-                    {/if}
-                    Add
-                </button>
+                {#if errors.projectName}
+                    <p class="text-red-500 text-sm">{errors.projectName}</p>
+                {/if}
             </div>
 
-            <!-- Error Message -->
-            {#if userError}
-                <div class="text-red-500 text-sm mt-1">{userError}</div>
-            {/if}
 
-            <!-- User Tags -->
-            <div class="flex flex-wrap gap-2 mt-2">
-                {#each userList as user, i}
-                    <div class="flex items-center bg-muted text-sm px-3 py-1 rounded-full">
-                        <div class="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center mr-2 text-xs font-bold">
-                            {user}
+            <!-- Project Description -->
+            <div class="space-y-2">
+                <label class="text-sm font-medium">Project Description</label>
+                <Textarea bind:value={new_description} class="h-24" placeholder={og_description} />
+            </div>
+
+            <!-- End Date -->
+            <div class="space-y-2">
+                <label class="text-sm font-medium">End Date *</label>
+                <Input type="date" bind:value={new_endDate} class="pr-10" />
+                {#if errors.endDate}
+                    <p class="text-red-500 text-sm">{errors.endDate}</p>
+                {/if}
+            </div>
+
+            <!-- Add Analysts Section -->
+            <div class="space-y-2">
+                <div class="font-semibold">Add Analysts</div>
+
+                <!-- Input + Button -->
+                <div class="flex gap-2 items-center">
+                    <Input
+                            type="text"
+                            class="input-class"
+                            bind:value={newUser}
+                            placeholder="Enter initials"
+                            disabled={isVerifying}
+                    />
+                    <button
+                            class="flex items-center bg-[var(--accent)] text-[var(--accent-foreground)] text-sm font-medium px-4 py-2 rounded-md shadow hover:bg-[var(--accent3)] disabled:opacity-60 disabled:cursor-not-allowed"
+                            on:click={addUser}
+                            disabled={isVerifying}
+                    >
+                        {#if isVerifying}
+                            <Loader2 class="w-4 h-4 mr-1 animate-spin" />
+                        {:else}
+                            <UserPlus class="w-4 h-4 mr-1" />
+                        {/if}
+                        Add
+                    </button>
+                </div>
+
+                <!-- Error Message -->
+                {#if userError}
+                    <div class="text-red-500 text-sm">{userError}</div>
+                {/if}
+
+                <!-- User Tags -->
+                <div class="flex flex-wrap gap-2">
+                    {#each userList as user, i}
+                        <div class="flex items-center bg-muted text-sm px-3 py-1 rounded-full">
+                            <div class="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center mr-2 text-xs font-bold">
+                                {user}
+                            </div>
+                            <button
+                                    type="button"
+                                    on:click={() => removeUser(user, i)}
+                                    class="text-gray-500 hover:text-red-500 ml-1"
+                            >
+                                <X class="w-4 h-4" />
+                            </button>
                         </div>
-                        <button
-                                type="button"
-                                on:click={() => removeUser(user, i)}
-                                class="text-gray-500 hover:text-red-500 ml-1"
-                        >
-                            <X class="w-4 h-4" />
-                        </button>
-                    </div>
-                {/each}
+                    {/each}
+                </div>
             </div>
         </div>
 
-
-        <DialogFooter>
-            <Button onclick={() => handleSave()}>Save</Button>
-            <Button variant="outline" onclick={handleCancel}>Cancel</Button>
+        <!-- Footer Buttons -->
+        <DialogFooter class="mt-6">
+            <Button on:click={handleSave}>Save</Button>
+            <Button variant="outline" on:click={handleCancel}>Cancel</Button>
         </DialogFooter>
     </DialogContent>
 </Dialog>
