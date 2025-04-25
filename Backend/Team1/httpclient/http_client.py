@@ -1,70 +1,84 @@
-import requests
 from urllib.parse import urlparse
 
 class HTTPClient:
     def __init__(self, proxy_server):
+        """
+        :param proxy_server: an instance of ProxyServer (or any object with .forward_request())
+        """
         self.target_system = None
         self.history = []
         self.proxy_server = proxy_server
 
     def specify_target_system(self, target_system):
         """
-        Ensures a valid target system URL is provided and sets it.
-        Logs the action with a message indicating the target system set.
-        Returns True if the target system is valid, otherwise False.
-        Protocols:
-        // @ requires targetSystem != null && isValidURL(targetSystem)
-        // @ ensures logEntry("Target System Set: " + targetSystem);
-        // @ ensures \result == true if targetSystem is valid, otherwise false
+        Set the base URL of the system you want to target.
+        Returns True if the URL is valid and was set; False otherwise.
         """
         if self.is_valid_url(target_system):
             self.target_system = target_system
-            print(f"Target System Set: {target_system}") # Simulate logging
+            print(f"Target System Set: {target_system}")
             return True
         return False
 
     def send_request(self, request):
         """
-        Sends an HTTP request to the target system.
-        Ensures the request and target system are valid before sending.
-        Protocols:
-        // @ requires request != null && targetSystem != null
-        // @ requires isValidRequest(request) && isValidURL(targetSystem)
-        // @ ensures response != null && response.isReceived() == true
+        Send an HTTP request (dict with keys 'method', 'url', optional 'headers' & 'body')
+        through the configured proxy_server. Returns either:
+          - a dict with status_code, statusText, headers, body, time, size
+          - or {'error': '...'} on validation/network failure
         """
+        # 1) Pre-validate inputs
         if request is None or self.target_system is None:
-            raise ValueError("Request or target system cannot be null.")
+            return {"error": "Request or target system cannot be null."}
         if not self.is_valid_request(request):
-            raise ValueError("Invalid HTTP request format.")
+            return {"error": "Invalid HTTP request format."}
 
-        # Ensure HTTP/1.1 compliance
+        # 2) Ensure HTTP/1.1 compliance headers
         request.setdefault("headers", {})
         request["headers"].setdefault("Host", urlparse(self.target_system).netloc)
         request["headers"].setdefault("Connection", "keep-alive")
 
-        # Send request through proxy server
-        response = self.proxy_server.forward_request(request, self.target_system)
+        try:
+            # 3) Forward via the proxy
+            resp = self.proxy_server.forward_request(request, self.target_system)
 
-        if response:
-            self.log_activity(request, response)
-            return response
-        raise RuntimeError("Failed to receive a valid response.")
+            # 4) If proxy reported an error, log & return it
+            if resp.get("error"):
+                self.log_activity(request, resp)
+                return {"error": resp["error"]}
+
+            # 5) Otherwise log success and normalize the payload
+            self.log_activity(request, resp)
+            return {
+                "status_code": resp["status_code"],
+                "statusText": resp.get("headers", {}).get("Status", ""),
+                "headers": resp["headers"],
+                "body": resp["body"],
+                "time": resp["time"],
+                "size": resp["size"],
+            }
+
+        except Exception as e:
+            # 6) Catch any unexpected exception, record it, and return as error
+            err_msg = str(e)
+            self.history.append((request, {"error": err_msg}))
+            return {"error": err_msg}
 
     def log_activity(self, request, response):
         """
-        Logs the HTTP request and response details.
-        Protocols:
-        // @ requires request != null;
-        // @ requires response != null;
-        // @ ensures logEntry(request, response);
-        // @ ensures logs.contains(request, response);
+        Append the (request, response) tuple to this client's history.
         """
         self.history.append((request, response))
-        # print(f"Logged activity: Request={request}, Response={response}") # Simulate logging
 
     def is_valid_url(self, url):
+        """
+        Basic URL validation: must have http/https and a netloc.
+        """
         parsed = urlparse(url)
-        return all([parsed.scheme in ["http", "https"], parsed.netloc])
+        return bool(parsed.scheme in ("http", "https") and parsed.netloc)
 
     def is_valid_request(self, request):
+        """
+        A valid request must be a dict containing at least 'method' and 'url'.
+        """
         return isinstance(request, dict) and "method" in request and "url" in request
