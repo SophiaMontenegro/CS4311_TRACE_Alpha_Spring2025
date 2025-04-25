@@ -6,7 +6,6 @@ import datetime
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
 from urllib.parse import urlparse
-# TODO: add the new http client
 from Team1.httpclient.http_client import HTTPClient
 from Team1.httpclient.proxy_server import ProxyServer
 from Team7.src.modules.crawler.crawler_response import CrawlerResponseProcessor
@@ -31,7 +30,6 @@ class crawler_manager:
 
     def __init__(self):
         self.config = {}
-        # TODO: add the new http client
         self.proxy = ProxyServer()
         self.http_client = HTTPClient(self.proxy)
         self.processor = CrawlerResponseProcessor()
@@ -156,7 +154,6 @@ class crawler_manager:
             response = self.http_client.send_request(request)
             raw_html = response["body"]
             await asyncio.sleep(self.config.get("delay", 0) / 1000.0)
-
 
             self.progress_callback(url)
 

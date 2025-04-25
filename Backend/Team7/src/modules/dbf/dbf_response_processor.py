@@ -34,7 +34,28 @@ class ResponseProcessor:
                 print(f"  ↳ Error: {res['error']}")
     
     def get_filtered_results(self):
-        return self.response
+        filtered = []
+
+        for res in self.response:
+            status = res.get("status")
+            length = res.get("length", 0)
+
+            # Apply show_only filter
+            if self.status_code_filter and status not in self.status_code_filter:
+                continue
+
+            # Apply hide_status filter
+            if self.hide_codes and status in self.hide_codes:
+                continue
+
+            # Apply content length filter
+            if self.length_threshold and length < self.length_threshold:
+                continue
+
+            filtered.append(res)
+
+        return filtered
+
 
 
     
