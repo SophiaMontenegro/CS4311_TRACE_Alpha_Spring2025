@@ -181,10 +181,10 @@
         endDate_error = '';
 
         if (!new_endDate) {
-            errors.endDate = 'End date is required';
+            endDate_error = 'End date is required';
             valid = false;
         } else if (new Date(new_endDate) < new Date(project.start_date)) {
-            errors.endDate = 'End date must be after start date';
+            endDate_error = 'End date must be after start date';
             valid = false;
         }
 
@@ -193,23 +193,25 @@
 
     async function changeProjectName() {
         // Force a reactive reset
+        isVerifying = true
+        console.log("Pressed changed button");
         projectName_error = '';
         const trimmedName = projectName.trim();
 
-        if (trimmedName !== name){
-            errors.projectName = 'Project name is the same';
+        if (trimmedName === name){
+            projectName_error = 'Project name is the same';
             return;
         }
 
         if (!trimmedName) {
-            errors.projectName = 'Project name is required';
+            projectName_error = 'Project name is required';
             return;
 
         } else {
             const verify_name = await check_name(trimmedName); // ✅ await async call
 
             if (verify_name === false) {
-                errors.projectName = 'Project name already exists';
+                projectName_error = 'Project name already exists';
                 return;
             }
         }
@@ -219,11 +221,21 @@
             const resName = await fetch(`${baseURL}/projects/${name}/name?new_name=${trimmedName}&analyst_name=${analystInitials}`, {
                 method: 'PUT'
             });
-            if (!resName.ok) throw new Error('Failed to update project name');
+            if (!resName.ok) {
+                throw new Error('Failed to update project name');
+                return;
+            }
+
 
         } catch (err) {
             console.error(err);
+            return;
+        } finally {
+            isVerifying = false;
         }
+
+        name = projectName; //change the name in the frontend
+        console.log("Changed project name: ", name);
 
     }
 
@@ -289,12 +301,17 @@
                             bind:value={projectName}
                             placeholder={name}
                     />
-                    <Button
-                            class="shrink-0 px-4"
+                    <button
+                            class="flex items-center bg-[var(--accent)] text-[var(--accent-foreground)] text-sm font-medium px-4 py-2 rounded-md shadow hover:bg-[var(--accent3)] disabled:opacity-60 disabled:cursor-not-allowed"
                             on:click={changeProjectName}
+                            disabled={isVerifying}
                     >
+                        {#if isVerifying}
+                            <Loader2 class="w-4 h-4 mr-1 animate-spin" />
+                        {:else}
                         Change
-                    </Button>
+                        {/if}
+                    </button>
                 </div>
 
                 {#if projectName_error}
@@ -372,8 +389,8 @@
 
         <!-- Footer Buttons -->
         <DialogFooter class="mt-6">
-            <Button on:click={handleSave}>Save</Button>
-            <Button variant="outline" on:click={handleCancel}>Cancel</Button>
+            <button on:click={handleSave}>Save</button>
+            <button variant="outline" on:click={handleCancel}>Cancel</button>
         </DialogFooter>
     </DialogContent>
 </Dialog>
