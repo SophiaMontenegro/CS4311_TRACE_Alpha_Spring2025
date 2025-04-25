@@ -8,7 +8,7 @@ class ProjectManager:
 
 
 
-    def create_project(self, analyst_id, project_name, start_date, end_date, description, userList):
+    def create_project(self, analyst_id, project_name, start_date, end_date, description, userList, port, directory_path):
 
         try:
             logging.debug(f"Creating project: analyst_name={analyst_id}, name={project_name}")
@@ -32,7 +32,9 @@ class ProjectManager:
                 end_date: $end_date,
                 locked: false,
                 created_at: datetime(),
-                last_edited: datetime()
+                last_edited: datetime(),
+                port: $port,
+                directory_path: $directory_path
             })
             CREATE (a)-[:OWNS]->(p)
             RETURN p
@@ -45,7 +47,9 @@ class ProjectManager:
                 "project_name": project_name,
                 "description": description,
                 "start_date": start_date_str,
-                "end_date": end_date_str
+                "end_date": end_date_str,
+                "port": port,
+                "directory": directory_path
             }
 
             logging.debug(f"Running query with params: {params}")
@@ -491,7 +495,7 @@ class ProjectManager:
         update_query = """
         MATCH (p:Project)
         WHERE p.name = $project
-        SET p.end = $end_date
+        SET p.end_date = $end_date
         """
         self.db_manager.run_query(update_query, {"project": project, "end_date": end_date})
         print(f"Successfully updated end date of '{project}' to {end_date}.")
@@ -541,4 +545,27 @@ class ProjectManager:
         """
         self.db_manager.run_query(update_query, {"project": project})
         print(f"Successfully updated last edited of '{project}'.")
+        return True
+
+    def edit_port(self, project, analyst_name, port):
+        if not self.analyst_manager.check_if_lead(analyst_name, project):
+            print(f"Error: Analyst '{analyst_name}' isn't part of the current project or doesn't have permission.")
+            return None
+
+        check_query = """
+        MATCH (p:Project)
+        WHERE p.name = $project
+        RETURN COUNT(p) > 0 AS project_exists
+        """
+        result = self.db_manager.run_query(check_query, {"project": project}, fetch=True)
+        if not result or not result[0]["project_exists"]:
+            print(f"Error: Project '{project}' not found.")
+            return None
+        update_query = """
+        MATCH (p:Project)
+        WHERE p.name = $project
+        SET p.port = $port
+        """
+        self.db_manager.run_query(update_query, {"project": project, "port": port})
+        print(f"Successfully updated port of '{project}' to {port}.")
         return True

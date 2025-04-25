@@ -27,21 +27,16 @@
     let isVerifying = false;
 
     let directoryPath: string = '';
+    let port; //integer
 
 
     let errors = {
         projectName: '',
         startDate: '',
         endDate: '',
-        saveDirectory: ''
+        saveDirectory: '',
+        port: ''
     };
-
-    function handleFileUpload(event: Event) {
-        const input = event.target as HTMLInputElement;
-        if (input.files) {
-            files = [...files, ...Array.from(input.files)];
-        }
-    }
 
     function removeFile(index: number) {
         files.splice(index, 1);
@@ -123,6 +118,14 @@
             valid = false;
         }
 
+        if (!port) {
+            errors.port = 'Port number is required';
+            valid = false;
+        } else if (isNaN(Number(port)) || Number(port) < 1 || Number(port) > 65535) {
+            errors.port = 'Invalid port number';
+            valid = false;
+        }
+
         return valid;
     }
 
@@ -195,6 +198,8 @@
                 startDate,
                 endDate,
                 userList,
+                port,
+                directoryPath,
                 analystId,
                 analystInitials
             };
@@ -267,23 +272,13 @@
                 <Textarea bind:value={description} class="h-24" placeholder="Enter project description" />
             </div>
 
-            <!-- Upload Files -->
+            <!-- Port Number -->
             <div class="space-y-2 md:col-span-2">
-                <label class="text-sm font-medium">Upload NMap</label>
-                <Input type="file" multiple class="input-class" on:change={handleFileUpload} />
-                <div class="space-y-1 mt-2">
-                    {#each files as file, index}
-                        <div class="flex items-center justify-between bg-muted px-3 py-2 rounded-md text-sm">
-                            <div class="flex items-center gap-2">
-                                <Check class="w-4 h-4 text-green-500" />
-                                <span>{file.name}</span>
-                            </div>
-                            <button type="button" on:click={() => removeFile(index)}>
-                                <Trash2 class="w-4 h-4 text-destructive" />
-                            </button>
-                        </div>
-                    {/each}
-                </div>
+                <label class="text-sm font-medium">Port *</label>
+                <Input type="text" class="input-class" bind:value={port} placeholder="Enter port number" />
+                {#if errors.port}
+                    <p class="text-red-500 text-sm">{errors.port}</p>
+                {/if}
             </div>
             <!-- Save Directory Selection -->
             <div class="space-y-2 md:col-span-2">

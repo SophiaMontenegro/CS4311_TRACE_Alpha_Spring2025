@@ -6,13 +6,14 @@
     import { Textarea } from '$lib/components/ui/textarea/index.js';
     import { createEventDispatcher} from 'svelte';
     import { UserPlus, X, Loader2  } from 'lucide-svelte';
+    import Alert from '$lib/components/ui/alert/Alert.svelte';
 
     export let project;
     export let analystInitials: string = '';
     const dispatch = createEventDispatcher();
     let modalOpen = true;
 
-    let name = '';
+    let name = ''; // actual name
     let og_endDate = '';
     let og_description = '';
 
@@ -28,6 +29,10 @@
     let projectName_error = '';
     let endDate_error = '';
 
+    let og_port = '';
+    let new_port = ''; // default to existing port
+    let port_error = '';
+
 
 
     console.log("EditProjectDialog mounted"); // ✅ Check this!
@@ -35,10 +40,19 @@
     onMount(async () => {
         name = project.name;
         og_endDate = project.end_date || '';
+        new_endDate = formatDateToInput(og_endDate); // <- formatted for input
         og_description = project.description || '';
+        og_port = project.port;
+        new_port = project.port || '';
         await show_analysts()
         userList = [...currentAnalysts]; // ← Sync with fetched data!
     });
+
+    function formatDateToInput(dateStr: string) {
+        const date = new Date(dateStr);
+        if (isNaN(date.getTime())) return '';
+        return date.toISOString().split('T')[0]; // Gets YYYY-MM-DD
+    }
 
 
     async function show_analysts() {
@@ -188,13 +202,20 @@
             valid = false;
         }
 
+        if (!new_port) {
+            port_error = 'Port number is required';
+            valid = false;
+        } else if (isNaN(Number(new_port)) || Number(new_port) < 1 || Number(new_port) > 65535) {
+            port_error = 'Invalid port number';
+            valid = false;
+        }
+
         return valid;
     }
 
     async function changeProjectName() {
         // Force a reactive reset
         isVerifying = true
-        console.log("Pressed changed button");
         projectName_error = '';
         const trimmedName = projectName.trim();
 
@@ -252,26 +273,40 @@
             const baseURL = 'http://127.0.0.1:8000/team3';
 
             //  Update Description
-            if (description !== og_description) {
-                const resDesc = await fetch(`${baseURL}/projects/${projectName}/description?description=${description}&analyst_name=${analystInitials}`, {
+            if (new_description !== og_description) {
+                const resDesc = await fetch(`${baseURL}/projects/${encodeURIComponent(name)}/description?description=${encodeURIComponent(new_description)}&analyst_name=${analystInitials}`, {
                     method: 'PUT'
                 });
                 if (!resDesc.ok) throw new Error('Failed to update description');
             }
 
             // Update End Date
-            if (endDate !== og_EndDate) {
-                const resDate = await fetch(`${baseURL}/projects/${projectName}/timeline?end_date=${endDate}&analyst_name=${analystInitials}`, {
+            if (new_endDate !== og_endDate) {
+                const resDate = await fetch(`${baseURL}/projects/${encodeURIComponent(name)}/timeline?end_date=${new_endDate}&analyst_name=${analystInitials}`, {
                     method: 'PUT'
                 });
                 if (!resDate.ok) throw new Error('Failed to update end date');
             }
+
+            // Update Port Number
+            if (new_port !== String(project.port)) {
+                const resPort = await fetch(`${baseURL}/projects/${encodeURIComponent(name)}/port?port=${new_port}&analyst_name=${analystInitials}`, {
+                    method: 'PUT'
+                });
+                if (!resPort.ok) throw new Error('Failed to update port number');
+            }
+
+            const update_last_edited = await fetch(`${baseURL}/projects/${encodeURIComponent(name)}/last_edited`, {
+                method: 'PUT'
+            });
+            if (!update_last_edited.ok) throw new Error('Failed to update last edited');
 
             alert("Project updated successfully!");
         } catch (err) {
             console.error(err);
             alert("There was a problem saving the project.");
         }
+        dispatch('save');
     }
 
     async function handleCancel() {
@@ -326,14 +361,26 @@
                 <Textarea bind:value={new_description} class="h-24" placeholder={og_description} />
             </div>
 
-            <!-- End Date -->
-            <div class="space-y-2">
-                <label class="text-sm font-medium">End Date *</label>
-                <Input type="date" bind:value={new_endDate} class="pr-10" />
-                {#if endDate_error}
-                    <p class="text-red-500 text-sm">{endDate_error}</p>
-                {/if}
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <!-- End Date -->
+                <div class="space-y-2">
+                    <label class="text-sm font-medium">End Date *</label>
+                    <Input type="date" bind:value={new_endDate} />
+                    {#if endDate_error}
+                        <p class="text-red-500 text-sm">{endDate_error}</p>
+                    {/if}
+                </div>
+
+                <!-- Port Number -->
+                <div class="space-y-2">
+                    <label class="text-sm font-medium">Port Number *</label>
+                    <Input type="number" bind:value={new_port} min="1" max="65535" />
+                    {#if port_error}
+                        <p class="text-red-500 text-sm">{port_error}</p>
+                    {/if}
+                </div>
             </div>
+
 
             <!-- Add Analysts Section -->
             <div class="space-y-2">
@@ -389,8 +436,20 @@
 
         <!-- Footer Buttons -->
         <DialogFooter class="mt-6">
-            <button on:click={handleSave}>Save</button>
-            <button variant="outline" on:click={handleCancel}>Cancel</button>
+            <button
+                    variant="outline" on:click={handleCancel}>Cancel</button>
+            <button class="flex items-center bg-[var(--accent)] text-[var(--accent-foreground)] text-sm font-medium px-4 py-2 rounded-md shadow hover:bg-[var(--accent3)] disabled:opacity-60 disabled:cursor-not-allowed"
+                    on:click={handleSave}>
+                Save
+            </button>
         </DialogFooter>
     </DialogContent>
 </Dialog>
+
+<Alert
+        isOpen={showSave}
+        title="Are you absolutely sure?"
+        message="This action cannot be undone."
+        onCancel={handleCancelDelete}
+        onContinue={handleConfirmedDelete}
+/>

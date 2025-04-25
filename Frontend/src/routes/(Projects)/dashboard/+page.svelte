@@ -83,7 +83,9 @@
                     start_date: projectData.startDate,
                     end_date: projectData.endDate,
                     description: projectData.description || '',
-                    userList: projectData.userList || []
+                    userList: projectData.userList || [],
+                    port: projectData.port,
+                    directory_path: projectData.directory_path
                 })
             });
 
@@ -204,8 +206,9 @@
         console.log('Save event received in parent:', updatedProject);
         editDialogOpen = false; // Close the dialog after saving
     }
-    function handleCancel() {
+    async function handleCancel() {
         editDialogOpen = false; // Close the dialog when canceled
+        await loadProjects();
     }
 
 
