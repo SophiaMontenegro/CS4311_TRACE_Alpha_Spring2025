@@ -219,7 +219,6 @@
 					selectedNode = null;
 					newSeverity = '';
 					loadTreeData(pathToCenter);
-					showToastMessage('Server error: ' + res.status, 'error');
 				}
 			})
 			.catch((err) => {
