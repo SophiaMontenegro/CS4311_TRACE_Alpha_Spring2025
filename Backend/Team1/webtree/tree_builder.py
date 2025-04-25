@@ -54,6 +54,8 @@ class WebTreeBuilder:
             elif operation == "update":
                 self.update_node(node_path, severity, ip_address, status_code, data.get("url"), hidden)
 
+            self.relink_orphans()
+
             # === Confirm changes ===
             updated_tree = self.fetch_tree()
             print("Updated Tree Sent to Controller:", updated_tree)
@@ -203,3 +205,33 @@ class WebTreeBuilder:
             for path, url in updates:
                 session.run("MATCH (n:Node {path: $path}) SET n.url = $url", path=path, url=url)
                 print(f"Updated {path} with inferred URL {url}")
+
+    def relink_orphans(self):
+        """ Scans and re-links all orphan nodes based on path hierarchy. """
+        with self.driver.session() as session:
+            query = """
+            MATCH (child:Node)
+            WHERE NOT (child)-[:CHILD_OF]->() AND child.path <> "/"
+            WITH child,
+                size(split(child.path, "/")) AS parts_len,
+                split(child.path, "/") AS segments
+            WITH child, 
+                CASE 
+                WHEN parts_len = 2 THEN "/" 
+                ELSE "/" + reduce(acc = "", i IN range(1, parts_len - 2) | acc + "/" + segments[i])
+                END AS parent_path
+            OPTIONAL MATCH (parent:Node {path: parent_path})
+            WITH child, 
+                CASE 
+                WHEN parent IS NOT NULL THEN parent.path 
+                ELSE "/" 
+                END AS final_parent_path
+            MATCH (final_parent:Node {path: final_parent_path})
+            MERGE (child)-[:CHILD_OF]->(final_parent)
+            RETURN child.path AS linked_child, final_parent_path AS linked_to
+            """
+            result = session.run(query)
+            print("Re-linked orphan nodes:")
+            for record in result:
+                print(f"  {record['linked_child']} → {record['linked_to']}")
+
