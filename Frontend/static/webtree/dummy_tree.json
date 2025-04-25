@@ -7,52 +7,186 @@
       {
         "node_id": "198.51.100.1",
         "name": "/home",
-        "severity": "high",
+        "severity": "low",
         "children": [
           {
             "node_id": "198.51.100.1",
             "name": "/home/dashboard",
-            "severity": "low",
+            "severity": "medium",
             "children": [],
             "hidden": false,
             "url": "https://example.com/home/dashboard"
+          },
+          {
+            "node_id": "198.51.100.1",
+            "name": "/home/settings",
+            "severity": "medium",
+            "children": [],
+            "hidden": false,
+            "url": "https://example.com/home/settings"
           }
         ],
         "hidden": false,
         "url": "https://example.com/home"
       },
       {
-        "node_id": "0.0.0.0",
+        "node_id": "198.51.100.1",
         "name": "/about",
         "severity": "low",
         "children": [
           {
             "node_id": "198.51.100.1",
             "name": "/about/team",
-            "severity": "high",
+            "severity": "low",
             "children": [],
             "hidden": false,
             "url": "https://example.com/about/team"
+          },
+          {
+            "node_id": "198.51.100.1",
+            "name": "/about/careers",
+            "severity": "low",
+            "children": [],
+            "hidden": false,
+            "url": "https://example.com/about/careers"
           }
         ],
         "hidden": false,
         "url": "https://example.com/about"
       },
       {
-        "node_id": "0.0.0.0",
-        "name": "/login",
-        "severity": "high",
-        "children": [],
+        "node_id": "198.51.100.1",
+        "name": "/contact",
+        "severity": "low",
+        "children": [
+          {
+            "node_id": "198.51.100.1",
+            "name": "/contact/support",
+            "severity": "low",
+            "children": [],
+            "hidden": false,
+            "url": "https://example.com/contact/support"
+          },
+          {
+            "node_id": "198.51.100.1",
+            "name": "/contact/feedback",
+            "severity": "low",
+            "children": [],
+            "hidden": false,
+            "url": "https://example.com/contact/feedback"
+          }
+        ],
         "hidden": false,
-        "url": "https://example.com/login"
+        "url": "https://example.com/contact"
+      },
+      {
+        "node_id": "198.51.100.1",
+        "name": "/services",
+        "severity": "high",
+        "children": [
+          {
+            "node_id": "198.51.100.1",
+            "name": "/services/consulting",
+            "severity": "low",
+            "children": [],
+            "hidden": false,
+            "url": "https://example.com/services/consulting"
+          },
+          {
+            "node_id": "198.51.100.1",
+            "name": "/services/development",
+            "severity": "low",
+            "children": [
+              {
+                "node_id": "198.51.100.1",
+                "name": "/services/development/web",
+                "severity": "low",
+                "children": [],
+                "hidden": false,
+                "url": "https://example.com/services/development/web"
+              },
+              {
+                "node_id": "198.51.100.1",
+                "name": "/services/development/mobile",
+                "severity": "high",
+                "children": [],
+                "hidden": false,
+                "url": "https://example.com/services/development/mobile"
+              }
+            ],
+            "hidden": false,
+            "url": "https://example.com/services/development"
+          }
+        ],
+        "hidden": false,
+        "url": "https://example.com/services"
+      },
+      {
+        "node_id": "198.51.100.1",
+        "name": "/blog",
+        "severity": "low",
+        "children": [
+          {
+            "node_id": "198.51.100.1",
+            "name": "/blog/news",
+            "severity": "low",
+            "children": [],
+            "hidden": false,
+            "url": "https://example.com/blog/news"
+          },
+          {
+            "node_id": "198.51.100.1",
+            "name": "/blog/events",
+            "severity": "low",
+            "children": [],
+            "hidden": false,
+            "url": "https://example.com/blog/events"
+          },
+          {
+            "node_id": "198.51.100.1",
+            "name": "/blog/releases",
+            "severity": "low",
+            "children": [
+              {
+                "node_id": "198.51.100.1",
+                "name": "/blog/releases/v1.0",
+                "severity": "low",
+                "children": [],
+                "hidden": false,
+                "url": "https://example.com/blog/releases/v1.0"
+              }
+            ],
+            "hidden": false,
+            "url": "https://example.com/blog/releases"
+          }
+        ],
+        "hidden": false,
+        "url": "https://example.com/blog"
       },
       {
         "node_id": "0.0.0.0",
-        "name": "/register",
-        "severity": "high",
-        "children": [],
+        "name": "/profile",
+        "severity": "unknown",
+        "children": [
+          {
+            "node_id": "198.51.100.1",
+            "name": "/profile/settings",
+            "severity": "medium",
+            "children": [],
+            "hidden": false,
+            "url": "https://example.com/profile/settings"
+          },
+          {
+            "node_id": "198.51.100.1",
+            "name": "/profile/security",
+            "severity": "low",
+            "children": [],
+            "hidden": false,
+            "url": "https://example.com/profile/security"
+          }
+        ],
         "hidden": false,
-        "url": "https://example.com/register"
+        "url": "https://example.com/profile"
       }
     ],
     "hidden": false,

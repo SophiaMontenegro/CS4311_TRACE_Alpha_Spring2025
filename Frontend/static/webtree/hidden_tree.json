@@ -7,37 +7,71 @@
     "children": [
       {
         "node_id": "198.51.100.1",
-        "name": "/login/reset",
-        "severity": "low",
+        "name": "/login",
+        "severity": "high",
         "children": [
           {
             "node_id": "198.51.100.1",
-            "name": "/login/reset/2fa",
+            "name": "/login/reset",
             "severity": "high",
             "children": [
               {
                 "node_id": "198.51.100.1",
-                "name": "/login/reset/2fa/help",
+                "name": "/login/reset/password",
                 "severity": "high",
                 "children": [],
                 "hidden": true,
-                "url": "https://example.com/login/reset/2fa/help"
+                "url": "https://example.com/login/reset/password"
+              },
+              {
+                "node_id": "198.51.100.1",
+                "name": "/login/reset/2fa",
+                "severity": "high",
+                "children": [
+                  {
+                    "node_id": "198.51.100.1",
+                    "name": "/login/reset/2fa/help",
+                    "severity": "high",
+                    "children": [],
+                    "hidden": true,
+                    "url": "https://example.com/login/reset/2fa/help"
+                  }
+                ],
+                "hidden": true,
+                "url": "https://example.com/login/reset/2fa"
               }
             ],
             "hidden": true,
-            "url": "https://example.com/login/reset/2fa"
+            "url": "https://example.com/login/reset"
           }
         ],
         "hidden": true,
-        "url": "https://example.com/login/reset"
+        "url": "https://example.com/login"
       },
       {
         "node_id": "198.51.100.1",
-        "name": "/register/validate",
+        "name": "/register",
         "severity": "low",
-        "children": [],
+        "children": [
+          {
+            "node_id": "198.51.100.1",
+            "name": "/register/validate",
+            "severity": "low",
+            "children": [],
+            "hidden": true,
+            "url": "https://example.com/register/validate"
+          },
+          {
+            "node_id": "198.51.100.1",
+            "name": "/register/verify-email",
+            "severity": "low",
+            "children": [],
+            "hidden": true,
+            "url": "https://example.com/register/verify-email"
+          }
+        ],
         "hidden": true,
-        "url": "https://example.com/register/validate"
+        "url": "https://example.com/register"
       }
     ]
   }

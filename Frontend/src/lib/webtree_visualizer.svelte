@@ -16,6 +16,10 @@
 
 	let lastFocusPath = '/'; // or null if you prefer no default
 
+	let showExportPopup = false;
+
+	let searchQuery = '';
+
 	function showToastMessage(message, type = 'success') {
 		const id = Date.now() + Math.random(); // unique id
 		toasts = [...toasts, { id, message, type }];
@@ -187,6 +191,28 @@
 						zoomBehavior.transform,
 						d3.zoomIdentity.translate(centerX, centerY).scale(currentZoom)
 					);
+
+				const perimeter = 2 * (160 + 60); // width + height
+
+				svg
+					.selectAll('g.node')
+					.filter((d) => d.data.name === focusPath)
+					.select('rect')
+					.attr('stroke', '#facc15') // bright yellow
+					.attr('stroke-width', 3)
+					.attr('stroke-dasharray', perimeter)
+					.attr('stroke-dashoffset', perimeter)
+					.transition()
+					.duration(600) // total draw time
+					.ease(d3.easeLinear)
+					.attr('stroke-dashoffset', 0)
+					.transition()
+					.delay(900)
+					.duration(500)
+					.attr('stroke', $mode === 'dark' ? '#9ca3af' : '#d1d5db')
+					.attr('stroke-width', 2)
+					.attr('stroke-dasharray', null)
+					.attr('stroke-dashoffset', null);
 			}
 		}
 	}
@@ -219,7 +245,6 @@
 					selectedNode = null;
 					newSeverity = '';
 					loadTreeData(pathToCenter);
-					showToastMessage('Server error: ' + res.status, 'error');
 				}
 			})
 			.catch((err) => {
@@ -231,10 +256,134 @@
 	$: if (treeData && $mode) {
 		renderTreeGraph(lastFocusPath);
 	}
+
+	function flattenTree(data, results = [], parentPath = '') {
+		data.forEach((node) => {
+			results.push({
+				ip: node.node_id,
+				path: node.name,
+				url: node.url,
+				severity: node.severity,
+				hidden: node.hidden,
+				parent: parentPath || '/'
+			});
+			if (node.children && node.children.length > 0) {
+				flattenTree(node.children, results, node.name);
+			}
+		});
+		return results;
+	}
+
+	function convertToCSV(rows) {
+		const header = Object.keys(rows[0]).join(',') + '\n';
+		const body = rows
+			.map((row) =>
+				Object.values(row)
+					.map((v) => `"${v}"`)
+					.join(',')
+			)
+			.join('\n');
+		return header + body;
+	}
+
+	function downloadCSV() {
+		if (!treeData) {
+			alert('No data loaded');
+			return;
+		}
+
+		const flattened = flattenTree(treeData);
+		const csv = convertToCSV(flattened);
+		const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+
+		const filename = `webtree-export-${new Date().toISOString().slice(0, 10)}.csv`;
+		const link = document.createElement('a');
+		link.href = URL.createObjectURL(blob);
+		link.setAttribute('download', filename);
+		document.body.appendChild(link);
+		link.click();
+		document.body.removeChild(link);
+	}
+
+	function flattenTreeToXML(data, parentPath = '/') {
+		let xml = '';
+		data.forEach((node) => {
+			const children = node.children || [];
+			xml += `<node`;
+			xml += ` path="${node.name}"`;
+			xml += ` ip="${node.node_id}"`;
+			xml += ` url="${node.url}"`;
+			xml += ` severity="${node.severity}"`;
+			xml += ` hidden="${node.hidden}"`;
+			xml += children.length > 0 ? `>\n` : ` />\n`;
+
+			if (children.length > 0) {
+				xml += flattenTreeToXML(children, node.name);
+				xml += `</node>\n`;
+			}
+		});
+		return xml;
+	}
+
+	function downloadXML() {
+		if (!treeData) {
+			alert('No data loaded');
+			return;
+		}
+
+		const xmlContent = `<?xml version="1.0" encoding="UTF-8"?>\n<webtree>\n${flattenTreeToXML(treeData)}</webtree>`;
+		const blob = new Blob([xmlContent], { type: 'application/xml;charset=utf-8;' });
+
+		const filename = `webtree-export-${new Date().toISOString().slice(0, 10)}.xml`;
+		const link = document.createElement('a');
+		link.href = URL.createObjectURL(blob);
+		link.setAttribute('download', filename);
+		document.body.appendChild(link);
+		link.click();
+		document.body.removeChild(link);
+	}
+
+	function focusSearchResult() {
+		if (!treeData || !searchQuery) {
+			showToastMessage('Please enter a path to search.', 'error');
+			return;
+		}
+
+		const allNodes = [];
+		const collectNodes = (nodes) => {
+			nodes.forEach((n) => {
+				allNodes.push(n);
+				if (n.children) collectNodes(n.children);
+			});
+		};
+
+		collectNodes(treeData);
+
+		const trimmedQuery = searchQuery.trim();
+		const match = allNodes.find((node) => node.name.toLowerCase() === trimmedQuery.toLowerCase());
+
+		if (match) {
+			lastFocusPath = match.name;
+			renderTreeGraph(match.name);
+			showToastMessage(`Focused on: ${match.name}`, 'success');
+		} else {
+			showToastMessage(`"${trimmedQuery}" not found.`, 'error');
+		}
+	}
 </script>
 
 <!-- Tree Container -->
 <div id="tree"></div>
+
+<div class="search-container">
+	<input
+		type="text"
+		placeholder="Search by path..."
+		bind:value={searchQuery}
+		on:keydown={(e) => e.key === 'Enter' && focusSearchResult()}
+	/>
+	<button on:click={focusSearchResult}>Go</button>
+</div>
 
 <!-- Zoom Controls -->
 <div class="zoom-controls">
@@ -268,6 +417,29 @@
 		<div class="toast {toast.type}">{toast.message}</div>
 	{/each}
 </div>
+
+{#if showExportPopup}
+	<div class="popup">
+		<div class="popup-content" class:dark={$mode === 'dark'}>
+			<h3>Select Export Format</h3>
+			<button
+				on:click={() => {
+					downloadCSV();
+					showExportPopup = false;
+				}}>Export as CSV</button
+			>
+			<button
+				on:click={() => {
+					downloadXML();
+					showExportPopup = false;
+				}}>Export as XML</button
+			>
+			<button on:click={() => (showExportPopup = false)}>Cancel</button>
+		</div>
+	</div>
+{/if}
+
+<button on:click={() => (showExportPopup = true)} class="export-button">Export</button>
 
 <style>
 	#tree {
@@ -346,9 +518,11 @@
 	.toast-container {
 		position: fixed;
 		top: 20px;
-		right: 20px;
+		left: 50%;
+		transform: translateX(-50%);
 		display: flex;
 		flex-direction: column;
+		align-items: center;
 		gap: 10px;
 		z-index: 9999;
 	}
@@ -389,5 +563,55 @@
 		background-color: #374151;
 		color: #f9fafb;
 		border: 1px solid #4b5563;
+	}
+
+	.export-button {
+		position: fixed;
+		top: 20px;
+		left: 100px;
+		background-color: #3b82f6;
+		color: white;
+		border: none;
+		padding: 8px 16px;
+		border-radius: 8px;
+		cursor: pointer;
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+	}
+
+	.export-button:hover {
+		background-color: #2563eb;
+	}
+
+	.popup-content button {
+		margin-top: 10px;
+		width: 100%;
+	}
+
+	.search-container {
+		position: fixed;
+		top: 20px;
+		right: 20px;
+		display: flex;
+		gap: 8px;
+	}
+
+	.search-container input {
+		padding: 8px;
+		border-radius: 6px;
+		border: 1px solid #ccc;
+		min-width: 200px;
+	}
+
+	.search-container button {
+		background-color: #3b82f6;
+		color: white;
+		border: none;
+		border-radius: 6px;
+		padding: 8px 12px;
+		cursor: pointer;
+	}
+
+	.search-container button:hover {
+		background-color: #2563eb;
 	}
 </style>
