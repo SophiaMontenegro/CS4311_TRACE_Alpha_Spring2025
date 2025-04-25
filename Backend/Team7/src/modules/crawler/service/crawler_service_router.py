@@ -233,9 +233,9 @@ async def get_crawler_results(job_id: str):
             
             # Try to load from crawler_table_data.json as fallback
             try:
-                if os.path.exists("crawler_table_data.json"):
+                if os.path.exists("Team7/src/database/crawler/crawler_table_data.json"):
                     logger.info("Attempting to read from crawler_table_data.json as fallback")
-                    with open("src/database/crawler/crawler_table_data.json", 'r') as f:
+                    with open("Team7/src/database/crawler/crawler_table_data.json", 'r') as f:
                         data = json.load(f)
                         logger.info(f"Successfully loaded {len(data)} records from fallback file")
                         add_log_entry(job_id, f"Results retrieved from fallback: {len(data)} records")

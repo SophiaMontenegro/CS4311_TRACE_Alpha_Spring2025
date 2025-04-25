@@ -5,10 +5,11 @@ from bs4 import BeautifulSoup
 from urllib.parse import urljoin
 from typing import List, Dict
 
+
 class IntruderTool:
     """
     The main class for the Intruder Tool.
-    Handles form discovery, selection, payload injection, and attack execution.
+    Handles HTML form attacks, JSON API payloads, and generic URL-based payloads.
     """
 
     def __init__(self, target_url: str):
@@ -23,11 +24,16 @@ class IntruderTool:
     def fetch_target(self) -> int:
         """
         Fetch the HTML content of the target URL.
-        Returns the HTTP status code.
+        Returns the HTTP status code, or -1 if the request fails.
         """
-        response = requests.get(self.target_url)
-        self.html = response.text
-        return response.status_code
+        try:
+            response = requests.get(self.target_url)
+            self.html = response.text
+            return response.status_code
+        except requests.exceptions.RequestException as e:
+            print(f"Fetch failed: {self._shorten_error(e)}")
+            self.html = ""
+            return -1
 
     def parse_forms(self) -> List[Dict]:
         """
@@ -55,8 +61,10 @@ class IntruderTool:
 
     def get_http_request_preview(self) -> Dict:
         """
+
         Generate a preview of what the HTTP request would look like
         for the selected form with placeholder values.
+
         """
         form = self.forms[self.selected_form_index]
         full_action_url = urljoin(self.target_url, form["action"])
@@ -74,14 +82,17 @@ class IntruderTool:
         self.intrusion_field = intrusion_field
         self.payloads = payloads
 
-    def run_attack(self) -> List[Dict]:
+
+    def run_html_form_attack(self) -> List[Dict]:
         """
-        Execute the attack loop by sending payloads to the selected form.
-        Returns the results of each payload attempt.
+        Execute the attack loop by sending payloads to the selected HTML form.
+        Returns a list of results including status code and response length.
         """
         form = self.forms[self.selected_form_index]
         action_url = urljoin(self.target_url, form["action"])
         method = form["method"]
+        self.results = []
+
 
         for payload in self.payloads:
             form_data = {
@@ -90,15 +101,110 @@ class IntruderTool:
             }
             form_data[self.intrusion_field] = payload
 
-            if method == "post":
-                response = requests.post(action_url, data=form_data)
-            else:
-                response = requests.get(action_url, params=form_data)
 
-            self.results.append({
-                "payload": payload,
-                "status_code": response.status_code,
-                "length": len(response.text)
-            })
+            try:
+                if method == "post":
+                    response = requests.post(action_url, data=form_data)
+                else:
+                    response = requests.get(action_url, params=form_data)
+                self.results.append({
+                    "payload": payload,
+                    "status_code": response.status_code,
+                    "length": len(response.text)
+                })
+            except requests.exceptions.RequestException as e:
+                short_error = self._shorten_error(e)
+                print(f"Request failed for '{payload}': {short_error}")
+                self.results.append({
+                    "payload": payload,
+                    "status_code": None,
+                    "length": 0,
+                    "error": short_error
+                })
 
         return self.results
+
+    def run_api_attack(self, method: str, endpoint: str, base_body: Dict, intrusion_key: str,
+                       payloads: List[str], headers: Optional[Dict] = None) -> List[Dict]:
+        """
+        Run payload injection on an API endpoint that accepts JSON.
+        """
+        self.results = []
+        headers = headers or {"Content-Type": "application/json"}
+
+        for payload in payloads:
+            body = base_body.copy()
+            body[intrusion_key] = payload
+
+            try:
+                if method.lower() == "post":
+                    response = requests.post(endpoint, json=body, headers=headers)
+                elif method.lower() == "get":
+                    response = requests.get(endpoint, params=body, headers=headers)
+                else:
+                    raise ValueError("Unsupported HTTP method for API attack.")
+                self.results.append({
+                    "payload": payload,
+                    "status_code": response.status_code,
+                    "length": len(response.text)
+                })
+            except requests.exceptions.RequestException as e:
+                short_error = self._shorten_error(e)
+                print(f"Request failed for '{payload}': {short_error}")
+                self.results.append({
+                    "payload": payload,
+                    "status_code": None,
+                    "length": 0,
+                    "error": short_error
+                })
+
+        return self.results
+
+    def run_urlencoded_attack(self, method: str, endpoint: str, param_name: str,
+                              payloads: List[str], headers: Optional[Dict] = None) -> List[Dict]:
+        """
+        Run generic URL-encoded attack against endpoints that accept raw form data.
+        """
+        self.results = []
+        headers = headers or {"Content-Type": "application/x-www-form-urlencoded"}
+
+        for payload in payloads:
+            data = {param_name: payload}
+
+            try:
+                if method.lower() == "post":
+                    response = requests.post(endpoint, data=data, headers=headers)
+                elif method.lower() == "get":
+                    response = requests.get(endpoint, params=data, headers=headers)
+                else:
+                    raise ValueError("Unsupported HTTP method.")
+                self.results.append({
+                    "payload": payload,
+                    "status_code": response.status_code,
+                    "length": len(response.text)
+                })
+            except requests.exceptions.RequestException as e:
+                short_error = self._shorten_error(e)
+                print(f"Request failed for '{payload}': {short_error}")
+                self.results.append({
+                    "payload": payload,
+                    "status_code": None,
+                    "length": len(short_error),
+                    "error": short_error
+                })
+
+        return self.results
+
+    def _shorten_error(self, e: Exception) -> str:
+        """
+        Utility method to extract a short, readable message from an exception.
+        """
+        full_msg = str(e)
+        if "Failed to resolve" in full_msg:
+            return "DNS resolution failed"
+        if "Max retries exceeded" in full_msg:
+            return "Server unreachable (max retries)"
+        if "Connection refused" in full_msg:
+            return "Connection refused"
+        return full_msg.split(":")[0]  # fallback: just the first part
+
