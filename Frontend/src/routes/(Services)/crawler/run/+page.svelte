@@ -65,7 +65,6 @@
 				...r,
 				crawler: parsed
 			}));
-
 		} catch (e) {
 			console.error('Failed to fetch crawler results:', e);
 		}
@@ -160,6 +159,18 @@
 		goto('/crawler/config');
 	}
 
+	function handleClearJob() {
+		const jobId = localStorage.getItem('currentCrawlerJobId');
+		if (jobId) {
+			localStorage.removeItem(`checkpoint_${jobId}`);
+			localStorage.removeItem('currentCrawlerJobId');
+		}
+		serviceResults.update((r) => ({ ...r, crawler: [] }));
+		serviceStatus.set({ status: 'idle', serviceType: null, startTime: null });
+		goto('/crawler/config');
+		console.log('[Clear Job] Service state and local storage cleared');
+	}
+
 	async function handleExport() {
 		const jobId = localStorage.getItem('currentCrawlerJobId');
 		if (!jobId) {
@@ -225,24 +236,6 @@
 		if (jobId && get(serviceStatus).status !== 'completed') {
 			connectToCrawlerWebSocket(jobId);
 		}
-		// Restore checkpoint if available
-		if (jobId) {
-			const savedCheckpoint = localStorage.getItem(`checkpoint_${jobId}`);
-			if (savedCheckpoint) {
-				try {
-					const parsed = JSON.parse(savedCheckpoint);
-					if (Array.isArray(parsed) && parsed.length > 0) {
-						serviceResults.update((r) => ({ ...r, crawler: parsed }));
-						console.log('[Restore] Checkpoint loaded for job', jobId);
-					}
-				} catch (err) {
-					console.error('[Restore] Failed to parse checkpoint data:', err);
-				}
-			}
-			connectToCrawlerWebSocket(jobId);
-		} else {
-			console.warn('No crawler job ID found in localStorage.');
-		}
 
 		intervalId = setInterval(() => {
 			const jobId = localStorage.getItem('currentCrawlerJobId');
@@ -294,7 +287,7 @@
 	</div>
 
 	<div class="button-section">
-		<div class="button-group">
+		<div class="left-buttons">
 			{#if $serviceStatus.status === 'completed'}
 				<Button
 					onclick={handleRestart}
@@ -342,7 +335,11 @@
 				>
 					Save Checkpoint
 				</Button>
+			{/if}
+		</div>
 
+		<div class="right-buttons">
+			{#if $serviceStatus.status === 'running' || $serviceStatus.status === 'paused'}
 				<Button
 					onclick={() => (showStopDialog = true)}
 					variant="destructive"
@@ -353,18 +350,18 @@
 				>
 					Stop
 				</Button>
+			{:else if $serviceStatus.status === 'error'}
+				<Button
+					onclick={handleClearJob}
+					variant="destructive"
+					size="default"
+					class="clear-button"
+					aria-label="Clear error state"
+					title="Clear scan state and try again"
+				>
+					Clear Job
+				</Button>
 			{/if}
-		</div>
-		<div class="single-button">
-			<Button
-				variant="secondary"
-				size="default"
-				class="terminal-button"
-				aria-label="Open terminal"
-				title="Click to open the terminal"
-			>
-				Terminal
-			</Button>
 		</div>
 	</div>
 
@@ -408,20 +405,19 @@
 	}
 	.button-section {
 		display: flex;
-		flex-direction: row;
 		justify-content: space-between;
+		align-items: center;
 		width: 100%;
 		padding: 0rem 8rem 3rem 8rem;
 	}
-	.button-group {
+
+	.left-buttons,
+	.right-buttons {
 		display: flex;
 		flex-direction: row;
 		gap: 1rem;
 	}
-	.single-button {
-		display: flex;
-		flex-direction: row;
-	}
+
 	.progress-bar-container {
 		display: flex;
 		flex-direction: column;

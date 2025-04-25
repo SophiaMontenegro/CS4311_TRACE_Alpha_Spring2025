@@ -79,6 +79,9 @@ export const actions = {
 			}
 		}
 
+		console.log("Received form data:", formData);
+
+
 		// Construct final config object
 		const configForBackend = {
 			"target-url": formData['target-url'],

@@ -11,7 +11,10 @@
 	import { derived, get, writable } from 'svelte/store';
 	import { serviceResults } from '$lib/stores/serviceResultsStore.js';
 	import { toast } from 'svelte-sonner';
-	import { connectToBruteForceWebSocket, closeBruteForceWebSocket } from '$lib/services/bruteForceSocket.js';
+	import {
+		connectToBruteForceWebSocket,
+		closeBruteForceWebSocket
+	} from '$lib/services/bruteForceSocket.js';
 	import {
 		scanProgress,
 		scanPaused,
@@ -162,6 +165,18 @@
 		goto('/bruteForce/config');
 	}
 
+	function handleClearJob() {
+		const jobId = localStorage.getItem('currentDbfJobId');
+		if (jobId) {
+			localStorage.removeItem(`checkpoint_${jobId}`);
+			localStorage.removeItem('currentDbfJobId');
+		}
+		serviceResults.update((r) => ({ ...r, bruteForce: [] }));
+		serviceStatus.set({ status: 'idle', serviceType: null, startTime: null });
+		goto('/bruteForce/config');
+		console.log('[Clear Job] Service state and local storage cleared');
+	}
+
 	async function handleExport() {
 		const jobId = localStorage.getItem('currentDbfJobId');
 		if (!jobId) {
@@ -169,63 +184,57 @@
 			return;
 		}
 
-		try {
-			const res = await fetch(`http://localhost:8000/api/dbf/${jobId}/results`);
-			if (!res.ok) throw new Error('Failed to fetch brute force results.');
+		// First, check if we already have results in store
+		let data = get(serviceResults).bruteForce;
 
-			const { results = [] } = await res.json();
-
-			// These are the fields expected by the UI
-			const exportFields = ['id', 'url', 'status', 'payload', 'length', 'error'];
-			const headers = ['ID', 'URL', 'Status Code', 'Payload', 'Length', 'Error'];
-
-			// Build CSV content
-			const csvRows = [
-				headers.join(','),
-				...results.map((row) => exportFields.map((key) => JSON.stringify(row[key] ?? '')).join(','))
-			];
-
-			const csvContent = csvRows.join('\n');
-			const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-			const url = URL.createObjectURL(blob);
-
-			const a = document.createElement('a');
-			a.href = url;
-			a.download = `bruteForce_${jobId}_results.csv`;
-			document.body.appendChild(a);
-			a.click();
-			a.remove();
-
-			URL.revokeObjectURL(url);
-		} catch (error) {
-			console.error('[Brute Force Export Error]', error);
+		// If not, try fetching from server
+		if (!data || data.length === 0) {
+			console.log('[Export] No results found in store. Fetching from API...');
+			try {
+				const res = await fetch(`http://localhost:8000/api/dbf/${jobId}/results`);
+				if (!res.ok) throw new Error('Failed to fetch brute force results.');
+				const { results = [] } = await res.json();
+				data = results;
+			} catch (error) {
+				console.error('[Brute Force Export Error]', error);
+				return;
+			}
 		}
-	}
+
+		if (!data || data.length === 0) {
+			toast.error('No results available for export.');
+			return;
+		}
+
+	// These are the fields expected by the UI
+	const exportFields = ['id', 'url', 'status', 'payload', 'length', 'error'];
+	const headers = ['ID', 'URL', 'Status Code', 'Payload', 'Length', 'Error'];
+
+	// Build CSV content
+	const csvRows = [
+		headers.join(','),
+		...data.map((row) => exportFields.map((key) => JSON.stringify(row[key] ?? '')).join(','))
+	];
+
+	const csvContent = csvRows.join('\n');
+	const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+	const url = URL.createObjectURL(blob);
+
+	const a = document.createElement('a');
+	a.href = url;
+	a.download = `bruteForce_${jobId}_results.csv`;
+	document.body.appendChild(a);
+	a.click();
+	a.remove();
+
+	URL.revokeObjectURL(url);
+}
 
 	// Restore checkpoint on mount
 	onMount(() => {
 		const jobId = localStorage.getItem('currentDbfJobId');
 		if (jobId && get(serviceStatus).status !== 'completed') {
 			connectToBruteForceWebSocket(jobId);
-		}
-
-		// Restore checkpoint if available
-		if (jobId) {
-			const savedCheckpoint = localStorage.getItem(`checkpoint_${jobId}`);
-			if (savedCheckpoint) {
-				try {
-					const parsed = JSON.parse(savedCheckpoint);
-					if (Array.isArray(parsed) && parsed.length > 0) {
-						serviceResults.update((r) => ({ ...r, bruteForce: parsed }));
-						console.log('[Restore] Checkpoint loaded for job', jobId);
-					}
-				} catch (err) {
-					console.error('[Restore] Failed to parse checkpoint data:', err);
-				}
-			}
-			connectToBruteForceWebSocket(jobId);
-		} else {
-			console.warn('No bruteForce job ID found in localStorage.');
 		}
 
 		intervalId = setInterval(() => {
@@ -278,7 +287,7 @@
 	</div>
 
 	<div class="button-section">
-		<div class="button-group">
+		<div class="left-buttons">
 			{#if $serviceStatus.status === 'completed'}
 				<Button
 					onclick={handleRestart}
@@ -322,11 +331,15 @@
 					size="default"
 					class="save-checkpoint"
 					aria-label="Save checkpoint"
-					title="Click to save checkpoint"
+					title="Checkpoint"
 				>
 					Save Checkpoint
 				</Button>
+			{/if}
+		</div>
 
+		<div class="right-buttons">
+			{#if $serviceStatus.status === 'running' || $serviceStatus.status === 'paused'}
 				<Button
 					onclick={() => (showStopDialog = true)}
 					variant="destructive"
@@ -337,18 +350,18 @@
 				>
 					Stop
 				</Button>
+			{:else if $serviceStatus.status === 'error'}
+				<Button
+					onclick={handleClearJob}
+					variant="destructive"
+					size="default"
+					class="clear-button"
+					aria-label="Clear error state"
+					title="Clear scan state and try again"
+				>
+					Clear Job
+				</Button>
 			{/if}
-		</div>
-		<div class="single-button">
-			<Button
-				variant="secondary"
-				size="default"
-				class="terminal-button"
-				aria-label="Open terminal"
-				title="Click to open the terminal"
-			>
-				Terminal
-			</Button>
 		</div>
 	</div>
 
@@ -392,19 +405,17 @@
 	}
 	.button-section {
 		display: flex;
-		flex-direction: row;
 		justify-content: space-between;
+		align-items: center;
 		width: 100%;
 		padding: 0rem 8rem 3rem 8rem;
 	}
-	.button-group {
+
+	.left-buttons,
+	.right-buttons {
 		display: flex;
 		flex-direction: row;
 		gap: 1rem;
-	}
-	.single-button {
-		display: flex;
-		flex-direction: row;
 	}
 	.progress-bar-container {
 		display: flex;

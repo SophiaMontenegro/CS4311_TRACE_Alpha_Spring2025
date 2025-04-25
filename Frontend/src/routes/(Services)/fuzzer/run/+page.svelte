@@ -115,7 +115,6 @@
 		console.log(`[Checkpoint] Saved for job ${jobId}`);
 	}
 
-
 	async function handleStopConfirm() {
 		showStopDialog = false;
 		stopScanProgress();
@@ -162,6 +161,18 @@
 		goto('/fuzzer/config');
 	}
 
+	function handleClearJob() {
+		const jobId = localStorage.getItem('currentFuzzerJobId');
+		if (jobId) {
+			localStorage.removeItem(`checkpoint_${jobId}`);
+			localStorage.removeItem('currentFuzzerJobId');
+		}
+		serviceResults.update((r) => ({ ...r, fuzzer: [] }));
+		serviceStatus.set({ status: 'idle', serviceType: null, startTime: null });
+		goto('/fuzzer/config');
+		console.log('[Clear Job] Service state and local storage cleared');
+	}
+
 	async function handleExport() {
 		const jobId = localStorage.getItem('currentFuzzerJobId');
 		if (!jobId) {
@@ -206,24 +217,6 @@
 		const jobId = localStorage.getItem('currentFuzzerJobId');
 		if (jobId && get(serviceStatus).status !== 'completed') {
 			connectToFuzzerWebSocket(jobId);
-		}
-		// Restore checkpoint if available
-		if (jobId) {
-			const savedCheckpoint = localStorage.getItem(`checkpoint_${jobId}`);
-			if (savedCheckpoint) {
-				try {
-					const parsed = JSON.parse(savedCheckpoint);
-					if (Array.isArray(parsed) && parsed.length > 0) {
-						serviceResults.update((r) => ({ ...r, fuzzer: parsed }));
-						console.log('[Restore] Checkpoint loaded for job', jobId);
-					}
-				} catch (err) {
-					console.error('[Restore] Failed to parse checkpoint data:', err);
-				}
-			}
-			connectToFuzzerWebSocket(jobId);
-		} else {
-			console.warn('No fuzzer job ID found in localStorage.');
 		}
 
 		intervalId = setInterval(() => {
@@ -272,7 +265,7 @@
 	</div>
 
 	<div class="button-section">
-		<div class="button-group">
+		<div class="left-buttons">
 			{#if $serviceStatus.status === 'completed'}
 				<Button
 					onclick={handleRestart}
@@ -290,7 +283,7 @@
 					size="default"
 					class="view-all-results"
 					aria-label="Export results"
-					title="Click to export fuzzer results"
+					title="Click to export crawler results"
 				>
 					Export Results
 				</Button>
@@ -309,7 +302,7 @@
 						Pause
 					{/if}
 				</Button>
-				
+
 				<Button
 					onclick={saveCheckpoint}
 					variant="secondary"
@@ -320,7 +313,11 @@
 				>
 					Save Checkpoint
 				</Button>
+			{/if}
+		</div>
 
+		<div class="right-buttons">
+			{#if $serviceStatus.status === 'running' || $serviceStatus.status === 'paused'}
 				<Button
 					onclick={() => (showStopDialog = true)}
 					variant="destructive"
@@ -330,6 +327,17 @@
 					title="Click to stop the scan"
 				>
 					Stop
+				</Button>
+			{:else if $serviceStatus.status === 'error'}
+				<Button
+					onclick={handleClearJob}
+					variant="destructive"
+					size="default"
+					class="clear-button"
+					aria-label="Clear error state"
+					title="Clear scan state and try again"
+				>
+					Clear Job
 				</Button>
 			{/if}
 		</div>
@@ -379,12 +387,14 @@
 	}
 	.button-section {
 		display: flex;
-		flex-direction: row;
 		justify-content: space-between;
+		align-items: center;
 		width: 100%;
 		padding: 0rem 8rem 3rem 8rem;
 	}
-	.button-group {
+
+	.left-buttons,
+	.right-buttons {
 		display: flex;
 		flex-direction: row;
 		gap: 1rem;

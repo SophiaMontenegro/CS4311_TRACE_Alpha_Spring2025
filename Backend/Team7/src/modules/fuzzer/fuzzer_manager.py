@@ -202,6 +202,7 @@ class FuzzerManager:
                     if http_method in ["POST", "PUT"]:
                         request["body"] = modified_body
                     response = self.http_client.send_request(request)
+                    await asyncio.sleep(0.3)
                     mock = MockResponse(target_url, response["status_code"], response["body"])
                     mock.payload = payload
                     mock.error = response["status_code"] not in [200]
