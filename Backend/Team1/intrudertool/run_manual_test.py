@@ -14,6 +14,8 @@ from urllib.parse import urlparse
 #url = "https://httpbin.org/anything"
 #url = "https://api.publicapis.org/entries" #Note this is website is down which will give you "DNS resolution failed" error
 #url = "https://www.formsite.com/html5/"
+#url = "https://juice-shop.herokuapp.com"
+#url = "http://dvwa.co.uk/"
 
 # Validate URL format
 def is_valid_url(url: str) -> bool:
