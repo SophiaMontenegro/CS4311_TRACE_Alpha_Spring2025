@@ -1,3 +1,4 @@
+
 # Test a single URL at a time, automatically detects mode (html/json/url)
 
 from intruder_tool import IntruderTool
@@ -137,3 +138,4 @@ elif mode == "url":
     run_url_mode(url)
 else:
     print("Unsupported or undetectable mode.")
+

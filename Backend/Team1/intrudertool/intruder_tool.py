@@ -1,10 +1,10 @@
 # intruder_tool.py
-# Clean version with short error logging
-
+# Code by erick
 import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
-from typing import List, Dict, Optional
+from typing import List, Dict
+
 
 class IntruderTool:
     """
@@ -61,7 +61,10 @@ class IntruderTool:
 
     def get_http_request_preview(self) -> Dict:
         """
-        Generate a preview of what the HTTP request would look like for the selected form.
+
+        Generate a preview of what the HTTP request would look like
+        for the selected form with placeholder values.
+
         """
         form = self.forms[self.selected_form_index]
         full_action_url = urljoin(self.target_url, form["action"])
@@ -79,6 +82,7 @@ class IntruderTool:
         self.intrusion_field = intrusion_field
         self.payloads = payloads
 
+
     def run_html_form_attack(self) -> List[Dict]:
         """
         Execute the attack loop by sending payloads to the selected HTML form.
@@ -89,12 +93,14 @@ class IntruderTool:
         method = form["method"]
         self.results = []
 
+
         for payload in self.payloads:
             form_data = {
                 f["name"]: "admin" for f in form["fields"]
                 if f["name"] and f["name"] != self.intrusion_field
             }
             form_data[self.intrusion_field] = payload
+
 
             try:
                 if method == "post":
@@ -201,3 +207,4 @@ class IntruderTool:
         if "Connection refused" in full_msg:
             return "Connection refused"
         return full_msg.split(":")[0]  # fallback: just the first part
+
