@@ -4,6 +4,7 @@ import json
 import uuid
 from datetime import datetime
 import os
+import asyncio
 
 # Import the service module
 from Team7.src.modules.dbf.service.dbf_service import (
@@ -43,6 +44,30 @@ async def handle_dbf_websocket(websocket: WebSocket, job_id: str):
         # Send initial message
         initial_status = get_job_status_message(job_id)
         await websocket.send_json(initial_status)
+
+        # Send progress immediately after status
+        if job_id in running_jobs:
+            await websocket.send_json({
+                'type': 'progress',
+                'job_id': job_id,
+                'data': {
+                    'progress': running_jobs[job_id].get('progress', 0),
+                    'processed_requests': running_jobs[job_id].get('urls_processed', 0),
+                    'total_requests': running_jobs[job_id].get('total_urls', 0),
+                    'current_payload': running_jobs[job_id].get('last_row', {}).get('payload')
+                }
+            })
+
+            # Send last row for immediate table preview
+            if 'last_row' in running_jobs[job_id]:
+                await websocket.send_json({
+                    'type': 'new_row',
+                    'job_id': job_id,
+                    'data': {
+                        'row': running_jobs[job_id]['last_row']
+                    }
+                })
+
 
         while True:
             message = await websocket.receive_text()
@@ -91,9 +116,9 @@ def add_log_entry(job_id: str, message: str):
     # Add logs to running_jobs if running
     if job_id in running_jobs:
         if 'logs' not in running_jobs[job_id]:
-            running_jobs[job_id] = []
+            running_jobs[job_id]['logs'] = []
         running_jobs[job_id]['logs'].append(log_entry)
-        logger.info(f'Added log to running jobs {job_id}: {message}')
+        logger.info(f'Added log to running job {job_id}: {message}')
 
     # Add to job_results if completed
     elif job_id in job_results:
@@ -125,7 +150,8 @@ async def start_dbf(config: DBFConfig, background_tasks: BackgroundTasks):
 
     # Add initial log entry
     add_log_entry(job_id, f'Job created with configuration: {config.model_dump()}')
-
+    
+    await asyncio.sleep(1)
     background_tasks.add_task(run_dbf_task, job_id, config)
 
     return DBFJobResponse(
@@ -189,13 +215,12 @@ async def get_dbf_results(job_id: str):
 
         if results_file and os.path.exists(results_file):
             try:
-                # TODO: Update the path to the database folder.
                 logger.info(f'Reading results from file: {results_file}')
                 with open(results_file, 'r') as f:
                     data = json.load(f)
                     logger.info(f'Successfully loaded {len(data)} records from file')
                     add_log_entry(job_id, f'Results retrieved: {len(data)} records')
-                return DBFResults(results=data)
+                    return DBFResults(results=data)
             except Exception as e:
                 logger.error(f'Error reading DBF results: {e}')
                 add_log_entry(job_id, f'Error reading results: {str(e)}')
@@ -237,7 +262,7 @@ async def get_dbf_logs(job_id: str):
 async def stop_dbf_job(job_id: str):
     logger.info(f'Request to stop job: {job_id}')
 
-    if job_id and running_jobs:
+    if job_id in running_jobs:
         add_log_entry(job_id, 'Stop requested by user')
 
         running_jobs[job_id]['status'] = 'stopped'
@@ -319,7 +344,7 @@ async def pause_dbf_job(job_id: str):
     raise HTTPException(status_code=404, detail=f'Job {job_id} not found')
 
 @dbf_router.post('/{job_id}/resume')
-async def resume_crawler_job(job_id: str):
+async def resume_dbf_job(job_id: str):
     logger.info(f'Request to resume job: {job_id}')
 
     if job_id in running_jobs:
@@ -333,9 +358,9 @@ async def resume_crawler_job(job_id: str):
 
         if job_id in active_connections:
             resume_message = {
-                'type': 'status',
-                'job_id': job_id,
-                'data': {'status': 'running'}
+                "type": "status", 
+                "job_id": job_id, 
+                "data": {"status": "running"}
             }
             for websocket in active_connections[job_id]:
                 try: 
