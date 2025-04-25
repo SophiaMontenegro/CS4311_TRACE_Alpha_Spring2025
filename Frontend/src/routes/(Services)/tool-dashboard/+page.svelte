@@ -151,9 +151,9 @@
 	}
 </script>
 
-<div class="dashboard">
+<div class="tool-dashboard">
 	<div class="title-section">
-		<div class="title">Dashboard</div>
+		<div class="title">Tool Dashboard</div>
 		<div class="proj-name">{data.projectName}</div>
 	</div>
 
@@ -200,10 +200,22 @@
 			</div>
 		{/each}
 	</div>
+	<div class="exit-button">
+		<Button
+			default="secondary"
+			size="lg"
+			onclick={() => goto('/dashboard')}
+			class="px-10"
+			aria-label="Settings"
+			title="Settings"
+		>
+			Exit
+		</Button>
+	</div>
 </div>
 
 <style>
-	.dashboard {
+	.tool-dashboard {
 		display: flex;
 		margin-left: 4.5rem;
 		height: 100vh;
@@ -333,5 +345,15 @@
 		height: 10px;
 		border-radius: 9999px;
 		background-color: currentColor;
+	}
+
+	.exit-button {
+		display: flex;
+		justify-content: flex-end;
+		align-items: flex-end;
+		padding-right: 3rem;
+		padding-bottom: 3rem;
+		width: 100%;
+		height: 100%;
 	}
 </style>

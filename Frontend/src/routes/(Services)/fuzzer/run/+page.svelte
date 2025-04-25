@@ -146,7 +146,7 @@
 		}
 
 		console.log('[Stop] Service state');
-		goto('/dashboard');
+		goto('/tool-dashboard');
 	}
 
 	function handleRestart() {
