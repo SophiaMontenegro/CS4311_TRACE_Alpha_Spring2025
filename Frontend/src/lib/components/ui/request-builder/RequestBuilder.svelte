@@ -10,6 +10,10 @@
 	import { createEventDispatcher } from 'svelte';
 	import { validateForm } from '$lib/validation/httpRequestValidation.js';
 
+	import Prism from 'prismjs';
+	import 'prismjs/components/prism-http';
+	import 'prismjs/plugins/line-numbers/prism-line-numbers.js';
+
 	export let formRef = null;
 	export let activeTab;
 	export let rawRequest = '';
@@ -108,6 +112,12 @@
 			formRef.requestSubmit();
 		}
 	}
+
+	$: highlightedRequest = rawRequest
+		? Prism.highlight(rawRequest, Prism.languages.http, 'http')
+		: '';
+
+	$: lineCount = rawRequest.split('\n').length || 1;
 </script>
 
 <svelte:window on:keydown={handleKeydown} />
@@ -119,7 +129,7 @@
 		{#if validationErrors.length}
 			<div class="bg-error/10 text-error mb-3 space-y-1 rounded-lg p-3 text-sm">
 				{#each validationErrors as err}
-					<p>• {err}</p>
+					<p>• {err}</p>
 				{/each}
 			</div>
 		{/if}
@@ -185,7 +195,21 @@
 				<!-- Raw tab -->
 				<TabsContent value="raw" class="flex-1 overflow-auto p-4">
 					<Label>Raw HTTP Request</Label>
-					<Textarea name="rawRequest" rows="15" bind:value={rawRequest} class="font-mono" />
+
+					<div class="codeblock">
+						<div class="gutter">
+							{#each Array(lineCount) as _, i}
+								<div class="ln">{i + 1}</div>
+							{/each}
+						</div>
+
+						<Textarea
+							name="rawRequest"
+							bind:value={rawRequest}
+							rows={lineCount}
+							class="code-textarea"
+						/>
+					</div>
 				</TabsContent>
 			</Tabs>
 		</div>
@@ -195,3 +219,53 @@
 		</div>
 	</CardContent>
 </Card>
+
+<style>
+	/* container for gutter + textarea */
+	.codeblock {
+		display: flex;
+		border: 1px solid var(--border);
+		border-radius: 4px;
+		overflow: hidden;
+		font-family: monospace;
+	}
+
+	/* left gutter with line numbers */
+	.gutter {
+		background: var(--muted);
+		padding: 0.5em 0.25em;
+		text-align: right;
+		user-select: none;
+	}
+	.ln {
+		line-height: 1.4em;
+		height: 1.4em;
+		color: var(--secondary);
+	}
+
+	/* style the Textarea to look like code */
+	.code-textarea {
+		flex: 1;
+		border: none;
+		padding: 0.5em;
+		font-family: inherit;
+		line-height: 1.4em;
+		resize: vertical;
+		outline: none;
+		background: transparent;
+		color: var(--foreground);
+	}
+
+	/* ensure the Textarea scrolls in sync with the gutter */
+	.code-textarea::-webkit-scrollbar {
+		width: 8px;
+	}
+	.code-textarea,
+	.gutter {
+		overflow-y: auto;
+	}
+	.code-textarea {
+		/* align scroll positions */
+		scrollbar-gutter: stable both-edges;
+	}
+</style>

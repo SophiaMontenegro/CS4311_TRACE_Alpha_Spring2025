@@ -1,3 +1,8 @@
+<script context="module">
+	// Prevent Prism from running on the server
+	export const ssr = false;
+</script>
+
 <script>
 	import { enhance } from '$app/forms';
 	import RequestBuilder from '$lib/components/ui/request-builder/RequestBuilder.svelte';
@@ -17,18 +22,12 @@
 
 		if (res?.type === 'failure' || res?.data?.error) {
 			response = { error: res.data?.error ?? res.statusText };
-
-			if (activeTab === 'request') {
-				builderRef?.refreshRawRequest();
-			}
-
+			if (activeTab === 'request') builderRef?.refreshRawRequest();
 			activeTab = 'raw';
 			return;
 		}
 
 		const data = res.data;
-		console.log('Successful response, triggering raw build...');
-
 		response = {
 			status: data.status_code ?? 0,
 			statusText: data.statusText ?? 'OK',
@@ -39,10 +38,9 @@
 			size: data.size ?? null
 		};
 
-		if (activeTab === 'request') {
-			builderRef?.refreshRawRequest();
-		}
+		console.log('▶️ response payload:', data);
 
+		if (activeTab === 'request') builderRef?.refreshRawRequest();
 		activeTab = 'raw';
 	}
 
@@ -55,12 +53,21 @@
 		};
 </script>
 
+<svelte:head>
+	<!-- Prism theme + line-numbers plugin CSS, loaded only on this route -->
+	<link rel="stylesheet" href="https://unpkg.com/prismjs@1.29.0/themes/prism-tomorrow.css" />
+	<link
+		rel="stylesheet"
+		href="https://unpkg.com/prismjs@1.29.0/plugins/line-numbers/prism-line-numbers.css"
+	/>
+</svelte:head>
+
 <form
 	method="POST"
 	use:enhance={submitEnhance}
 	bind:this={formRef}
 	on:submit={(e) => {
-		isLoading = true; // Ensures spinner appears before network call
+		isLoading = true; // show spinner immediately
 		builderRef?.onSubmit(e);
 	}}
 	class="flex h-screen w-full items-center justify-center"
