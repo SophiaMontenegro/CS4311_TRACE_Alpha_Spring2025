@@ -6,29 +6,28 @@
 	let response = null;
 	let hideCodes = [];
 	let showOnlyCodes = [];
+	let isLoading = false;
 
 	let formRef;
-	let builderRef; // for calling .refreshRawRequest()
+	let builderRef;
 	let activeTab = 'request';
-
-	let isLoading = false;
 
 	async function handleResult({ result }) {
 		const res = await result;
 
-		// Treat both transport failures and JSON error payloads as errors
 		if (res?.type === 'failure' || res?.data?.error) {
 			response = { error: res.data?.error ?? res.statusText };
-			// Only regenerate raw if coming from the form
+
 			if (activeTab === 'request') {
 				builderRef?.refreshRawRequest();
 			}
+
 			activeTab = 'raw';
 			return;
 		}
 
 		const data = res.data;
-		console.log('🎯 Successful response, triggering raw build...');
+		console.log('Successful response, triggering raw build...');
 
 		response = {
 			status: data.status_code ?? 0,
@@ -40,23 +39,20 @@
 			size: data.size ?? null
 		};
 
-		// Regenerate raw HTTP preview only if we sent from the form
 		if (activeTab === 'request') {
 			builderRef?.refreshRawRequest();
 		}
+
 		activeTab = 'raw';
 	}
 
-	// Hook into form handling
-	const submitEnhance = (form) => {
-		return async ({ result }) => {
+	const submitEnhance =
+		() =>
+		async ({ result }) => {
 			isLoading = true;
-
 			await handleResult({ result });
-
 			isLoading = false;
 		};
-	};
 </script>
 
 <form
@@ -64,7 +60,7 @@
 	use:enhance={submitEnhance}
 	bind:this={formRef}
 	on:submit={(e) => {
-		isLoading = true; // Set here so the DOM updates *before* the fetch starts
+		isLoading = true; // Ensures spinner appears before network call
 		builderRef?.onSubmit(e);
 	}}
 	class="flex h-screen w-full items-center justify-center"

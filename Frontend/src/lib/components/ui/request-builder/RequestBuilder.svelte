@@ -1,7 +1,5 @@
 <script>
 	import { onMount } from 'svelte';
-
-	/* shadcn‑svelte UI bits */
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { Textarea } from '$lib/components/ui/textarea';
@@ -10,35 +8,26 @@
 	import { Card, CardContent } from '$lib/components/ui/card';
 	import { Tabs, TabsContent, TabsList, TabsTrigger } from '$lib/components/ui/tabs';
 	import { createEventDispatcher } from 'svelte';
-
 	import { validateForm } from '$lib/validation/httpRequestValidation.js';
 
 	export let formRef = null;
 	export let activeTab;
+	export let rawRequest = '';
 
 	let method = 'GET';
 	let targetUrl = '';
 	let headers = '';
 	let cookies = '';
 	let requestBody = '';
-	export let rawRequest = ''; // Now user-editable
 	let rawEnabled = false;
+	let validationErrors = [];
 
 	const STORAGE_KEY = 'httpTesterFormData';
 
 	// Refresh raw request manually from parent
 	export function refreshRawRequest() {
-		console.log('🛠️ refreshRawRequest() called');
-		console.log('method:', method);
-		console.log('targetUrl:', targetUrl);
-		console.log('headers:', headers);
-		console.log('cookies:', cookies);
-		console.log('requestBody:', requestBody);
-
 		rawRequest = buildRawRequest();
 		rawEnabled = !!rawRequest;
-
-		console.log('🚀 rawRequest generated:\n', rawRequest);
 	}
 
 	function buildRawRequest() {
@@ -66,7 +55,7 @@
 
 			return raw;
 		} catch (err) {
-			console.warn('⚠️ Failed to build raw request:', err);
+			console.warn('Failed to build raw request:', err);
 			return '';
 		}
 	}
@@ -96,8 +85,6 @@
 			);
 		}
 	}
-
-	let validationErrors = [];
 
 	export function onSubmit(e) {
 		validationErrors = validateForm({

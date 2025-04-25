@@ -12,10 +12,10 @@ export const actions = {
 
     try {
       const formData = await request.formData();
-      console.log('[Server] Raw formData entries:', [...formData.entries()]);
-
       const mode = formData.get('mode')?.toString() || 'request';
-      let method, url, headers = {}, body;
+
+      let method, url, body;
+      let headers = {};
       let targetUrl;
 
       if (mode === 'raw') {
@@ -31,6 +31,7 @@ export const actions = {
 
         const u = new URL(targetUrl);
         url = u.pathname + u.search;
+
       } else {
         targetUrl = formData.get('targetUrl')?.toString() || '';
         method = formData.get('method')?.toString().toUpperCase() || 'GET';
@@ -48,7 +49,6 @@ export const actions = {
           const parsed = new URL(targetUrl);
           url = parsed.pathname + parsed.search;
         } catch {
-          console.warn('Invalid URL format:', targetUrl);
           return json({ error: 'Invalid URL format' }, { status: 400 });
         }
 
@@ -69,8 +69,6 @@ export const actions = {
         }
       };
 
-      console.log('[Server] Sending to proxy:', proxyPayload);
-
       const res = await fetch('http://127.0.0.1:8000/api/http/send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -80,14 +78,17 @@ export const actions = {
       let data;
       try {
         data = await res.json();
-      } catch (err) {
+      } catch {
         const text = await res.text();
-        return json({ error: `Non-JSON response from proxy: ${text.slice(0, 100)}...` }, { status: 502 });
+        return json(
+          { error: `Non-JSON response from proxy: ${text.slice(0, 100)}...` },
+          { status: 502 }
+        );
       }
 
       const parsedCookies = parseSetCookie(data.headers?.['Set-Cookie']);
 
-      const responsePayload = {
+      return {
         success: true,
         status_code: data.status_code || res.status,
         statusText: data.statusText || res.statusText,
@@ -96,12 +97,8 @@ export const actions = {
         body: data.body || '',
         time: data.time || null,
         size: data.size || null,
-        version: data.version || '2' 
-
+        version: data.version || '2'
       };
-
-      console.log('[Server] Returning payload:', responsePayload);
-      return responsePayload;
 
     } catch (error) {
       console.error('[Server] Action error:', error);
