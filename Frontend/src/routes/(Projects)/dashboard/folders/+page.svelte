@@ -105,17 +105,16 @@
     {:else}
         <div class="space-y-4">
             <!-- Column Headers -->
-            <div class="grid grid-cols-4 px-6 py-2 text-sm font-semibold text-muted-foreground">
+            <div class="grid grid-cols-5 px-6 py-2 text-sm font-semibold text-muted-foreground">
                 <div>Project Name</div>
                 <div>Last Edit</div>
                 <div>Lead Analyst</div>
                 <div>Port</div>
-                <div class="text-right pr-4"></div> <!-- delete maybe-->
+                <div class="text-right pr-4"></div> <!-- empty column for alignment -->
             </div>
 
-
             {#each filteredProjects as project (project.id)}
-                <div class="grid grid-cols-4 items-center rounded-2xl px-6 py-4 shadow-sm" style="background-color: var(--background1);">
+                <div class="grid grid-cols-5 items-center rounded-2xl px-6 py-4 shadow-sm" style="background-color: var(--background1);">
                     <!-- Project Info -->
                     <div class="flex items-center gap-4">
                         <!-- Colored status bar -->
@@ -138,8 +137,8 @@
                     <!-- Port -->
                     <div class="text-sm text-muted-foreground">{project.port || 'N/A'}</div>
 
-                    <!-- Lock icon + button -->_
-                    <div class="flex items-center justify-end gap-3">
+                    <!-- Lock icon + button -->
+                    <div class="flex justify-end gap-3">
                         {#if project.locked}
                             <Lock class="w-5 h-5 text-muted-foreground" />
                         {/if}
@@ -159,12 +158,12 @@
                                 {/if}
                             </Button>
                         {/if}
-
                     </div>
 
                 </div>
             {/each}
         </div>
+
     {/if}
 
 </div>
