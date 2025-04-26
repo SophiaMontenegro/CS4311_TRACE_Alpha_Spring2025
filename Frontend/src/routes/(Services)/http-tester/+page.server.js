@@ -114,8 +114,9 @@ export const actions = {
     }
 
     // 6) Success — build cookie map and return plain object
-    const parsedCookies = parseSetCookie(data.headers?.['Set-Cookie']);
-
+    const setCookieHeader = data.headers?.['set-cookie'] || data.headers?.['Set-Cookie'];
+    const parsedCookies = parseSetCookie(setCookieHeader);
+    
     return {
       success:     true,
       status_code: data.status_code   || proxyRes.status,

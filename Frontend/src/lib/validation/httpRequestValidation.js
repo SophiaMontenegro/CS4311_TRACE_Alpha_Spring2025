@@ -129,25 +129,24 @@ export function validateForm({
 }
 
 
-export function parseSetCookie(header) {
-  if (!header) return {};
-
+export function parseSetCookie(setCookieHeader) {
   const cookies = {};
-  const cookieParts = Array.isArray(header) ? header : [header];
 
-  for (const part of cookieParts) {
-    const parts = part.split(';').map(p => p.trim());
-    const [key, value] = parts[0].split('=');
-    if (key && value) {
-      cookies[key.trim()] = {
-        value: value.trim(),
-        attributes: parts.slice(1)
-      };
+  if (!setCookieHeader) return cookies;
+
+  const cookieStrings = Array.isArray(setCookieHeader) ? setCookieHeader : [setCookieHeader];
+
+  for (const cookieStr of cookieStrings) {
+    const parts = cookieStr.split(';')[0]; 
+    const [name, value] = parts.split('=');
+    if (name && value !== undefined) {
+      cookies[name.trim()] = value.trim();
     }
   }
 
   return cookies;
 }
+
 
 
 export function validateBodySize(body, maxSize = 10000) {

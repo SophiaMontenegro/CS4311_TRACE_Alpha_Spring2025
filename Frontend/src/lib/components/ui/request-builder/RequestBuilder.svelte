@@ -242,30 +242,4 @@
 		height: 1.4em;
 		color: var(--secondary);
 	}
-
-	/* style the Textarea to look like code */
-	.code-textarea {
-		flex: 1;
-		border: none;
-		padding: 0.5em;
-		font-family: inherit;
-		line-height: 1.4em;
-		resize: vertical;
-		outline: none;
-		background: transparent;
-		color: var(--foreground);
-	}
-
-	/* ensure the Textarea scrolls in sync with the gutter */
-	.code-textarea::-webkit-scrollbar {
-		width: 8px;
-	}
-	.code-textarea,
-	.gutter {
-		overflow-y: auto;
-	}
-	.code-textarea {
-		/* align scroll positions */
-		scrollbar-gutter: stable both-edges;
-	}
 </style>
