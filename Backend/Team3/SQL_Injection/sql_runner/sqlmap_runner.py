@@ -2,7 +2,6 @@ import sys
 import subprocess
 import os
 import json
-from datetime import datetime
 import shutil
 import stat
 import shlex
@@ -10,23 +9,21 @@ import threading
 import platform
 import signal
 import csv
+from datetime import datetime
 
-# Windows-specific (conditionally used)
+# Windows-specific imports
 if platform.system() == "Windows":
     import ctypes
-    import win32api
-    import win32con
-    import win32process
 
 HISTORY_FILE = "sqlmap_results/injection_history.json"
 Program = True
 
-# Utility for handling file permissions
+# Utility to handle file permission issues
 def handle_remove(func, path, exc):
     os.chmod(path, stat.S_IWRITE)
     func(path)
 
-# Reset all saved results
+# Reset service
 def reset_service():
     resetConfirm = input("Are you sure you would like to reset (y/n): ").strip().lower()
     if resetConfirm == 'y':
@@ -36,13 +33,13 @@ def reset_service():
         except Exception as e:
             print(f"[-] Failed to reset: {e}")
 
-# Show loading bar
+# Progress bar
 def print_progress(percent, width=40):
     done = int(width * percent / 100)
     bar = f"[{'=' * done}{' ' * (width - done)}] {percent:.0f}%"
     print(f"\r{bar}", end='', flush=True)
 
-# Save scan data to JSON history
+# Save scan history
 def save_to_history(entry):
     os.makedirs("sqlmap_results", exist_ok=True)
     if os.path.exists(HISTORY_FILE):
@@ -56,7 +53,7 @@ def save_to_history(entry):
     with open(HISTORY_FILE, "w") as f:
         json.dump(history, f, indent=4)
 
-# Show scan history
+# View scan history
 def view_history():
     print("\n[+] Viewing previous SQL injection test history...\n")
     if not os.path.exists(HISTORY_FILE):
@@ -75,132 +72,11 @@ def view_history():
         print(f"URL       : {entry['url']}")
         print(f"Port      : {entry['port']}")
         print(f"Timestamp : {entry['timestamp']}")
-        print(f"Output    : {entry['output_folder']}/output.txt")
+        print(f"Result    : {entry['result_file']}")
+        print(f"Log       : {entry['log_file']}")
         print("-----------------------------")
 
-# View output from a previous test
-def view_output_file():
-    if not os.path.exists(HISTORY_FILE):
-        print("[-] No previous injection history found.")
-        return
-
-    with open(HISTORY_FILE, "r") as f:
-        history = json.load(f)
-
-    if not history:
-        print("[-] No records to display.")
-        return
-
-    print("\n[+] Select a test to view its output:\n")
-    for i, entry in enumerate(history, 1):
-        print(f"{i}. {entry['timestamp']} - {entry['url']}")
-
-    try:
-        selection = int(input("\nEnter the test number: ").strip())
-        if 1 <= selection <= len(history):
-            output_path = os.path.join(history[selection - 1]['output_folder'], "output.txt")
-            if os.path.exists(output_path):
-                entry = history[selection - 1]
-                if "summary" in entry:
-                    print(f"\n[+] Showing summarized results:\n")
-                    print(entry["summary"])
-                else:
-                    print(f"\n[+] Showing full output from: {output_path}\n")
-                    with open(output_path, "r") as f:
-                        print(f.read())
-
-            else:
-                print("[-] Output file not found.")
-        else:
-            print("[-] Invalid selection.")
-    except ValueError:
-        print("[-] Invalid input.")
-
-def extract_useful_info(output_path, summary_path):
-    useful_lines = []
-    keywords = [
-        "[INFO] testing connection", 
-        "[INFO] the back-end DBMS is",
-        "[INFO] fetching", 
-        "[INFO] database",
-        "[INFO] table", 
-        "[INFO] column", 
-        "[INFO] entries",
-        "[CRITICAL]", 
-        "[WARNING]", 
-        "[DATA]"
-    ]
-
-    with open(output_path, "r") as infile:
-        for line in infile:
-            if any(keyword in line for keyword in keywords):
-                useful_lines.append(line.strip())
-
-    with open(summary_path, "w") as summary_file:
-        summary_file.write("\n".join(useful_lines))
-
-    print(f"[+] Summary saved to: {summary_path}")
-
-def extract_essential_results(output_dir):
-    summary = []
-    csv_rows = []
-
-    output_file = os.path.join(output_dir, "output.txt")
-    if os.path.exists(output_file):
-        with open(output_file, "r", encoding="utf-8", errors="ignore") as f:
-            for line in f:
-                if "parameter" in line.lower() and "injectable" in line.lower():
-                    msg = f"[Injection Point] {line.strip()}"
-                    summary.append(msg)
-                    csv_rows.append(["Injection Point", line.strip()])
-                if "back-end DBMS is" in line:
-                    msg = f"[DBMS Info] {line.strip()}"
-                    summary.append(msg)
-                    csv_rows.append(["DBMS Info", line.strip()])
-
-    # Search for .csv dumped data
-    for root, dirs, files in os.walk(output_dir):
-        for file in files:
-            if file.endswith(".csv"):
-                parts = os.path.normpath(root).split(os.sep)
-                db_name = parts[-2] if len(parts) >= 2 else "unknown_db"
-                table_name = parts[-1]
-                section_title = f"[Dumped Data] Database: {db_name}, Table: {table_name}"
-                summary.append(f"\n{section_title}")
-                csv_rows.append(["Dump Info", f"Database: {db_name}, Table: {table_name}"])
-
-                csv_path = os.path.join(root, file)
-                try:
-                    with open(csv_path, "r", encoding="utf-8", errors="ignore") as csvfile:
-                        reader = csv.reader(csvfile)
-                        for row in reader:
-                            line = ",".join(row)
-                            summary.append(line)
-                            csv_rows.append(["Dump Row", line])
-                except Exception as e:
-                    error_msg = f"[!] Failed to read dump: {e}"
-                    summary.append(error_msg)
-                    csv_rows.append(["Error", error_msg])
-
-    # Save CSV
-    csv_out_path = os.path.join(output_dir, "results.csv")
-    try:
-        with open(csv_out_path, "w", newline='', encoding="utf-8") as f:
-            writer = csv.writer(f)
-            writer.writerow(["Type", "Message"])
-            writer.writerows(csv_rows)
-        print(f"[+] CSV log saved: {csv_out_path}")
-    except Exception as e:
-        print(f"[-] Failed to save CSV: {e}")
-
-    if not summary:
-        summary.append("[!] No significant results found.")
-        csv_rows.append(["Info", "No significant results found."])
-
-    return "\n".join(summary)
-
-
-# Cross-platform suspend/resume
+# Suspend process
 def suspend_process(pid):
     if platform.system() == "Windows":
         try:
@@ -217,6 +93,7 @@ def suspend_process(pid):
     else:
         os.kill(pid, signal.SIGSTOP)
 
+# Resume process
 def resume_process(pid):
     if platform.system() == "Windows":
         try:
@@ -233,16 +110,16 @@ def resume_process(pid):
     else:
         os.kill(pid, signal.SIGCONT)
 
-# Main scan logic
+# Run SQLMap
 def run_sqlmap():
     base_url = input("Enter the target URL: ").strip()
     port = input("Enter the port: ").strip()
-    params = input("Enter GET parameters (e.g. id=1&name=admin, ?id=1) or press ENTER to skip: ").strip()
+    params = input("Enter GET parameters (or press ENTER to skip): ").strip()
 
-    if "://" in base_url:
-        protocol, rest = base_url.split("://", 1)
+    if "//" in base_url:
+        protocol, rest = base_url.split("//", 1)
         if ":" not in rest:
-            base_url = f"{protocol}://{rest}:{port}"
+            base_url = f"{protocol}//{rest}:{port}"
     else:
         base_url = f"http://{base_url}:{port}"
 
@@ -254,17 +131,17 @@ def run_sqlmap():
 
     print(f"\n[+] Final Target: {base_url}")
 
-    # Create base Job ID folder
-    job_base_dir = os.path.join("sqlmap_results", "Job ID")
-    os.makedirs(job_base_dir, exist_ok=True)
+    # Directly save in sqlmap_results folder
+    os.makedirs("sqlmap_results", exist_ok=True)
 
-    # Determine next job number
-    existing = [int(name) for name in os.listdir(job_base_dir) if name.isdigit()]
-    next_job_id = max(existing, default=6999) + 1  # Start at 7000
+    existing = [int(name.replace("sql_results_", "").replace(".csv", "")) for name in os.listdir("sqlmap_results") if name.startswith("sql_results_")]
+    next_job_id = max(existing, default=6999) + 1
 
-    # Create the new result folder for this job
-    output_dir = os.path.join(job_base_dir, str(next_job_id))
-    os.makedirs(output_dir, exist_ok=True)
+    result_filename = f"sql_results_{next_job_id}.csv"
+    log_filename = f"sql_log_{next_job_id}.csv"
+
+    result_path = os.path.join("sqlmap_results", result_filename)
+    log_path = os.path.join("sqlmap_results", log_filename)
 
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
@@ -273,15 +150,13 @@ def run_sqlmap():
     python_exe = sys.executable
 
     cmd = [
-        python_exe,
-        sqlmap_path,
+        python_exe, sqlmap_path,
         "-u", base_url,
         "--batch",
-        "--dump",
-        "--output-dir", output_dir
+        "--dump"
     ]
 
-    customFlag = input("Enter any additional SQLMAP flags or press ENTER to skip: ").strip()
+    customFlag = input("Enter any additional SQLMap flags (or press ENTER to skip): ").strip()
     if customFlag:
         cmd += shlex.split(customFlag)
 
@@ -289,67 +164,67 @@ def run_sqlmap():
 
     process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
 
-    # Real-time input handler
+    # Live input listener thread
     def input_listener(proc):
         paused = False
         while proc.poll() is None:
             key = input("\n[Press 'p' to pause, 'r' to resume, 'q' to quit scan]: ").strip().lower()
             if key == 'p':
-                print("[*] Pausing SQLMap...")
                 suspend_process(proc.pid)
+                print("[*] SQLMap Paused.")
                 paused = True
             elif key == 'r':
-                print("[*] Resuming SQLMap...")
                 resume_process(proc.pid)
+                print("[*] SQLMap Resumed.")
                 paused = False
             elif key == 'q':
-                print("[!] Terminating SQLMap...")
                 if paused:
-                    print("[*] Process is paused. Resuming before termination...")
                     resume_process(proc.pid)
-                    paused = False
+                print("[!] Terminating SQLMap...")
                 proc.terminate()
-                try:
-                    proc.wait(timeout=5)
-                except subprocess.TimeoutExpired:
-                    print("[!] Process didn't terminate in time. Forcing kill.")
-                    proc.kill()
                 break
 
     threading.Thread(target=input_listener, args=(process,), daemon=True).start()
 
-    output_file = os.path.join(output_dir, "output.txt")
-    with open(output_file, "w") as f:
+    with open(result_path, "w", encoding="utf-8", newline='') as result_file, open(log_path, "w", encoding="utf-8", newline='') as log_file:
+        csv_writer = csv.writer(result_file)
+        csv_writer.writerow(["Type", "Details"])
+
         for line in process.stdout:
-            f.write(line)
-            if "checking if the target is protected" in line.lower():
+            log_file.write(line)
+            lower_line = line.lower()
+
+            if "checking if the target is protected" in lower_line:
                 print_progress(20)
-            elif "testing connection" in line.lower():
+            elif "testing connection" in lower_line:
                 print_progress(40)
-            elif "the back-end dbms is" in line.lower():
+            elif "the back-end dbms is" in lower_line:
                 print_progress(60)
-            elif "fetching" in line.lower() or "dumping" in line.lower():
+            elif "fetching" in lower_line or "dumping" in lower_line:
                 print_progress(90)
+
+            important_keywords = ["parameter:", "type:", "title:", "payload:", "database:", "table:", "column:", "data:"]
+            if any(keyword in lower_line for keyword in important_keywords):
+                clean_line = line.strip()
+                for keyword in important_keywords:
+                    if keyword in lower_line:
+                        csv_writer.writerow([keyword.replace(":", "").capitalize(), clean_line])
+                        break
 
         process.wait()
         print_progress(100)
         print("\n[+] Scan complete.")
 
-    summary_path = os.path.join(output_dir, "summary.txt")
-    extract_useful_info(output_file, summary_path)
-   
-
-    useful_summary = extract_essential_results(output_dir)
-
     save_to_history({
         "url": base_url,
         "port": port,
         "timestamp": timestamp,
-        "output_folder": output_dir.replace("\\", "/"),
-        "summary": useful_summary
+        "result_file": result_path.replace("\\", "/"),
+        "log_file": log_path.replace("\\", "/")
     })
 
-    print(f"[+] Results saved to: {output_file}")
+    print(f"[+] Results saved to: {result_path}")
+    print(f"[+] Log saved to: {log_path}")
     print(f"[+] History updated: {HISTORY_FILE}")
 
 # CLI menu
@@ -359,9 +234,8 @@ if __name__ == "__main__":
             print("====== SQLMap Tool ======")
             print("1 - Perform New Injection")
             print("2 - View Previous Results")
-            print("3 - Reset Services Result")
-            print("4 - View Output File")
-            print("5 - Quit")
+            print("3 - Reset Service Results")
+            print("4 - Quit")
 
             choice = input("Choose an option: ").strip()
 
@@ -372,10 +246,8 @@ if __name__ == "__main__":
             elif choice == "3":
                 reset_service()
             elif choice == "4":
-                view_output_file()
-            elif choice == "5":
                 Program = False
-                print("Goodbye")
+                print("Goodbye!")
             else:
                 print("Invalid choice. Try again")
     except KeyboardInterrupt:
