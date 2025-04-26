@@ -119,6 +119,7 @@
     }
 
     async function createDirectories(project_name, directory_path) {
+        console.log("project name: ", project_name);
         try {
             const url = `http://127.0.0.1:8000/team3/directories/${encodeURIComponent(project_name)}/create?directory_path=${encodeURIComponent(directory_path)}`;
 
@@ -130,6 +131,8 @@
             });
 
             const responseData = await response.json();
+
+            console.log("create dir:", responseData);
 
             if (!response.ok) {
                 let errorMessage = 'Failed to create Directories';

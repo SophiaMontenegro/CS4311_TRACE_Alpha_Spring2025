@@ -427,7 +427,8 @@ async def verify_directory_path(data: PathVerifyRequest):
 # Create Directories
 @team3_router.put("/directories/{project_name}/create")
 async def create_directories(directory_path: str, project_name: str):
-    success = file_manager.fileCreation(directory_path, project_name)
+    print("create directories method in router", directory_path)
+    success = file_manager.fileCreation(project_name, directory_path)
     if success is None:
         raise HTTPException(status_code=404, detail="Directory Path doesn't exist")
     return {"message": f"Directories created at {directory_path} "}
