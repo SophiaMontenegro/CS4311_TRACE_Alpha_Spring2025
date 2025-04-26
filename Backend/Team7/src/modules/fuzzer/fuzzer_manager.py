@@ -10,7 +10,6 @@ from Team1.httpclient.http_client import HTTPClient
 from Team1.httpclient.proxy_server import ProxyServer
 from Team7.src.modules.fuzzer.fuzzer_response_processor import FuzzerResponseProcessor
 
-
 log_path = os.path.join(os.path.dirname(__file__), "fuzzing.log")
 logging.basicConfig(
     filename=log_path,
@@ -47,7 +46,6 @@ class FuzzerManager:
     def __init__(self) -> None:
         self.config = {}
         self.response_processor = FuzzerResponseProcessor()
-        # TODO: add the new http client
         self.proxy = ProxyServer()
         self.http_client = HTTPClient(self.proxy)
         self.request_count = 0
@@ -123,7 +121,6 @@ class FuzzerManager:
         if not target_url or not http_method or not parameters or not payloads:
             raise ValueError("Missing required fuzzing configuration parameters.")
         if isinstance(payloads, str) and os.path.isfile(payloads):
-            # TODO: Update the path to the database folder.
             with open(payloads, "r", encoding="utf-8") as f:
                 payloads = [line.strip() for line in f if line.strip()]
         if not isinstance(payloads, list) or not payloads:
@@ -205,6 +202,7 @@ class FuzzerManager:
                     if http_method in ["POST", "PUT"]:
                         request["body"] = modified_body
                     response = self.http_client.send_request(request)
+                    await asyncio.sleep(0.3)
                     mock = MockResponse(target_url, response["status_code"], response["body"])
                     mock.payload = payload
                     mock.error = response["status_code"] not in [200]
@@ -297,26 +295,3 @@ class FuzzerManager:
         @ensures isinstance(result, list);
         """
         return self.response_processor.get_filtered_results()
-
-#sample test
-if __name__ == '__main__':
-    manager = FuzzerManager()
-
-    wordlist = ["root", "admin", "test", "guest", "info", "adm", "mysql", "user", "administrator", "oracle", "ftp", "pi", "puppet", "ansible", "ec2-user", "vagrant", "azureuser"]
-
-    manager.configure_fuzzing(
-        target_url="https://team-9-56497.firebaseapp.com/Login",
-        http_method="POST",
-        headers={"User-Agent": "Mozilla/5.0", "Content-Type": "application/x-www-form-urlencoded"},
-        cookies={},
-        proxy=None,
-        body_template={"field-r1__control": "", "field-r2__control": ""},
-        parameters=["field-r1__control", "field-r2__control"],
-        payloads=wordlist
-    )
-    try:
-        loop = asyncio.get_running_loop()
-        task = loop.create_task(manager.start_fuzzing())
-        loop.run_until_complete(task)
-    except RuntimeError:
-        asyncio.run(manager.start_fuzzing())
