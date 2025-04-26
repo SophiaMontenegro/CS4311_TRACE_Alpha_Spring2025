@@ -46,7 +46,7 @@
         
         <div class="flex justify-end gap-3">
           <button 
-            class="px-4 py-2 rounded-md bg-accent text-background hover:bg-accent1 transition-colors"
+            class="px-4 py-2 rounded-md bg-accent text-foreground hover:bg-accent1 transition-colors"
             on:click={onCancel}
           >
             Cancel
