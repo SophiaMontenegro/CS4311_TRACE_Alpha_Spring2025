@@ -7,12 +7,14 @@ import logging
 from Team3.Database.Project_Manager import ProjectManager
 from Team3.Database.Database_Manager import Database_Manager
 from Team3.Database.Analyst_Manager import AnalystManager
+from Team3.Database.File_Manager import FileManager
 
 # ✅ Initialize DB connection and project manager
 try:
     db = Database_Manager()  # No arguments needed anymore
     analyst_manager = AnalystManager(db)
     project_manager = ProjectManager(db, analyst_manager)
+    file_manager = FileManager()
     print("✅ Database connection successful for Team 3")
 except Exception as e:
     print(f"Team 3 database connection failed ❌: {e}")
@@ -403,10 +405,29 @@ async def edit_last_edited(project_name: str):
         raise HTTPException(status_code=404, detail="Project doesn't exist")
     return {"message": f"Project updated last_edited sucessfully"}
 
-# Edit description
+# Edit port
 @team3_router.put("/projects/{project_name}/port")
 async def edit_port(project_name: str, port: int, analyst_name: str):
     success = project_manager.edit_port(project_name, analyst_name, port)
     if success is None:
         raise HTTPException(status_code=404, detail="Analyst doesn't exist")
     return {"message": f"Project port updated successfully to {port}"}
+
+class PathVerifyRequest(BaseModel):
+    directory_path: str
+
+# Directory Path Verification
+@team3_router.put("/directory_path_verify/")
+async def verify_directory_path(data: PathVerifyRequest):
+    success = file_manager.is_valid_path(data.directory_path)
+    if not success:
+        return {"status": "invalid"}
+    return {"status": "available"}
+
+# Create Directories
+@team3_router.put("/directories/{project_name}/create")
+async def create_directories(directory_path: str, project_name: str):
+    success = file_manager.fileCreation(directory_path, project_name)
+    if success is None:
+        raise HTTPException(status_code=404, detail="Directory Path doesn't exist")
+    return {"message": f"Directories created at {directory_path} "}

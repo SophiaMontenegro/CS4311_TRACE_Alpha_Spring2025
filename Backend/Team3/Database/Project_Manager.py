@@ -49,7 +49,7 @@ class ProjectManager:
                 "start_date": start_date_str,
                 "end_date": end_date_str,
                 "port": port,
-                "directory": directory_path
+                "directory_path": directory_path
             }
 
             logging.debug(f"Running query with params: {params}")

@@ -135,7 +135,10 @@
                     <!-- Lead Analyst -->
                     <div class="text-sm text-muted-foreground">{project.lead_analyst}</div>
 
-                    <!-- Lock icon + button -->
+                    <!-- Port -->
+                    <div class="text-sm text-muted-foreground">{project.port || 'N/A'}</div>
+
+                    <!-- Lock icon + button -->_
                     <div class="flex items-center justify-end gap-3">
                         {#if project.locked}
                             <Lock class="w-5 h-5 text-muted-foreground" />

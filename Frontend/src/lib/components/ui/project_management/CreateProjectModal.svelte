@@ -91,47 +91,87 @@
         const trimmedName = projectName.trim();
 
         if (!trimmedName) {
-            errors.projectName = 'Project name is required';
+            errors.projectName = 'Project name is required.';
             valid = false;
         } else {
             const verify_name = await check_name(trimmedName); // ✅ await async call
 
             if (verify_name === false) {
-                errors.projectName = 'Project name already exists';
+                errors.projectName = 'Project name already exists.';
                 valid = false;
             }
         }
 
         if (!startDate) {
-            errors.startDate = 'Start date is required';
+            errors.startDate = 'Start date is required.';
             valid = false;
         } else if (!endDate) {
-            errors.endDate = 'End date is required';
+            errors.endDate = 'End date is required.';
             valid = false;
         } else if (new Date(endDate) < new Date(startDate)) {
-            errors.startDate = 'End date must be after start date';
+            errors.startDate = 'End date must be after start date.';
             valid = false;
         }
 
-        if (!directoryPath) {
+        const trimmedPath = directoryPath.trim();
+        console.log("PATH boolean: ", !trimmedPath);
+        if (!trimmedPath) {
             errors.saveDirectory = 'Directory needs to be added.';
             valid = false;
         }
-
+        else {
+            const valid_path= await verifyPath(trimmedPath); // ✅ await async call
+            if (valid_path === false) {
+                errors.saveDirectory = 'Directory is invalid';
+                valid = false;
+            }
+        }
         if (!port) {
-            errors.port = 'Port number is required';
+            errors.port = 'Port number is required.';
             valid = false;
         } else if (isNaN(Number(port)) || Number(port) < 1 || Number(port) > 65535) {
-            errors.port = 'Invalid port number';
+            errors.port = 'Invalid port number.';
             valid = false;
         }
 
         return valid;
     }
 
-    function validate_DirectorySelection() {
-        // implement later
-        return True
+    async function verifyPath(path) {
+        try {
+            const response = await fetch('http://127.0.0.1:8000/team3/directory_path_verify/', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    directory_path: path
+                })
+            });
+
+            const responseData = await response.json();
+
+            if (!response.ok) {
+                let errorMessage = 'Failed to verify path';
+                if (responseData.detail) {
+                    errorMessage = typeof responseData.detail === 'string'
+                        ? responseData.detail
+                        : JSON.stringify(responseData.detail);
+                } else if (typeof responseData === 'object') {
+                    errorMessage = JSON.stringify(responseData);
+                }
+
+                throw new Error(errorMessage);
+            }
+
+            // Check if name is taken
+            if (responseData.status === "invalid") {
+                return false;
+            }
+
+            return true;
+        } catch (err) {
+            console.error("verify path error:", err);
+            return false;
+        }
     }
 
     async function addUser() {
@@ -304,6 +344,9 @@
                         </div>
                     </div>
                 {/if}
+                {#if errors.saveDirectory}
+                    <p class="text-red-500 text-sm">{errors.saveDirectory}</p>
+                {/if}
             </div>
 
 
@@ -347,7 +390,6 @@
             <Button class="btn-class" variant="ghost" size="sm" onclick={handleClose}>Cancel</Button>
             <!-- Not in a form -->
             <Button class="btn-class" variant="default" size="sm" onclick={async () => {
-                console.log("Button clicked!");
                 await handleSubmit();
             }}>
                 Create

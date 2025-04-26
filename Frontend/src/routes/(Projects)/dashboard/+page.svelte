@@ -85,7 +85,7 @@
                     description: projectData.description || '',
                     userList: projectData.userList || [],
                     port: projectData.port,
-                    directory_path: projectData.directory_path
+                    directory_path: projectData.directoryPath
                 })
             });
 
@@ -104,7 +104,7 @@
                 throw new Error(errorMessage);
             }
 
-
+            await createDirectories(projectData.projectName, projectData.directoryPath);
             await loadProjects();
             closeCreateModal();
         } catch (err) {
@@ -117,6 +117,41 @@
             }
         }
     }
+
+    async function createDirectories(project_name, directory_path) {
+        try {
+            const url = `http://127.0.0.1:8000/team3/directories/${encodeURIComponent(project_name)}/create?directory_path=${encodeURIComponent(directory_path)}`;
+
+            const response = await fetch(url, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            const responseData = await response.json();
+
+            if (!response.ok) {
+                let errorMessage = 'Failed to create Directories';
+                if (responseData.detail) {
+                    errorMessage = typeof responseData.detail === 'string'
+                        ? responseData.detail
+                        : JSON.stringify(responseData.detail);
+                } else if (typeof responseData === 'object') {
+                    errorMessage = JSON.stringify(responseData);
+                }
+
+                throw new Error(errorMessage);
+            }
+
+            return true;
+        } catch (err) {
+            console.error("create directories error:", err);
+            return false;
+        }
+    }
+
+
 
     function handleImportProject(event) {
         const { files } = event.detail;

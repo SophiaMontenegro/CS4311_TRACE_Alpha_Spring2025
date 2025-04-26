@@ -289,7 +289,7 @@
             }
 
             // Update Port Number
-            if (new_port !== String(project.port)) {
+            if (new_port !== project.port) {
                 const resPort = await fetch(`${baseURL}/projects/${encodeURIComponent(name)}/port?port=${new_port}&analyst_name=${analystInitials}`, {
                     method: 'PUT'
                 });
@@ -445,11 +445,3 @@
         </DialogFooter>
     </DialogContent>
 </Dialog>
-
-<Alert
-        isOpen={showSave}
-        title="Are you absolutely sure?"
-        message="This action cannot be undone."
-        onCancel={handleCancelDelete}
-        onContinue={handleConfirmedDelete}
-/>
