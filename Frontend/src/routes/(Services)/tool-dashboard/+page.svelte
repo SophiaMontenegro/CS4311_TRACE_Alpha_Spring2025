@@ -4,15 +4,79 @@
 	import { serviceStatus } from '$lib/stores/projectServiceStore.js';
 	import { onMount } from 'svelte';
 	import { get } from 'svelte/store';
-
-	import { connectToCrawlerWebSocket } from '$lib/services/crawlerSocket';
-	import { connectToFuzzerWebSocket } from '$lib/services/fuzzerSocket';
-	import { connectToBruteForceWebSocket } from '$lib/services/bruteForceSocket';
-	import { scanProgress } from '$lib/stores/scanProgressStore.js';
-	import { Check, X, Circle } from 'lucide-svelte';
+	import { Check, X, Circle, LogOut } from 'lucide-svelte';
+	import Alert from '$lib/components/ui/alert/Alert.svelte';
+	import { connectToCrawlerWebSocket, closeCrawlerWebSocket } from '$lib/services/crawlerSocket';
+	import { connectToFuzzerWebSocket, closeFuzzerWebSocket } from '$lib/services/fuzzerSocket';
+	import {
+		connectToBruteForceWebSocket,
+		closeBruteForceWebSocket
+	} from '$lib/services/bruteForceSocket';
+	import { serviceResults } from '$lib/stores/serviceResultsStore.js';
+	import { scanProgress, stopScanProgress } from '$lib/stores/scanProgressStore.js';
 
 	export let data;
 	$: $serviceStatus;
+	let showExitDialog = false;
+	let projectName = '';
+
+	function handleExitClick() {
+		showExitDialog = true;
+	}
+
+	function handleExitCancel() {
+		showExitDialog = false;
+	}
+
+	async function stopCurrentScan(toolType) {
+		stopScanProgress();
+
+		let jobIdKey = '';
+		let closeSocketFn;
+		let serviceKey = '';
+
+		if (toolType === 'crawler') {
+			jobIdKey = 'currentCrawlerJobId';
+			closeSocketFn = closeCrawlerWebSocket;
+			serviceKey = 'crawler';
+		} else if (toolType === 'fuzzer') {
+			jobIdKey = 'currentFuzzerJobId';
+			closeSocketFn = closeFuzzerWebSocket;
+			serviceKey = 'fuzzer';
+		} else if (toolType === 'dbf') {
+			jobIdKey = 'currentDbfJobId';
+			closeSocketFn = closeBruteForceWebSocket;
+			serviceKey = 'dbf';
+		}
+
+		const jobId = localStorage.getItem(jobIdKey);
+
+		if (jobId) {
+			closeSocketFn();
+
+			// Dynamically build the stop URL
+			await fetch(`http://localhost:8000/api/${toolType}/${jobId}/stop`, {
+				method: 'POST'
+			});
+
+			// Clear results and local storage
+			serviceResults.update((r) => ({ ...r, [serviceKey]: [] }));
+			localStorage.removeItem(jobIdKey);
+		}
+	}
+
+	async function handleExitConfirm() {
+		showExitDialog = false;
+		localStorage.removeItem('current_project_name');
+
+		const toolType = get(serviceStatus).serviceType;
+
+		if (toolType) {
+			await stopCurrentScan(toolType);
+		}
+
+		goto('/dashboard');
+	}
 
 	onMount(() => {
 		const status = get(serviceStatus).status;
@@ -36,6 +100,18 @@
 					break;
 				}
 			}
+		}
+	});
+
+	onMount(() => {
+		const urlParams = new URLSearchParams(window.location.search);
+		const queryProjectName = urlParams.get('projectName');
+
+		if (queryProjectName) {
+			projectName = queryProjectName;
+			localStorage.setItem('current_project_name', queryProjectName);
+		} else {
+			projectName = localStorage.getItem('current_project_name') || 'Unnamed Project';
 		}
 	});
 
@@ -64,16 +140,6 @@
 		const type = getServiceType(tool);
 		const routeSegment = getToolRouteSegment(type);
 
-		// If service is idle and the user is starting a new scan
-		if ($serviceStatus.status === 'idle' && $serviceStatus.serviceType !== type) {
-			// Reset the serviceStatus when clicking "Start"
-			serviceStatus.set({
-				status: 'idle',
-				serviceType: null,
-				startTime: null
-			});
-		}
-
 		if (
 			['running', 'paused', 'completed', 'error'].includes($serviceStatus.status) &&
 			$serviceStatus.serviceType === type
@@ -90,10 +156,13 @@
 		if ($serviceStatus.serviceType === type) {
 			switch ($serviceStatus.status) {
 				case 'running':
+					console.log('Tool is running:', tool.name);
 					return 'In Progress';
 				case 'paused':
+					console.log('Tool is paused:', tool.name);
 					return 'Paused';
 				case 'completed':
+					console.log('Tool has completed:', tool.name);
 					return 'Finished';
 				default:
 					return 'Not Started';
@@ -153,8 +222,23 @@
 
 <div class="tool-dashboard">
 	<div class="title-section">
-		<div class="title">Tool Dashboard</div>
-		<div class="proj-name">{data.projectName}</div>
+		<div class="text-section">
+			<div class="title">Tool Dashboard</div>
+			<div class="proj-name">{projectName}</div>
+		</div>
+		<div class="exit-button">
+			<Button
+				variant="secondary"
+				size="lg"
+				onclick={handleExitClick}
+				class="px-6"
+				aria-label="Exit Tool Dashboard"
+				title="Exit Tool Dashboard"
+			>
+				<LogOut class="mr-2 size-4" />
+				Exit Project
+			</Button>
+		</div>
 	</div>
 
 	<div class="cards-container">
@@ -164,23 +248,25 @@
 			<div class="card">
 				<div class="tool-name">{tool.name}</div>
 
-				<div class="tool-actions">
-					<div class="status-group">
-						<div class="status-icon {display.rawStatus}">
-							{#if display.rawStatus === 'completed'}
-								<span class="icon"><Check /></span>
-							{:else if display.rawStatus === 'error'}
-								<span class="icon"><X /></span>
-							{:else}
-								<div class="center-dot"></div>
-							{/if}
+
+					<div class="tool-actions">
+						<div class="status-group">
+							<div class="status-icon {display.rawStatus}">
+								{#if display.rawStatus === 'completed'}
+									<span class="icon"><Check /></span>
+								{:else if display.rawStatus === 'error'}
+									<span class="icon"><X /></span>
+								{:else}
+									<div class="center-dot"></div>
+								{/if}
+							</div>
 						</div>
+						<span>
+							<span class="percent">{display.percent}</span>
+							<span class="status-text"> {display.statusText}</span>
+						</span>
 					</div>
-					<span>
-						<span class="percent">{display.percent}</span>
-						<span class="status-text"> {display.statusText}</span>
-					</span>
-				</div>
+
 
 				<div class="buttons-container">
 					<Button
@@ -200,19 +286,15 @@
 			</div>
 		{/each}
 	</div>
-	<div class="exit-button">
-		<Button
-			default="secondary"
-			size="lg"
-			onclick={() => goto('/dashboard')}
-			class="px-10"
-			aria-label="Settings"
-			title="Settings"
-		>
-			Exit
-		</Button>
-	</div>
 </div>
+
+<Alert
+	isOpen={showExitDialog}
+	title="Are you absolutely sure?"
+	message="This action will stop the project session and disconnect all services."
+	onCancel={handleExitCancel}
+	onContinue={handleExitConfirm}
+/>
 
 <style>
 	.tool-dashboard {
@@ -224,9 +306,18 @@
 
 	.title-section {
 		display: flex;
+		flex-direction: row;
+		max-height: fit-content;
+		padding-bottom: 2rem;
+	}
+
+	.text-section {
+		display: flex;
 		flex-direction: column;
 		max-height: fit-content;
 		padding-bottom: 2rem;
+		width: 50%;
+		height: 100%;
 	}
 
 	.title {
@@ -351,9 +442,9 @@
 		display: flex;
 		justify-content: flex-end;
 		align-items: flex-end;
-		padding-right: 3rem;
-		padding-bottom: 3rem;
-		width: 100%;
+		padding-right: 5rem;
+		padding-bottom: 4rem;
+		width: 50%;
 		height: 100%;
 	}
 </style>

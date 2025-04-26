@@ -249,7 +249,7 @@
 				localStorage.setItem(`checkpoint_${jobId}`, JSON.stringify(data));
 				console.log(`[Auto] Checkpoint saved for job ${jobId}`);
 			}
-		}, 15000);
+		}, 10000);
 	});
 
 	onDestroy(() => {
