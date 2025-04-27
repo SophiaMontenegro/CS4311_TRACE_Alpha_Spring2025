@@ -8,7 +8,8 @@ class ProjectManager:
 
     
 
-    def create_project(self, analyst_id, project_name, start_date, end_date, description, userList):
+    def create_project(self, analyst_id, project_name, start_date, end_date, description, userList, lead_ip):
+
         """
         Creates a new project with the given analyst as the owner.
         
@@ -43,6 +44,7 @@ class ProjectManager:
                 start_date: $start_date,
                 end_date: $end_date,
                 locked: false,
+                lead_ip: $lead_ip,
                 created_at: datetime()
             })
             CREATE (a)-[:OWNS]->(p)
@@ -55,7 +57,8 @@ class ProjectManager:
                 "project_name": project_name,
                 "description": description,
                 "start_date": start_date_str,
-                "end_date": end_date_str
+                "end_date": end_date_str,
+                "lead_ip": lead_ip
             }
             
             logging.debug(f"Running query with params: {params}")
