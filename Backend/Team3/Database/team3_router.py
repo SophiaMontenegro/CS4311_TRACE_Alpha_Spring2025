@@ -14,7 +14,7 @@ try:
     db = Database_Manager()  # No arguments needed anymore
     analyst_manager = AnalystManager(db)
     project_manager = ProjectManager(db, analyst_manager)
-    file_manager = FileManager()
+    file_manager = FileManager(db)
     print("✅ Database connection successful for Team 3")
 except Exception as e:
     print(f"Team 3 database connection failed ❌: {e}")
@@ -64,7 +64,15 @@ async def create_project(project: ProjectCreate):
             logging.error("Project creation failed")
             raise HTTPException(status_code=500, detail="Project creation failed")
 
+        # Create the tool nodes with file paths after project is created
+        project_manager.create_tool_nodes(
+            project_data['project_name'],
+            project_data['directory_path']
+        )
+        logging.debug(f"Tool nodes successfully created for project: {project_data['project_name']}")
+
         return {"message": "Project created successfully", "project": project_data}
+
     except Exception as e:
         logging.error(f"Error creating project: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -432,3 +440,44 @@ async def create_directories(directory_path: str, project_name: str):
     if success is None:
         raise HTTPException(status_code=404, detail="Directory Path doesn't exist")
     return {"message": f"Directories created at {directory_path} "}
+
+# Retrieve tool directory to save files
+@team3_router.put("/directories/{project_name}/tool_directory")
+async def get_tool_directory_endpoint(project_name: str, tool_name: str):
+    tools = {"BruteForce", "Crawler", "Fuzzer", "Gen_AI",
+             "HTTP", "Intruder", "SQLInjection", "WebTree"}
+    directory = ""
+    if (tool_name in tools):
+        directory = file_manager.get_tool_directory(project_name, tool_name)
+    else:
+        raise HTTPException(status_code=404, detail="Tool Doesn't Exist")
+    return {"directory":  directory }
+
+
+# Add a Files:
+# File  model
+class FileNode(BaseModel):
+    job_id: str
+    tool_name: str
+    file_name: str
+    file_path: str
+    is_log: bool
+@team3_router.put("/directories/{project_name}/add_files")
+async def add_files(project_name: str, data: FileNode):
+    # First, append job_id to the tool
+    append_success = file_manager.append_job_id_to_tool(project_name, data.tool_name, data.job_id)
+    if not append_success:
+        raise HTTPException(status_code=500, detail=f"Failed to update tool '{data.tool_name}' with job ID.")
+
+    # Then, create the File node
+    create_success = file_manager.create_file_node(
+        project_name,
+        data.job_id,
+        data.file_name,
+        data.file_path,
+        is_log=data.is_log
+    )
+    if not create_success:
+        raise HTTPException(status_code=500, detail=f"Failed to create file node '{data.file_name}'.")
+
+    return {"message": f"File '{data.file_name}' successfully created and linked to tool '{data.tool_name}'."}

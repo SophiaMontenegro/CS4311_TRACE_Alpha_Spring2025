@@ -9,7 +9,8 @@
 	import { connectToFuzzerWebSocket } from '$lib/services/fuzzerSocket';
 	import { connectToBruteForceWebSocket } from '$lib/services/bruteForceSocket';
 
-	export let data;
+    export let project;
+    export let data;
 	$: $serviceStatus;
 
 	onMount(() => {
