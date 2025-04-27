@@ -65,47 +65,47 @@
             tooltip: 'Optional additional SQLMap flags',
             required: false,
             advanced: true
-        },
-        {
-            id: 'dbUser',
-            label: 'DB Username',
-            placeholder: 'admin',
-            tooltip: 'Optional: Database username if known',
-            required: false,
-            advanced: true
-        },
-        {
-            id: 'dbPass',
-            label: 'DB Password',
-            placeholder: 'password123',
-            tooltip: 'Optional: Database password if known',
-            required: false,
-            advanced: true
-        },
-        {
-            id: 'enumLevel',
-            label: 'Enumeration Level',
-            placeholder: '1',
-            tooltip: 'Enumeration level (1-5)',
-            required: false,
-            advanced: true
-        },
-        {
-            id: 'timeout',
-            label: 'Timeout',
-            placeholder: '30',
-            tooltip: 'Timeout in seconds',
-            required: false,
-            advanced: true
-        },
-        {
-            id: 'additional',
-            label: 'Additional Flags',
-            placeholder: '',
-            tooltip: 'Any other custom SQLMap flags',
-            required: false,
-            advanced: true
         }
+        // {
+        //     id: 'dbUser',
+        //     label: 'DB Username',
+        //     placeholder: 'admin',
+        //     tooltip: 'Optional: Database username if known',
+        //     required: false,
+        //     advanced: true
+        // },
+        // {
+        //     id: 'dbPass',
+        //     label: 'DB Password',
+        //     placeholder: 'password123',
+        //     tooltip: 'Optional: Database password if known',
+        //     required: false,
+        //     advanced: true
+        // },
+        // {
+        //     id: 'enumLevel',
+        //     label: 'Enumeration Level',
+        //     placeholder: '1',
+        //     tooltip: 'Enumeration level (1-5)',
+        //     required: false,
+        //     advanced: true
+        // },
+        // {
+        //     id: 'timeout',
+        //     label: 'Timeout',
+        //     placeholder: '30',
+        //     tooltip: 'Timeout in seconds',
+        //     required: false,
+        //     advanced: true
+        // },
+        // {
+        //     id: 'additional',
+        //     label: 'Additional Flags',
+        //     placeholder: '',
+        //     tooltip: 'Any other custom SQLMap flags',
+        //     required: false,
+        //     advanced: true
+        // }
     ];
 
     function handleInputChange(id, value) {
@@ -124,19 +124,22 @@
             } else {
                 fieldErrors[id] = null;
             }
-        } else if (id === 'enumLevel') {
-            if (value && !/^[1-5]$/.test(value)) {
-                fieldErrors[id] = { error: true, message: 'Level must be 1-5' };
-            } else {
-                fieldErrors[id] = null;
-            }
-        } else if (id === 'timeout') {
-            if (value && !/^\d+$/.test(value)) {
-                fieldErrors[id] = { error: true, message: 'Timeout must be numeric' };
-            } else {
-                fieldErrors[id] = null;
-            }
-        } else {
+        } 
+        // else if (id === 'enumLevel') {
+        //     if (value && !/^[1-5]$/.test(value)) {
+        //         fieldErrors[id] = { error: true, message: 'Level must be 1-5' };
+        //     } else {
+        //         fieldErrors[id] = null;
+        //     }
+        // } 
+        // else if (id === 'timeout') {
+        //     if (value && !/^\d+$/.test(value)) {
+        //         fieldErrors[id] = { error: true, message: 'Timeout must be numeric' };
+        //     } else {
+        //         fieldErrors[id] = null;
+        //     }
+        // } 
+        else {
             fieldErrors[id] = null;
         }
     }
@@ -145,21 +148,21 @@
 
     async function runScan(event) {
         event.preventDefault();
-
+    
         // Validate all required fields
         for (const field of inputFields) {
             validateField(field.id, formData[field.id]);
         }
-
+    
         const hasErrors = Object.values(fieldErrors).some((e) => e?.error);
         if (hasErrors) {
             message = 'Please fix the errors before running the scan';
             return;
         }
-
+    
         message = 'Starting scan...';
         progress = 10;
-
+    
         try {
             let flags = formData.customFlags || '';
             if (formData.dbUser) flags += ` --dbuser=${formData.dbUser}`;
@@ -168,24 +171,24 @@
             if (formData.timeout) flags += ` --timeout=${formData.timeout}`;
             if (formData.dbEnum) flags += ` --dbs`;
             if (formData.additional) flags += ` ${formData.additional}`;
-
+    
             const res = await fetch(`${API_BASE_URL}/sqlmap/scan`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    url: formData.targetUrl,
+                    target_url: formData.targetUrl,
                     port: formData.targetPort,
-                    params: formData.injectableParams,
+                    injectable_params: formData.injectableParams,
                     custom_flags: flags.trim()
                 })
             });
-
+    
             if (!res.ok) throw new Error('Failed to start scan');
-
+    
             const data = await res.json();
-            const scanId = data.scan_id;
-            localStorage.setItem('current_scan_id', scanId);
-            goto(`/sqlmap/running?id=${scanId}`);
+            const jobId = data.job_id; // Changed from scan_id to job_id to match backend response
+            localStorage.setItem('currentSQLInjectionJobId', jobId);
+            goto(`/SQLInjection/run?id=${jobId}`);
         } catch (error) {
             console.error('Error starting scan:', error);
             message = `Error: ${error.message}`;
@@ -240,10 +243,10 @@
             />
         {/each}
 
-        <div class="flex items-center space-x-2 mt-4">
+        <!-- <div class="flex items-center space-x-2 mt-4">
             <Label for="dbEnum">Enable DB Enumeration</Label>
             <Switch id="dbEnum" bind:checked={formData.dbEnum} />
-        </div>
+        </div> -->
 
         <Button type="submit" class="w-96 mt-4">Submit</Button>
     </form>

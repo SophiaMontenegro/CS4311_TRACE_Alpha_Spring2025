@@ -131,6 +131,7 @@
 		margin-left: 4.5rem;
 		height: 100vh;
 		flex-direction: column;
+		
 	}
 
 	.title-section {
@@ -198,12 +199,20 @@
 	}
 
 	.exit-button {
-		display: flex;
+		/* display: flex;
 		justify-content: flex-end;
 		align-items: flex-end;
 		padding-right: 3rem;
-		padding-bottom: 3rem;
+		padding-bottom: 12rem;
 		width: 100%;
 		height: 100%;
+		margin-top: auto; */
+		position: relative; /* Change to absolute positioning */
+		top: 15px;
+		text-align: end;
+        bottom: 1rem; /* Position from bottom */
+        right: 3rem; /* Position from right */
+        padding: 0;
+		padding-bottom: 0rem;
 	}
 </style>

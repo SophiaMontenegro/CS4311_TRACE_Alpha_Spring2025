@@ -6,7 +6,8 @@ export function load() {
 			{ name: 'Fuzzer', route: '/fuzzer/config' },
 			{ name: 'Brute Force', route: '/bruteForce/config' },
 			{ name: 'HTTP Tester', route: '/http-tester' },
-			{ name: 'Intruder', route: '/intruder' }
+			{ name: 'Intruder', route: '/intruder' },
+			{ name: 'SQL Injector', route: '/SQLInjection/config' }
 		]
 	};
 }

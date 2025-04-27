@@ -29,7 +29,11 @@ from Team7.src.modules.dbf.service.dbf_service_router import get_service_routers
 from Team7.src.modules.dbf.service.dbf_service_router import get_websocket_handlers as get_dbf_websocket_handlers
 from Team7.src.modules.dbf.service.dbf_service import job_results as dbf_job_results, running_jobs as dbf_running_jobs
 
-from team1_router import team1_router
+# SQL Injection Routers and Services
+from Team3.SQL_Injection.sql_injection_router import get_service_routers as get_sql_injection_routers
+from Team3.SQL_Injection.sql_injection_router import get_websocket_handlers as get_sql_injection_websocket_handlers
+
+from Team3.Database.team3_router import team3_router
 
 from Team3.Database.team3_router import team3_router
 
@@ -89,6 +93,14 @@ class JobStatus:
     started_at: Optional[str] = None
     completed_at: Optional[str] = None
     error: Optional[str] = None
+
+@strawberry.type
+class SQLInjectionResultType:
+    id: int
+    url: str
+    vulnerability: str
+    payload: str
+    details: str
 
 @strawberry.type
 class Query:
@@ -193,6 +205,36 @@ class Query:
                     return []
                 
         return []
+
+    @strawberry.field
+    def get_sql_injection_results(self, job_id: str) -> List[SQLInjectionResultType]:
+        # Check if the job exists in the results
+        if job_id not in job_results:
+            raise HTTPException(status_code=404, detail=f"Results for job {job_id} not found")
+
+        # Get the result file path
+        result_file = job_results[job_id].get('result_file')
+
+        if not result_file or not os.path.exists(result_file):
+            raise HTTPException(status_code=404, detail=f"Result file for job {job_id} not found")
+
+        try:
+            # Read and parse the CSV file
+            with open(result_file, 'r', encoding='utf-8') as f:
+                csv_reader = csv.DictReader(f)
+                results = []
+                for row in csv_reader:
+                    result = SQLInjectionResultType(
+                        type=row.get('Type', ''),
+                        details=row.get('Details', '')
+                    )
+                    results.append(result)
+
+            return results
+
+        except Exception as e:
+            logger.error(f"Error reading SQL injection results: {str(e)}")
+            raise HTTPException(status_code=500, detail="Error reading SQL injection results")
     
     @strawberry.field
     def get_crawler_job_status(self, job_id: str) -> str:
@@ -244,12 +286,16 @@ app.add_middleware(
 # Include GraphQL router
 app.include_router(graphql_app, prefix='/graphql')
 
-app.include_router(team1_router)
+#app.include_router(team1_router)
 app.include_router(team3_router)
 
 # Register service routers
 # Crawler routers
 for router in get_crawler_routers():
+    app.include_router(router)
+
+# SQL Injection router
+for router in get_sql_injection_routers():
     app.include_router(router)
 
 # # DBF routers
@@ -269,6 +315,7 @@ crawler_websocket_handlers = get_crawler_websocket_handlers()
 dbf_websocket_handlers = get_dbf_websocket_handlers()
 ml_websocket_handlers = get_ml_websocket_handlers()
 fuzzer_websocket_handlers = get_fuzzer_websocket_handlers()
+sql_injection_websocket_handlers = get_sql_injection_websocket_handlers()
 
 # WebSocket endpoint for crawler updates
 @app.websocket('/ws/crawler/{job_id}')
@@ -286,6 +333,10 @@ async def ml_socket(websocket: WebSocket, job_id: str):
 @app.websocket('/ws/fuzzer/{job_id}')
 async def fuzzer_socket(websocket: WebSocket, job_id: str):
     await fuzzer_websocket_handlers['fuzzer'](websocket, job_id)
+
+@app.websocket('/ws/sql_injection/{job_id}')
+async def sql_injection_socket(websocket: WebSocket, job_id: str):
+    await sql_injection_websocket_handlers['sql_injection'](websocket, job_id)
 
 # Root endpoint
 @app.get("/")

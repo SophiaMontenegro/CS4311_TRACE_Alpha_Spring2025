@@ -9,5 +9,6 @@ export const serviceResults = writable({
 	credGenAI: [],
 	bruteForce: [],
 	fuzzer: [],
+	sqlinjection: [],
 });
 

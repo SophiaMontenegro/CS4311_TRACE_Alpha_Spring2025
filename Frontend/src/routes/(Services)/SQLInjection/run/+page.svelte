@@ -1,235 +1,576 @@
 <script>
-    import { onMount, onDestroy } from 'svelte';
-    import { goto } from '$app/navigation';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import { goto } from '$app/navigation';
+	import { Progress } from '$lib/components/ui/progress/index.js';
+	import { onMount, onDestroy } from 'svelte';
+	import { serviceStatus } from '$lib/stores/projectServiceStore.js';
+	import StepIndicator from '$lib/components/ui/progressStep/ProgressStep.svelte';
+	import Spinner from '$lib/components/ui/spinner/Spinner.svelte';
+	import Table from '$lib/components/ui/table/Table.svelte';
+	import Alert from '$lib/components/ui/alert/Alert.svelte';
+	import { derived, get, writable } from 'svelte/store';
+	import { serviceResults } from '$lib/stores/serviceResultsStore.js';
+	import { toast } from 'svelte-sonner';
+	import { connectToSQLInjectionWebSocket, closeSQLInjectionWebSocket } from '$lib/services/sqlInjectionSocket';
+	import {
+		scanProgress,
+		scanPaused,
+		startScanProgress,
+		stopScanProgress,
+		pauseScan,
+		resumeScan
+	} from '$lib/stores/scanProgressStore.js';
 
-    let analystInitials = '';
-    let scanId = '';
-    let progress = 30;
-    let scanStatus = 'running';
-    let statusMessage = 'Scanning...';
+	const { data } = $props();
+	let showStopDialog = $state(false);
+	let intervalId;
 
-    let testingType = 'Error-based SQL Injection';
-    let processedRequests = 0;
-    let effectivePayloads = 0;
-    let responseTime = '0.32s';
+	// Derived stores
+	const sqlInjectionResults = derived(serviceResults, ($serviceResults) => $serviceResults.sqlinjection);
+	const dynamicColumns = derived(sqlInjectionResults, ($sqlInjectionResults) =>
+		$sqlInjectionResults.length > 0
+			? Object.keys($sqlInjectionResults[0]).map((key) => ({
+					key,
+					label: key
+						.replace(/([a-z])([A-Z])/g, '$1 $2')
+						.split('_')
+						.map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+						.join(' ')
+				}))
+			: []
+	);
+	const showProgress = derived(
+		[serviceStatus, sqlInjectionResults],
+		([$serviceStatus, $sqlInjectionResults]) =>
+			$serviceStatus.status === 'running' && $sqlInjectionResults.length > 0
+	);
 
-    let results = [
-        { id: 1, parameter: 'id', method: 'GET', type: 'Integer', payload: "1' OR '1'='1", status: 'Success', length: 2345, vulnerability: 'High' },
-        { id: 2, parameter: 'username', method: 'POST', type: 'String', payload: "admin' --", status: 'Error', length: 1240, vulnerability: 'Medium' },
-        { id: 3, parameter: 'search', method: 'GET', type: 'String', payload: "1 UNION SELECT 1,2,3", status: 'Success', length: 3120, vulnerability: 'Critical' }
-    ];
+	const currentStep = derived(serviceStatus, ($serviceStatus) =>
+		$serviceStatus.status === 'running' || $serviceStatus.status === 'paused'
+			? 'running'
+			: $serviceStatus.status === 'completed'
+				? 'results'
+				: 'config'
+	);
 
-    let pollingInterval;
+	// Create a new store for the fake progress
+	const fakeProgress = writable(0);
 
-    function handleLogout() {
-        localStorage.removeItem('analyst_id');
-        localStorage.removeItem('analyst_initials');
-        goto('/login');
-    }
+	// Function to simulate progress
+	function simulateProgress() {
+	    let progress = 0;
+	    const interval = setInterval(() => {
+	        if (progress < 95) {
+	            progress += Math.random() * 10;
+	            fakeProgress.set(Math.min(progress, 95));
+	        }
+	    }, 1000);
+	
+	    return () => clearInterval(interval);
+	}
 
-    function pauseScan() {
-        if (confirm('Are you sure you want to pause the scan?')) {
-            scanStatus = 'paused';
-            statusMessage = 'Paused';
-            clearInterval(pollingInterval);
-        }
-    }
+	// Create a new store for the fake job ID
+	const fakeJobId = writable(null);
+	
+	// Function to generate a fake job ID
+	function generateFakeJobId() {
+	    return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+	}
+	
+	// Modify the onMount function
+	onMount(() => {
+	    const jobId = localStorage.getItem('currentSQLInjectionJobId') || generateFakeJobId();
+	    fakeJobId.set(jobId);
+	    localStorage.setItem('currentSQLInjectionJobId', jobId);
+	
+	    connectToSQLInjectionWebSocket(jobId);
+	    const stopSimulation = simulateProgress();
+	    
+	    // Fetch results every 5 seconds
+	    const resultInterval = setInterval(() => fetchResults(jobId), 5000);
+	
+	    return () => {
+	        stopSimulation();
+	        clearInterval(resultInterval);
+	        closeSQLInjectionWebSocket();
+	    };
+	});
+	
+	// Modify the fetchResults function
+	async function fetchResults(jobId) {
+	    try {
+	        // Make the actual API call to get the results
+	        const res = await fetch(`http://localhost:8000/sqlmap/results/${jobId}`);
+	        if (!res.ok) {
+	            throw new Error(`Failed to fetch results: ${res.statusText}`);
+	        }
+	        
+	        const data = await res.json();
+	        
+	        // Check if we have a result file path
+	        if (data && data.result_file) {
+	            // Fetch the CSV content from the result file
+	            const csvRes = await fetch(`http://localhost:8000/sqlmap/csv/${jobId}`);
+	            if (!csvRes.ok) {
+	                throw new Error(`Failed to fetch CSV: ${csvRes.statusText}`);
+	            }
+	            
+	            const csvText = await csvRes.text();
+	            
+	            // Parse CSV to JSON
+	            const parsedResults = parseCSV(csvText);
+	            
+	            // Set into shared store under "sqlinjection"
+	            serviceResults.update((r) => ({
+	                ...r,
+	                sqlinjection: parsedResults
+	            }));
+	            
+	            // Set progress to 100% when results are received
+	            fakeProgress.set(100);
+	            scanProgress.set(100);
+	            serviceStatus.set({ status: 'completed', serviceType: 'sqlinjection', startTime: null });
+	        } else {
+	            // No results yet, continue with fake progress
+	            console.log('No result file available yet, continuing with progress simulation');
+	        }
+	    } catch (e) {
+	        console.error('Failed to fetch SQLInjection results:', e);
+	    }
+	}
 
-    function resumeScan() {
-        scanStatus = 'running';
-        statusMessage = 'Scanning...';
-        startPolling();
-    }
+	// Function to parse CSV to JSON
+	function parseCSV(csvText) {
+	    // Split by lines and remove empty lines
+	    const lines = csvText.split('\n').filter(line => line.trim() !== '');
+	    if (lines.length <= 1) {
+	        return [];
+	    }
+	    
+	    // Get headers
+	    const headers = lines[0].split(',').map(header => 
+	        header.trim().replace(/^"|"$/g, '')
+	    );
+	    
+	    // Parse data rows
+	    const results = [];
+	    for (let i = 1; i < lines.length; i++) {
+	        // Handle CSV parsing correctly (respect quotes)
+	        const values = parseCSVLine(lines[i]);
+	        
+	        if (values.length === headers.length) {
+	            const row = {};
+	            headers.forEach((header, index) => {
+	                // Convert to camelCase for consistency
+	                const key = header.toLowerCase()
+	                    .replace(/\s(.)/g, (_, char) => char.toUpperCase())
+	                    .replace(/\s/g, '');
+	                row[key] = values[index];
+	            });
+	            results.push(row);
+	        }
+	    }
+	    
+	    return results;
+	}
 
-    function stopScan() {
-        if (confirm('Are you sure you want to stop the scan?')) {
-            scanStatus = 'completed';
-            statusMessage = 'Stopped by user';
-            clearInterval(pollingInterval);
-        }
-    }
+	// Helper function to parse CSV line respecting quotes
+	function parseCSVLine(line) {
+	    const result = [];
+	    let inQuotes = false;
+	    let currentValue = '';
+	    
+	    for (let i = 0; i < line.length; i++) {
+	        const char = line[i];
+	        
+	        if (char === '"') {
+	            // Toggle quote state
+	            inQuotes = !inQuotes;
+	        } else if (char === ',' && !inQuotes) {
+	            // End of value
+	            result.push(currentValue.trim().replace(/^"|"$/g, ''));
+	            currentValue = '';
+	        } else {
+	            // Part of value
+	            currentValue += char;
+	        }
+	    }
+	    
+	    // Add the last value
+	    result.push(currentValue.trim().replace(/^"|"$/g, ''));
+	    
+	    return result;
+	}
 
-    function restartScan() {
-        if (confirm('Restart scan and lose current progress?')) {
-            progress = 0;
-            processedRequests = 0;
-            effectivePayloads = 0;
-            scanStatus = 'running';
-            statusMessage = 'Scanning...';
-            startPolling();
-        }
-    }
+	// WebSocket connection
+	$effect(() => {
+		if ($currentStep === 'results' && $sqlInjectionResults.length === 0) {
+			const jobId = localStorage.getItem('currentSQLInjectionJobId');
+			if (jobId) {
+				console.log('[Fetcher] Fetching results for job:', jobId);
+				fetchResults(jobId);
+			}
+		}
+	});
 
-    function modifySettings() {
-        goto('/sqlmap');
-    }
+	const togglePause = async () => {
+		if ($scanPaused) {
+			await resumeScan('sqlinjection');
+		} else {
+			await pauseScan('sqlinjection');
+		}
+	};
 
-    function startPolling() {
-        pollingInterval = setInterval(() => {
-            if (scanStatus === 'running') {
-                progress += Math.random() * 2;
-                if (progress >= 100) {
-                    progress = 100;
-                    scanStatus = 'completed';
-                    statusMessage = 'Scan completed';
-                    clearInterval(pollingInterval);
-                }
+	function handleStopCancel() {
+		showStopDialog = false;
+	}
 
-                processedRequests += Math.floor(Math.random() * 5) + 1;
-                if (Math.random() > 0.7) {
-                    effectivePayloads += 1;
+	function saveCheckpoint() {
+		const jobId = localStorage.getItem('currentSQLInjectionJobId');
+		if (!jobId) {
+			toast.error('No job ID found.');
+			return;
+		}
 
-                    if (Math.random() > 0.5 && results.length < 20) {
-                        const payloads = [
-                            "' OR 1=1 --", "admin' --", "1 UNION SELECT 1,2,3",
-                            "1; DROP TABLE users --", "' OR '1'='1"
-                        ];
-                        const parameters = ['id', 'username', 'search', 'query', 'filter'];
-                        const methods = ['GET', 'POST'];
-                        const types = ['Integer', 'String', 'Boolean'];
-                        const statuses = ['Success', 'Error', 'Timeout'];
-                        const vulnerabilities = ['Low', 'Medium', 'High', 'Critical'];
+		const data = get(serviceResults).sqlinjection;
+		if (!data || data.length === 0) {
+			toast.error('No results to checkpoint.');
+			return;
+		}
 
-                        results = [...results, {
-                            id: results.length + 1,
-                            parameter: parameters[Math.floor(Math.random() * parameters.length)],
-                            method: methods[Math.floor(Math.random() * methods.length)],
-                            type: types[Math.floor(Math.random() * types.length)],
-                            payload: payloads[Math.floor(Math.random() * payloads.length)],
-                            status: statuses[Math.floor(Math.random() * statuses.length)],
-                            length: Math.floor(Math.random() * 5000) + 500,
-                            vulnerability: vulnerabilities[Math.floor(Math.random() * vulnerabilities.length)]
-                        }];
-                    }
-                }
+		localStorage.setItem(`checkpoint_${jobId}`, JSON.stringify(data));
+		toast.success('Checkpoint saved!', {
+			description: `Saved at ${new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true })}`
+		});
+		console.log(`[Checkpoint] Saved for job ${jobId}`);
+	}
 
-                responseTime = (Math.random() * 0.5 + 0.1).toFixed(2) + 's';
-            }
-        }, 1000);
-    }
+	async function handleStopConfirm() {
+		showStopDialog = false;
+		stopScanProgress();
+		closeSQLInjectionWebSocket();
 
-    onMount(() => {
-        analystInitials = localStorage.getItem('analyst_initials') || '';
-        if (!analystInitials) goto('/login');
-        const urlParams = new URLSearchParams(window.location.search);
-        scanId = urlParams.get('id') || localStorage.getItem('current_scan_id') || 'test-scan-123';
-        startPolling();
-    });
+		// Get the job id
+		const jobId = localStorage.getItem('currentSQLInjectionJobId');
+		if (!jobId) {
+			console.error('No SQLInjection Job Id found in local storage');
+		}
 
-    onDestroy(() => {
-        clearInterval(pollingInterval);
-    });
+		// Clear app state
+		serviceResults.update((r) => ({ ...r, sqlinjection: [] }));
+		serviceStatus.set({ status: 'idle', serviceType: null, startTime: null });
+		localStorage.removeItem('currentSQLInjectionJobId');
+
+		// Tell the backend to stop
+		try {
+			const res = await fetch(`http://localhost:8000/api/sqlinjection/${jobId}/stop`, {
+				method: 'POST'
+			});
+			if (res.ok) {
+				console.log('SQLInjection job stopped.');
+			} else {
+				console.error('Failed to stop SQLInjection job:', await res.text());
+			}
+		} catch (e) {
+			console.error('Failed to stop SQLInjection:', e);
+		}
+
+		console.log('[Stop] Service state');
+		goto('/tool-dashboard');
+	}
+
+	function handleRestart() {
+		stopScanProgress();
+
+		// Reset the service results and status
+		serviceResults.update((r) => ({ ...r, sqlinjection: [] }));
+		serviceStatus.set({ status: 'idle', serviceType: null, startTime: null });
+		localStorage.removeItem('currentSQLInjectionJobId');
+
+		console.log('[Restart] Service state');
+		goto('/SQLInjection/config');
+	}
+
+	async function handleExport() {
+		const jobId = localStorage.getItem('currentSQLInjectionJobId');
+		if (!jobId) {
+			console.log('SQLInjection job ID not found.');
+			return;
+		}
+
+		try {
+			const res = await fetch(`http://localhost:8000/api/sqlinjection/${jobId}/results`);
+			if (!res.ok) throw new Error('Failed to fetch SQLInjection results.');
+
+			const { results = [] } = await res.json();
+
+			// Fields you want to include in the export - adjust these to match SQLInjection results
+			const exportFields = [
+				'url',
+				'parameter',
+				'vulnerabilityType',
+				'severity',
+				'details',
+				'status'
+			];
+
+			// Optional: Human-readable column names
+			const headers = [
+				'URL',
+				'Parameter',
+				'Vulnerability Type',
+				'Severity',
+				'Details',
+				'Status'
+			];
+
+			// Build CSV content
+			const csvRows = [
+				headers.join(','), // Header row
+				...results.map((row) => exportFields.map((key) => JSON.stringify(row[key] ?? '')).join(','))
+			];
+
+			// Create blob and trigger download
+			const csvContent = csvRows.join('\n');
+			const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+			const url = URL.createObjectURL(blob);
+
+			const a = document.createElement('a');
+			a.href = url;
+			a.download = `sqlinjection_${jobId}_results.csv`;
+			document.body.appendChild(a);
+			a.click();
+			a.remove();
+
+			URL.revokeObjectURL(url);
+		} catch (error) {
+			console.error('[SQLInjection Export Error]', error);
+		}
+	}
+
+	// Restore checkpoint on mount
+	onMount(() => {
+		const jobId = localStorage.getItem('currentSQLInjectionJobId');
+		if (jobId && get(serviceStatus).status !== 'completed') {
+			connectToSQLInjectionWebSocket(jobId);
+		}
+		// Restore checkpoint if available
+		if (jobId) {
+			const savedCheckpoint = localStorage.getItem(`checkpoint_${jobId}`);
+			if (savedCheckpoint) {
+				try {
+					const parsed = JSON.parse(savedCheckpoint);
+					if (Array.isArray(parsed) && parsed.length > 0) {
+						serviceResults.update((r) => ({ ...r, sqlinjection: parsed }));
+						console.log('[Restore] Checkpoint loaded for job', jobId);
+					}
+				} catch (err) {
+					console.error('[Restore] Failed to parse checkpoint data:', err);
+				}
+			}
+			connectToSQLInjectionWebSocket(jobId);
+		} else {
+			console.warn('No SQLInjection job ID found in localStorage.');
+		}
+
+		intervalId = setInterval(() => {
+			const jobId = localStorage.getItem('currentSQLInjectionJobId');
+			const status = get(serviceStatus);
+
+			// Do not save checkpoints after scan is completed or idle
+			if (!jobId || (status.status !== 'running' && status.status !== 'paused')) return;
+
+			const data = get(serviceResults).sqlinjection;
+			if (data.length > 0) {
+				localStorage.setItem(`checkpoint_${jobId}`, JSON.stringify(data));
+				console.log(`[Auto] Checkpoint saved for job ${jobId}`);
+			}
+		}, 15000);
+	});
+
+	onDestroy(() => {
+		clearInterval(intervalId);
+		closeSQLInjectionWebSocket();
+	});
+
 </script>
 
-<div class="flex flex-col min-h-screen">
-    <header class="bg-gray-100 dark:bg-gray-900 shadow p-4 flex justify-between items-center">
-        <h1 class="text-xl font-bold text-primary">TRACE</h1>
-        <div class="flex items-center gap-4">
-            <span class="text-muted-foreground">Analyst: {analystInitials}</span>
-            <button class="text-red-600 hover:underline text-sm" on:click={handleLogout}>Logout</button>
-        </div>
-    </header>
+<svelte:head>
+	<title>SQL Injection Run | TRACE</title>
+</svelte:head>
 
-    <nav class="flex bg-background text-muted-foreground border-b p-2 space-x-4">
-        <button on:click={() => goto('/dashboard')} class="hover:text-primary">Dashboard</button>
-        <button class="text-primary font-semibold">SQL Injection</button>
-        <button on:click={() => goto('/settings')} class="hover:text-primary">Settings</button>
-    </nav>
+<div class="sqlinjection-run">
+	<div class="title-section">
+		<div class="title">
+			{$currentStep === 'running' ? 'SQL Injection Scanning' : 'SQL Injection Results'}
+		</div>
+		<StepIndicator status={$currentStep} />
+	</div>
 
-    <div class="flex flex-1 overflow-hidden">
-        <aside class="w-48 bg-gray-50 dark:bg-gray-800 p-4 border-r text-sm">
-            <ul class="space-y-2">
-                <li class="hover:text-primary cursor-pointer" on:click={() => goto('/sqlmap')}>Configuration</li>
-                <li class="text-primary font-semibold">Running</li>
-                <li class="text-muted-foreground">Reports</li>
-            </ul>
-        </aside>
+	<div class="table">
+		{#if $showProgress || $serviceStatus.status === 'completed' || $serviceStatus.status === 'paused'}
+			<div class="progress-bar-container">
+				<div class="progress-info">
+					<div class="text-sm font-medium">Progress</div>
+					<div class="text-2xl font-bold">{$fakeProgress.toFixed(1)}% scanned</div>
+				</div>
+				<Progress value={$fakeProgress} max={100} class="w-[100%]" />
+			</div>
+		{:else}
+			<Spinner />
+		{/if}
 
-        <main class="flex-1 p-6 overflow-y-auto">
-            <h2 class="text-xl font-bold">SQL Injection</h2>
-            <p class="text-muted-foreground mb-4">Running</p>
+		{#if $sqlInjectionResults.length > 0}
+			<Table data={$sqlInjectionResults} columns={$dynamicColumns} />
+		{:else}
+			<p>Waiting for results...</p>
+		{/if}
+	</div>
 
-            <div class="bg-white dark:bg-gray-900 rounded-xl shadow p-4 space-y-6">
-                <div class="flex justify-between items-center">
-                    <div class="w-full">
-                        <div class="flex justify-between mb-1">
-                            <span class="text-sm font-medium">{Math.floor(progress)}%</span>
-                            <span class="text-sm text-muted-foreground">{statusMessage}</span>
-                        </div>
-                        <div class="w-full bg-gray-200 rounded-full h-2.5">
-                            <div class="bg-primary h-2.5 rounded-full" style="width: {progress}%"></div>
-                        </div>
-                    </div>
+	<div class="button-section">
+		<div class="button-group">
+			{#if $serviceStatus.status === 'completed'}
+				<Button
+					onclick={handleRestart}
+					variant="default"
+					size="default"
+					class="restart-button"
+					aria-label="Restart the scan"
+					title="Click to restart the scan"
+				>
+					Restart
+				</Button>
+				<Button
+					onclick={handleExport}
+					variant="secondary"
+					size="default"
+					class="view-all-results"
+					aria-label="Export results"
+					title="Click to export SQL Injection results"
+				>
+					Export Results
+				</Button>
+			{:else if $serviceStatus.status === 'running' || $serviceStatus.status === 'paused'}
+				<Button
+					onclick={togglePause}
+					variant="secondary"
+					size="default"
+					class="pause-button"
+					aria-label={$scanPaused ? 'Resume the scan' : 'Pause the scan'}
+					title={$scanPaused ? 'Click to resume the scan' : 'Click to pause the scan'}
+				>
+					{#if $scanPaused}
+						Resume
+					{:else}
+						Pause
+					{/if}
+				</Button>
 
-                    <div class="flex gap-2 ml-4">
-                        {#if scanStatus === 'running'}
-                            <button class="btn" on:click={pauseScan}>Pause</button>
-                            <button class="btn" on:click={stopScan}>Stop</button>
-                        {:else if scanStatus === 'paused'}
-                            <button class="btn" on:click={resumeScan}>Resume</button>
-                            <button class="btn" on:click={stopScan}>Stop</button>
-                        {:else if scanStatus === 'completed'}
-                            <button class="btn" on:click={restartScan}>Restart</button>
-                        {/if}
-                        <button class="btn" on:click={modifySettings}>Settings</button>
-                    </div>
-                </div>
+				<Button
+					onclick={saveCheckpoint}
+					variant="secondary"
+					size="default"
+					class="save-checkpoint"
+					aria-label="Save checkpoint"
+					title="Checkpoint"
+				>
+					Save Checkpoint
+				</Button>
 
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div class="p-2 bg-muted rounded-lg">
-                        <div class="text-xs text-muted-foreground">Testing Type</div>
-                        <div class="font-semibold text-sm">{testingType}</div>
-                    </div>
-                    <div class="p-2 bg-muted rounded-lg">
-                        <div class="text-xs text-muted-foreground">Processed Requests</div>
-                        <div class="font-semibold text-sm">{processedRequests}</div>
-                    </div>
-                    <div class="p-2 bg-muted rounded-lg">
-                        <div class="text-xs text-muted-foreground">Effective Payloads</div>
-                        <div class="font-semibold text-sm">{effectivePayloads}</div>
-                    </div>
-                    <div class="p-2 bg-muted rounded-lg">
-                        <div class="text-xs text-muted-foreground">Response Time</div>
-                        <div class="font-semibold text-sm">{responseTime}</div>
-                    </div>
-                </div>
+				<Button
+					onclick={() => (showStopDialog = true)}
+					variant="destructive"
+					size="default"
+					class="stop-button"
+					aria-label="Stop the scan"
+					title="Click to stop the scan"
+				>
+					Stop
+				</Button>
+			{/if}
+		</div>
+		<div class="single-button">
+			<Button
+				variant="secondary"
+				size="default"
+				class="terminal-button"
+				aria-label="Open terminal"
+				title="Click to open the terminal"
+			>
+				Terminal
+			</Button>
+		</div>
+	</div>
 
-                <div>
-                    <h3 class="font-semibold text-lg mb-2">Injection Results</h3>
-                    <div class="overflow-auto rounded-lg border">
-                        <table class="w-full text-sm text-left">
-                            <thead class="bg-muted text-muted-foreground">
-                            <tr>
-                                <th class="px-4 py-2">#</th>
-                                <th class="px-4 py-2">Parameter</th>
-                                <th class="px-4 py-2">Method</th>
-                                <th class="px-4 py-2">Type</th>
-                                <th class="px-4 py-2">Payload</th>
-                                <th class="px-4 py-2">Status</th>
-                                <th class="px-4 py-2">Length</th>
-                                <th class="px-4 py-2">Vulnerability</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            {#each results as result}
-                                <tr class="border-t">
-                                    <td class="px-4 py-2">{result.id}</td>
-                                    <td class="px-4 py-2">{result.parameter}</td>
-                                    <td class="px-4 py-2">{result.method}</td>
-                                    <td class="px-4 py-2">{result.type}</td>
-                                    <td class="px-4 py-2 font-mono text-xs">{result.payload}</td>
-                                    <td class="px-4 py-2 {result.status === 'Error' ? 'text-red-500' : ''}">{result.status}</td>
-                                    <td class="px-4 py-2">{result.length}</td>
-                                    <td class="px-4 py-2 font-bold {result.vulnerability.toLowerCase()}">
-                                        {result.vulnerability}
-                                    </td>
-                                </tr>
-                            {/each}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </main>
-    </div>
+	<Alert
+		isOpen={showStopDialog}
+		title="Are you absolutely sure?"
+		message="This action cannot be undone. This will permanently stop the SQL Injection scan and save current progress."
+		onCancel={handleStopCancel}
+		onContinue={handleStopConfirm}
+	/>
 </div>
+
+<style>
+	.sqlinjection-run {
+		display: flex;
+		margin-left: 4.5rem;
+		height: 100vh;
+		flex-direction: column;
+	}
+	.title-section {
+		display: flex;
+		flex-direction: row;
+		justify-content: space-between;
+		width: 100%;
+		max-height: fit-content;
+		padding-right: 3rem;
+	}
+	.title {
+		font-size: 2rem;
+		font-style: normal;
+		font-weight: 600;
+		padding-left: 3rem;
+		padding-top: 3rem;
+	}
+	.table {
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		align-items: center;
+		height: 100%;
+	}
+	.button-section {
+		display: flex;
+		flex-direction: row;
+		justify-content: space-between;
+		width: 100%;
+		padding: 0rem 8rem 3rem 8rem;
+	}
+	.button-group {
+		display: flex;
+		flex-direction: row;
+		gap: 1rem;
+	}
+	.single-button {
+		display: flex;
+		flex-direction: row;
+	}
+	.progress-bar-container {
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		max-width: 100%;
+		width: 80%;
+		margin: 0 auto;
+		padding-left: 3rem;
+		padding-right: 3rem;
+		padding-top: 1rem;
+	}
+	.progress-info {
+		display: flex;
+		flex-direction: column;
+		justify-content: flex-start;
+		width: 100%;
+	}
+</style>

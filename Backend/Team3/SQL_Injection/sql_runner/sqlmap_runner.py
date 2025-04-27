@@ -111,11 +111,7 @@ def resume_process(pid):
         os.kill(pid, signal.SIGCONT)
 
 # Run SQLMap
-def run_sqlmap():
-    base_url = input("Enter the target URL: ").strip()
-    port = input("Enter the port: ").strip()
-    params = input("Enter GET parameters (or press ENTER to skip): ").strip()
-
+def run_sqlmap(base_url, port, params="", custom_flags=""):
     if "//" in base_url:
         protocol, rest = base_url.split("//", 1)
         if ":" not in rest:
@@ -156,9 +152,8 @@ def run_sqlmap():
         "--dump"
     ]
 
-    customFlag = input("Enter any additional SQLMap flags (or press ENTER to skip): ").strip()
-    if customFlag:
-        cmd += shlex.split(customFlag)
+    if custom_flags:
+        cmd += shlex.split(custom_flags)
 
     print(f"[+] Running sqlmap...\n")
 
@@ -227,28 +222,52 @@ def run_sqlmap():
     print(f"[+] Log saved to: {log_path}")
     print(f"[+] History updated: {HISTORY_FILE}")
 
-# CLI menu
+    return {
+        "job_id": next_job_id,
+        "result_file": result_path,
+        "log_file": log_path
+    }
+
+# Main function to handle API requests
+def handle_sqlmap_request(data):
+    base_url = data.get("target_url")
+    port = data.get("port")
+    params = data.get("injectable_params", "")
+    custom_flags = data.get("custom_flags", "")
+
+    if not base_url or not port:
+        return {"error": "Missing required parameters"}
+
+    result = run_sqlmap(base_url, port, params, custom_flags)
+    return result
+
+# Remove or comment out the CLI menu
+# if __name__ == "__main__":
+#     try:
+#         while Program:
+#             print("====== SQLMap Tool ======")
+#             print("1 - Perform New Injection")
+#             print("2 - View Previous Results")
+#             print("3 - Reset Service Results")
+#             print("4 - Quit")
+
+#             choice = input("Choose an option: ").strip()
+
+#             if choice == "1":
+#                 run_sqlmap()
+#             elif choice == "2":
+#                 view_history()
+#             elif choice == "3":
+#                 reset_service()
+#             elif choice == "4":
+#                 Program = False
+#                 print("Goodbye!")
+#             else:
+#                 print("Invalid choice. Try again")
+#     except KeyboardInterrupt:
+#         print("\n[!] Exiting program...")
+
+# Add this at the end of the file
 if __name__ == "__main__":
-    try:
-        while Program:
-            print("====== SQLMap Tool ======")
-            print("1 - Perform New Injection")
-            print("2 - View Previous Results")
-            print("3 - Reset Service Results")
-            print("4 - Quit")
-
-            choice = input("Choose an option: ").strip()
-
-            if choice == "1":
-                run_sqlmap()
-            elif choice == "2":
-                view_history()
-            elif choice == "3":
-                reset_service()
-            elif choice == "4":
-                Program = False
-                print("Goodbye!")
-            else:
-                print("Invalid choice. Try again")
-    except KeyboardInterrupt:
-        print("\n[!] Exiting program...")
+    # This can be used for testing or standalone execution
+    print("SQLMap Runner is ready to be called via API")
