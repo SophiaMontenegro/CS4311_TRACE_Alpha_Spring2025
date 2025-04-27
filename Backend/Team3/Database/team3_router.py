@@ -65,7 +65,7 @@ async def create_project(project: ProjectCreate):
             raise HTTPException(status_code=500, detail="Project creation failed")
 
         # Create the tool nodes with file paths after project is created
-        project_manager.create_tool_nodes(
+        file_manager.create_tools_for_project(
             project_data['project_name'],
             project_data['directory_path']
         )

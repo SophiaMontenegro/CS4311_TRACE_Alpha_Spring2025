@@ -293,7 +293,7 @@ class FileManager:
         """
 
         try:
-            self.db_manager.run_query(query, {
+            self.db.run_query(query, {
                 "project_name": project_name,
                 "tool_nodes": tool_nodes
             })
