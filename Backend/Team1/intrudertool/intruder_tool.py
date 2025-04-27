@@ -3,7 +3,8 @@
 import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
-from typing import List, Dict
+from typing import List, Dict, Optional
+
 
 
 class IntruderTool:
