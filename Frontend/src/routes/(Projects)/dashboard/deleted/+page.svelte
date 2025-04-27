@@ -1,4 +1,4 @@
-<script>
+<!-- <script>
   import { onMount } from 'svelte';
   import ThemeToggle from '$lib/components/ThemeToggle.svelte';
   
@@ -402,4 +402,4 @@
   :global(body.dark-mode) .no-projects {
     color: #aaa;
   }
-</style>
+</style> -->
