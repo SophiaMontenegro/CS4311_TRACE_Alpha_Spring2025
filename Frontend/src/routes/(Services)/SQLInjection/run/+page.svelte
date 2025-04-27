@@ -59,14 +59,18 @@
 	// Function to simulate progress
 	function simulateProgress() {
 	    let progress = 0;
-	    const interval = setInterval(() => {
-	        if (progress < 95) {
-	            progress += Math.random() * 10;
-	            fakeProgress.set(Math.min(progress, 95));
-	        }
-	    }, 1000);
-	
-	    return () => clearInterval(interval);
+        const interval = setInterval(() => {
+            // Check if progress already reached 100 or if service is completed
+            if (progress >= 95 || $fakeProgress >= 100 || $serviceStatus.status === 'completed') {
+                clearInterval(interval);
+                return;
+            }
+            
+            progress += Math.random() * 10;
+            fakeProgress.set(Math.min(progress, 95));
+        }, 1000);
+    
+        return () => clearInterval(interval);
 	}
 
 	// Create a new store for the fake job ID
@@ -77,67 +81,128 @@
 	    return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 	}
 	
-	// Modify the onMount function
-	onMount(() => {
-	    const jobId = localStorage.getItem('currentSQLInjectionJobId') || generateFakeJobId();
-	    fakeJobId.set(jobId);
-	    localStorage.setItem('currentSQLInjectionJobId', jobId);
-	
-	    connectToSQLInjectionWebSocket(jobId);
-	    const stopSimulation = simulateProgress();
-	    
-	    // Fetch results every 5 seconds
-	    const resultInterval = setInterval(() => fetchResults(jobId), 5000);
-	
-	    return () => {
-	        stopSimulation();
-	        clearInterval(resultInterval);
-	        closeSQLInjectionWebSocket();
-	    };
-	});
+	let resultIntervalId;
+    let checkpointIntervalId;
+    let completionTracked = false;
+
+    // Modify the onMount function 
+    onMount(() => {
+        const jobId = localStorage.getItem('currentSQLInjectionJobId') || generateFakeJobId();
+        fakeJobId.set(jobId);
+        localStorage.setItem('currentSQLInjectionJobId', jobId);
+        
+        // Check if we're already in completed status
+        if (get(serviceStatus).status === 'completed') {
+            completionTracked = true;
+            console.log('[SQLInjection] Skipping intervals as scan is already completed');
+            return;
+        }
+
+        connectToSQLInjectionWebSocket(jobId);
+        const stopSimulation = simulateProgress();
+        
+        // Store the interval ID for result fetching
+        resultIntervalId = setInterval(() => {
+            // Only fetch results if the scan is not completed
+            const status = get(serviceStatus).status;
+            if (status !== 'completed') {
+                fetchResults(jobId);
+            } else if (!completionTracked) {
+                // If we just completed, fetch one last time then clear the interval
+                fetchResults(jobId);
+                completionTracked = true;
+                clearAllIntervals();
+            }
+        }, 5000);
+        
+        // Store the interval ID for checkpoint saving
+        checkpointIntervalId = setInterval(() => {
+            const status = get(serviceStatus).status;
+            
+            // Do not save checkpoints after scan is completed or idle
+            if (!jobId || (status !== 'running' && status !== 'paused')) {
+                return;
+            }
+
+            const data = get(serviceResults).sqlinjection;
+            if (data.length > 0) {
+                localStorage.setItem(`checkpoint_${jobId}`, JSON.stringify(data));
+                console.log(`[Auto] Checkpoint saved for job ${jobId}`);
+            }
+        }, 15000);
+
+        return () => {
+            stopSimulation();
+            clearAllIntervals();
+            closeSQLInjectionWebSocket();
+        };
+    });
+
+    // Function to clear all intervals at once
+    function clearAllIntervals() {
+        console.log('[SQLInjection] Clearing all intervals');
+        if (resultIntervalId) clearInterval(resultIntervalId);
+        if (checkpointIntervalId) clearInterval(checkpointIntervalId);
+        resultIntervalId = null;
+        checkpointIntervalId = null;
+    }
 	
 	// Modify the fetchResults function
 	async function fetchResults(jobId) {
-	    try {
-	        // Make the actual API call to get the results
-	        const res = await fetch(`http://localhost:8000/sqlmap/results/${jobId}`);
-	        if (!res.ok) {
-	            throw new Error(`Failed to fetch results: ${res.statusText}`);
-	        }
-	        
-	        const data = await res.json();
-	        
-	        // Check if we have a result file path
-	        if (data && data.result_file) {
-	            // Fetch the CSV content from the result file
-	            const csvRes = await fetch(`http://localhost:8000/sqlmap/csv/${jobId}`);
-	            if (!csvRes.ok) {
-	                throw new Error(`Failed to fetch CSV: ${csvRes.statusText}`);
-	            }
-	            
-	            const csvText = await csvRes.text();
-	            
-	            // Parse CSV to JSON
-	            const parsedResults = parseCSV(csvText);
-	            
-	            // Set into shared store under "sqlinjection"
-	            serviceResults.update((r) => ({
-	                ...r,
-	                sqlinjection: parsedResults
-	            }));
-	            
-	            // Set progress to 100% when results are received
-	            fakeProgress.set(100);
-	            scanProgress.set(100);
-	            serviceStatus.set({ status: 'completed', serviceType: 'sqlinjection', startTime: null });
-	        } else {
-	            // No results yet, continue with fake progress
-	            console.log('No result file available yet, continuing with progress simulation');
-	        }
-	    } catch (e) {
-	        console.error('Failed to fetch SQLInjection results:', e);
-	    }
-	}
+        // Skip if we've already tracked completion
+        if (completionTracked) {
+            console.log('[SQLInjection] Skipping fetch as completion is tracked');
+            return;
+        }
+        
+        try {
+            // Make the actual API call to get the results
+            const res = await fetch(`http://localhost:8000/sqlmap/results/${jobId}`);
+            if (!res.ok) {
+                throw new Error(`Failed to fetch results: ${res.statusText}`);
+            }
+            
+            const data = await res.json();
+            
+            // Check if we have a result file path
+            if (data && data.result_file) {
+                // Fetch the CSV content from the result file
+                const csvRes = await fetch(`http://localhost:8000/sqlmap/csv/${jobId}`);
+                if (!csvRes.ok) {
+                    throw new Error(`Failed to fetch CSV: ${csvRes.statusText}`);
+                }
+                
+                const csvText = await csvRes.text();
+                
+                // Parse CSV to JSON
+                const parsedResults = parseCSV(csvText);
+                
+                // Set into shared store under "sqlinjection"
+                serviceResults.update((r) => ({
+                    ...r,
+                    sqlinjection: parsedResults
+                }));
+                
+                // Set progress to 100% when results are received
+                if ($fakeProgress < 100) {
+                    fakeProgress.set(100);
+                    scanProgress.set(100);
+                }
+                
+                // Mark the scan as completed and stop all intervals
+                serviceStatus.set({ status: 'completed', serviceType: 'sqlinjection', startTime: null });
+                completionTracked = true;
+                clearAllIntervals();
+                
+                console.log('[SQLInjection] Scan completed. Stopping all polling and intervals.');
+            } else {
+                // No results yet
+                console.log('No result file available yet');
+            }
+        } catch (e) {
+            console.error('Failed to fetch SQLInjection results:', e);
+        }
+    }
 
 	// Function to parse CSV to JSON
 	function parseCSV(csvText) {
@@ -350,48 +415,35 @@
 
 	// Restore checkpoint on mount
 	onMount(() => {
-		const jobId = localStorage.getItem('currentSQLInjectionJobId');
-		if (jobId && get(serviceStatus).status !== 'completed') {
-			connectToSQLInjectionWebSocket(jobId);
-		}
-		// Restore checkpoint if available
-		if (jobId) {
-			const savedCheckpoint = localStorage.getItem(`checkpoint_${jobId}`);
-			if (savedCheckpoint) {
-				try {
-					const parsed = JSON.parse(savedCheckpoint);
-					if (Array.isArray(parsed) && parsed.length > 0) {
-						serviceResults.update((r) => ({ ...r, sqlinjection: parsed }));
-						console.log('[Restore] Checkpoint loaded for job', jobId);
-					}
-				} catch (err) {
-					console.error('[Restore] Failed to parse checkpoint data:', err);
-				}
-			}
-			connectToSQLInjectionWebSocket(jobId);
-		} else {
-			console.warn('No SQLInjection job ID found in localStorage.');
-		}
+        const jobId = localStorage.getItem('currentSQLInjectionJobId') || generateFakeJobId();
+        fakeJobId.set(jobId);
+        localStorage.setItem('currentSQLInjectionJobId', jobId);
 
-		intervalId = setInterval(() => {
-			const jobId = localStorage.getItem('currentSQLInjectionJobId');
-			const status = get(serviceStatus);
+        connectToSQLInjectionWebSocket(jobId);
+        const stopSimulation = simulateProgress();
+        
+        // Store the interval ID so we can clear it later
+        const resultInterval = setInterval(() => {
+            // Only fetch results if the scan is not completed
+            if ($serviceStatus.status !== 'completed') {
+                fetchResults(jobId);
+            }
+        }, 5000);
+        
+        // Save the interval ID to clear it on component destroy
+        intervalId = resultInterval;
 
-			// Do not save checkpoints after scan is completed or idle
-			if (!jobId || (status.status !== 'running' && status.status !== 'paused')) return;
-
-			const data = get(serviceResults).sqlinjection;
-			if (data.length > 0) {
-				localStorage.setItem(`checkpoint_${jobId}`, JSON.stringify(data));
-				console.log(`[Auto] Checkpoint saved for job ${jobId}`);
-			}
-		}, 15000);
-	});
+        return () => {
+            stopSimulation();
+            clearInterval(resultInterval);
+            closeSQLInjectionWebSocket();
+        };
+    });
 
 	onDestroy(() => {
-		clearInterval(intervalId);
-		closeSQLInjectionWebSocket();
-	});
+        clearAllIntervals();
+        closeSQLInjectionWebSocket();
+    });
 
 </script>
 
@@ -422,6 +474,10 @@
 
 		{#if $sqlInjectionResults.length > 0}
 			<Table data={$sqlInjectionResults} columns={$dynamicColumns} />
+		{:else if $serviceStatus.status === 'completed'}
+			<div class="no-results-message">
+				<p>No vulnerabilities found on the target.</p>
+			</div>
 		{:else}
 			<p>Waiting for results...</p>
 		{/if}
@@ -573,4 +629,18 @@
 		justify-content: flex-start;
 		width: 100%;
 	}
+    .no-results-message {
+        margin-top: 2rem;
+        padding: 2rem;
+        text-align: center;
+        background-color: #f8f9fa;
+        border-radius: 0.5rem;
+        width: 80%;
+    }
+    
+    .no-results-message p {
+        font-size: 1.25rem;
+        font-weight: 500;
+        color: #4b5563;
+    }
 </style>

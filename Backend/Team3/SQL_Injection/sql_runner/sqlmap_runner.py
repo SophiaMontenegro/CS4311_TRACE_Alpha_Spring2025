@@ -159,56 +159,95 @@ def run_sqlmap(base_url, port, params="", custom_flags=""):
 
     process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
 
-    # Live input listener thread
-    def input_listener(proc):
+    # Create an event to signal thread termination
+    stop_event = threading.Event()
+    
+    # Live input listener thread with non-blocking input
+    def input_listener(proc, stop_event):
         paused = False
-        while proc.poll() is None:
-            key = input("\n[Press 'p' to pause, 'r' to resume, 'q' to quit scan]: ").strip().lower()
-            if key == 'p':
-                suspend_process(proc.pid)
-                print("[*] SQLMap Paused.")
-                paused = True
-            elif key == 'r':
-                resume_process(proc.pid)
-                print("[*] SQLMap Resumed.")
-                paused = False
-            elif key == 'q':
-                if paused:
+        import select
+        import sys
+        import time
+        
+        # Only use this when running in CLI mode, not when called via API
+        if not sys.__stdin__.isatty():
+            return
+            
+        while proc.poll() is None and not stop_event.is_set():
+            # Non-blocking approach to check for input
+            print("\r[Press 'p' to pause, 'r' to resume, 'q' to quit scan]", end='', flush=True)
+            time.sleep(1)  # Check periodically instead of blocking
+            
+            # Only process input if there's something to read
+            if select.select([sys.stdin], [], [], 0.0)[0]:
+                key = sys.stdin.readline().strip().lower()
+                if key == 'p':
+                    suspend_process(proc.pid)
+                    print("[*] SQLMap Paused.")
+                    paused = True
+                elif key == 'r':
                     resume_process(proc.pid)
-                print("[!] Terminating SQLMap...")
-                proc.terminate()
-                break
+                    print("[*] SQLMap Resumed.")
+                    paused = False
+                elif key == 'q':
+                    if paused:
+                        resume_process(proc.pid)
+                    print("[!] Terminating SQLMap...")
+                    proc.terminate()
+                    break
 
-    threading.Thread(target=input_listener, args=(process,), daemon=True).start()
+    # Start the listener thread
+    listener_thread = threading.Thread(target=input_listener, args=(process, stop_event), daemon=True)
+    listener_thread.start()
 
-    with open(result_path, "w", encoding="utf-8", newline='') as result_file, open(log_path, "w", encoding="utf-8", newline='') as log_file:
-        csv_writer = csv.writer(result_file)
-        csv_writer.writerow(["Type", "Details"])
+    try:
+        with open(result_path, "w", encoding="utf-8", newline='') as result_file, open(log_path, "w", encoding="utf-8", newline='') as log_file:
+            csv_writer = csv.writer(result_file)
+            csv_writer.writerow(["Type", "Details"])
 
-        for line in process.stdout:
-            log_file.write(line)
-            lower_line = line.lower()
+            for line in process.stdout:
+                log_file.write(line)
+                lower_line = line.lower()
 
-            if "checking if the target is protected" in lower_line:
-                print_progress(20)
-            elif "testing connection" in lower_line:
-                print_progress(40)
-            elif "the back-end dbms is" in lower_line:
-                print_progress(60)
-            elif "fetching" in lower_line or "dumping" in lower_line:
-                print_progress(90)
+                if "checking if the target is protected" in lower_line:
+                    print_progress(20)
+                elif "testing connection" in lower_line:
+                    print_progress(40)
+                elif "the back-end dbms is" in lower_line:
+                    print_progress(60)
+                elif "fetching" in lower_line or "dumping" in lower_line:
+                    print_progress(90)
 
-            important_keywords = ["parameter:", "type:", "title:", "payload:", "database:", "table:", "column:", "data:"]
-            if any(keyword in lower_line for keyword in important_keywords):
-                clean_line = line.strip()
-                for keyword in important_keywords:
-                    if keyword in lower_line:
-                        csv_writer.writerow([keyword.replace(":", "").capitalize(), clean_line])
-                        break
+                important_keywords = ["parameter:", "type:", "title:", "payload:", "database:", "table:", "column:", "data:"]
+                if any(keyword in lower_line for keyword in important_keywords):
+                    clean_line = line.strip()
+                    for keyword in important_keywords:
+                        if keyword in lower_line:
+                            csv_writer.writerow([keyword.replace(":", "").capitalize(), clean_line])
+                            break
 
         process.wait()
         print_progress(100)
         print("\n[+] Scan complete.")
+        
+    finally:
+        # Signal the listener thread to stop
+        stop_event.set()
+        
+        # Make sure SQLMap process is terminated
+        if process.poll() is None:
+            process.terminate()
+            try:
+                process.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                process.kill()
+                
+        # No need to join daemon thread, but it's good practice
+        if listener_thread.is_alive():
+            try:
+                listener_thread.join(timeout=1)
+            except:
+                pass
 
     save_to_history({
         "url": base_url,

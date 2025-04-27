@@ -124,5 +124,117 @@
         "timestamp": "20250426_222903",
         "result_file": "sqlmap_results/sql_results_7017.csv",
         "log_file": "sqlmap_results/sql_log_7017.csv"
+    },
+    {
+        "url": "http://localhost:8080/vulnerabilities/sqli?id=1&Submit=Submit",
+        "port": "80",
+        "timestamp": "20250426_225045",
+        "result_file": "sqlmap_results/sql_results_7018.csv",
+        "log_file": "sqlmap_results/sql_log_7018.csv"
+    },
+    {
+        "url": "http://localhost:8080/vulnerabilities/sqli?id=1&Submit=Submit",
+        "port": "80",
+        "timestamp": "20250426_225139",
+        "result_file": "sqlmap_results/sql_results_7019.csv",
+        "log_file": "sqlmap_results/sql_log_7019.csv"
+    },
+    {
+        "url": "http://localhost:8080/vulnerabilities/sqli?id=1&Submit=Submit",
+        "port": "80",
+        "timestamp": "20250426_225616",
+        "result_file": "sqlmap_results/sql_results_7020.csv",
+        "log_file": "sqlmap_results/sql_log_7020.csv"
+    },
+    {
+        "url": "http://localhost:8080/vulnerabilities/sqli?id=1&Submit=Submit",
+        "port": "80",
+        "timestamp": "20250426_225649",
+        "result_file": "sqlmap_results/sql_results_7021.csv",
+        "log_file": "sqlmap_results/sql_log_7021.csv"
+    },
+    {
+        "url": "http://localhost:8080/vulnerabilities/sqli?id=1&Submit=Submit",
+        "port": "80",
+        "timestamp": "20250426_230242",
+        "result_file": "sqlmap_results/sql_results_7022.csv",
+        "log_file": "sqlmap_results/sql_log_7022.csv"
+    },
+    {
+        "url": "http://localhost:8080/vulnerabilities/sqli?id=1&Submit=Submit",
+        "port": "80",
+        "timestamp": "20250426_231121",
+        "result_file": "sqlmap_results/sql_results_7023.csv",
+        "log_file": "sqlmap_results/sql_log_7023.csv"
+    },
+    {
+        "url": "http://localhost:8080/vulnerabilities/sqli?id=1&Submit=Submit",
+        "port": "80",
+        "timestamp": "20250426_231200",
+        "result_file": "sqlmap_results/sql_results_7024.csv",
+        "log_file": "sqlmap_results/sql_log_7024.csv"
+    },
+    {
+        "url": "http://localhost:80?dsaccs",
+        "port": "80",
+        "timestamp": "20250426_231234",
+        "result_file": "sqlmap_results/sql_results_7025.csv",
+        "log_file": "sqlmap_results/sql_log_7025.csv"
+    },
+    {
+        "url": "http://sskdla:80?jsaklan",
+        "port": "80",
+        "timestamp": "20250426_231746",
+        "result_file": "sqlmap_results/sql_results_7026.csv",
+        "log_file": "sqlmap_results/sql_log_7026.csv"
+    },
+    {
+        "url": "http://localhost:8080/vulnerabilities/sqli?id=1&Submit=Submit",
+        "port": "80",
+        "timestamp": "20250426_231840",
+        "result_file": "sqlmap_results/sql_results_7027.csv",
+        "log_file": "sqlmap_results/sql_log_7027.csv"
+    },
+    {
+        "url": "http://ghj:80?jsaklan",
+        "port": "80",
+        "timestamp": "20250426_232057",
+        "result_file": "sqlmap_results/sql_results_7028.csv",
+        "log_file": "sqlmap_results/sql_log_7028.csv"
+    },
+    {
+        "url": "http://localhost:8080/vulnerabilities/sqli?id=1&Submit=Submit",
+        "port": "80",
+        "timestamp": "20250426_232520",
+        "result_file": "sqlmap_results/sql_results_7029.csv",
+        "log_file": "sqlmap_results/sql_log_7029.csv"
+    },
+    {
+        "url": "http://localhost:8080?hjbnjlnjl",
+        "port": "80",
+        "timestamp": "20250426_232557",
+        "result_file": "sqlmap_results/sql_results_7030.csv",
+        "log_file": "sqlmap_results/sql_log_7030.csv"
+    },
+    {
+        "url": "http://localhost:8080/vulnerabilities/sqli?id=1&Submit=Submit",
+        "port": "80",
+        "timestamp": "20250426_232939",
+        "result_file": "sqlmap_results/sql_results_7031.csv",
+        "log_file": "sqlmap_results/sql_log_7031.csv"
+    },
+    {
+        "url": "http://nkdanjka:80?asd",
+        "port": "80",
+        "timestamp": "20250426_232959",
+        "result_file": "sqlmap_results/sql_results_7032.csv",
+        "log_file": "sqlmap_results/sql_log_7032.csv"
+    },
+    {
+        "url": "http://localhost:8080/vulnerabilities/sqli?id=1&Submit=Submit",
+        "port": "80",
+        "timestamp": "20250426_233058",
+        "result_file": "sqlmap_results/sql_results_7033.csv",
+        "log_file": "sqlmap_results/sql_log_7033.csv"
     }
 ]
