@@ -3,6 +3,8 @@
 import json
 import asyncio
 import datetime
+import requests
+import socket
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
 from urllib.parse import urlparse
@@ -66,6 +68,32 @@ class crawler_manager:
         The callback should accept two parameters: url and error (which can be None).
         """
         self.progress_callback = callback
+    
+    def send_update(self, ip: str, full_url: str, severity: int):
+        """
+        Sets up the call to send the responses to webtree
+        """
+        try:
+            parsed = urlparse(full_url)
+            path = parsed.path if parsed.path else "/"
+            payload = {
+                "ip": ip,
+                "path": path,
+                "severity": severity
+            }
+            response = requests.post("http://localhost:8000/update", json=payload)
+            print(f"Sent {path}: {response.status_code} - {response.json()}")
+        except Exception as e:
+            print(f"Error sending update for {full_url}: {e}")
+    
+    def get_ip_from_target_url(self, url: str) -> str:
+        try:
+            parsed = urlparse(url)
+            if parsed.hostname:
+                return socket.gethostbyname(parsed.hostname)
+        except Exception as e:
+            print(f"Failed to resolve IP for {url}: {e}")
+        return "0.0.0.0"  
 
     def configure_crawler(self, target_url: str, depth: int, limit: int, user_agent: str, delay: int, proxy: str, crawl_date: str = None, crawl_time: str = None, excluded_urls: str = None) -> None:
         """
@@ -245,6 +273,13 @@ class crawler_manager:
             json.dump(self.table_data, f, indent=1)
 
         print("Crawling completed. Results written to crawler_table_data.json")
+
+        target_ip = self.get_ip_from_target_url(self.config["target_url"])
+
+        for result in self.results:
+            self.send_update(target_ip, result["url"], 200)
+            print(target_ip, "Target ip Address")
+        
         return self.results
 
 # Sample test run

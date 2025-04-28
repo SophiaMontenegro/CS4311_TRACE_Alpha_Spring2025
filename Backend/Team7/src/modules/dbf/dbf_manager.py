@@ -2,6 +2,9 @@ import os
 import time
 import logging
 import asyncio
+import socket
+import requests
+from urllib.parse import urlparse
 from typing import List, Dict, Callable, Optional
 from Team1.httpclient.proxy_server import ProxyServer
 from Team1.httpclient.http_client import HTTPClient
@@ -161,6 +164,12 @@ class DirectoryBruteForceManager:
         else:
             self.end_time = time.perf_counter()
 
+        target_ip = self.get_ip_from_target_url(self.config["target_url"])
+        filtered_results = self.get_filtered_results()
+
+        for result in filtered_results:
+            self.send_update(target_ip, result["url"], result["status"])
+
     async def _wait_pause(self, interval=0.5):
         """Helper method to wait during pause state"""
         await asyncio.sleep(interval)
@@ -182,6 +191,32 @@ class DirectoryBruteForceManager:
         # Set end time when stopping
         if not self.end_time:
             self.end_time = time.perf_counter()
+
+    def send_update(self, ip: str, full_url: str, severity: int):
+        """
+        Sets up the call to send the responses to webtree
+        """
+        try:
+            parsed = urlparse(full_url)
+            path = parsed.path if parsed.path else "/"
+            payload = {
+                "ip": ip,
+                "path": path,
+                "severity": severity
+            }
+            response = requests.post("http://localhost:8000/update", json=payload)
+            print(f"Sent {path}: {response.status_code} - {response.json()}")
+        except Exception as e:
+            print(f"Error sending update for {full_url}: {e}")
+    
+    def get_ip_from_target_url(self, url: str) -> str:
+        try:
+            parsed = urlparse(url)
+            if parsed.hostname:
+                return socket.gethostbyname(parsed.hostname)
+        except Exception as e:
+            print(f"Failed to resolve IP for {url}: {e}")
+        return "0.0.0.0"  
 
     def get_metrics(self) -> Dict[str, float]:
         """Get metrics about the scan progress and results"""
