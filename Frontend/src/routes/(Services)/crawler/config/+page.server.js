@@ -41,7 +41,13 @@ export const actions = {
 		};
 
 		try {
-			const response = await fetch("http://127.0.0.1:8000/api/crawler", {
+			const apiBaseURL = localStorage.getItem('apiBaseURL');
+
+			if (!apiBaseURL) {
+				throw new Error('API base URL is not set!');
+			}
+
+			const response = await fetch(`${apiBaseURL}/api/crawler`, {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",

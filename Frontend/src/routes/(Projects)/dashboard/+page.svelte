@@ -349,8 +349,8 @@
 								on:click={async () => {
 									if (!project.locked) {
 										apiBaseURL = `http://${project.lead_ip}:8000`;
-										console.log('API BASE URL set to:', apiBaseURL); // TESTING		
-										goto(`/tool-dashboard?projectName=${encodeURIComponent(project.name)}`);
+										localStorage.setItem('apiBaseURL', apiBaseURL);  // Save to local storage
+										console.log('API BASE URL set to:', apiBaseURL);
 									}
 								}}
 							>
