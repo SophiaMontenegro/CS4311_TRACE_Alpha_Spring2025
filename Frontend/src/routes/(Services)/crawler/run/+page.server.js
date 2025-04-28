@@ -9,7 +9,9 @@ export async function load({ fetch, url }) {
 	}
 
 	try {
-		const res = await fetch(`http://127.0.0.1:8000/api/crawler/${jobId}/results`);
+		const apiBaseURL = localStorage.getItem('apiBaseURL');
+		if (!apiBaseURL) throw new Error('API Base URL is not set!');
+		const res = await fetch(`${apiBaseURL}/api/crawler/${jobId}/results`);
 		const json = await res.json();
 		return {
 			tableData: json.results ?? [],

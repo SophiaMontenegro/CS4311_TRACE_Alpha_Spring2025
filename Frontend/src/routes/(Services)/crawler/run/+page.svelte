@@ -56,7 +56,9 @@
 	// Fetch results from the server
 	async function fetchResults(jobId) {
 		try {
-			const res = await fetch(`http://localhost:8000/api/crawler/${jobId}/results`);
+			const apiBaseURL = localStorage.getItem('apiBaseURL');
+			if (!apiBaseURL) throw new Error('API Base URL is not set!');
+			const res = await fetch(`${apiBaseURL}/api/crawler/${jobId}/results`);
 			const response = await res.json();
 			const parsed = Array.isArray(response) ? response : (response.results ?? []);
 
@@ -131,7 +133,9 @@
 
 		// Tell the backend to stop
 		try {
-			const res = await fetch(`http://localhost:8000/api/crawler/${jobId}/stop`, {
+			const apiBaseURL = localStorage.getItem('apiBaseURL');
+			if (!apiBaseURL) throw new Error('API Base URL is not set!');
+			const res = await fetch(`${apiBaseURL}/api/crawler/${jobId}/stop`, {
 				method: 'POST'
 			});
 			if (res.ok) {
@@ -179,7 +183,9 @@
 		}
 
 		try {
-			const res = await fetch(`http://localhost:8000/api/crawler/${jobId}/results`);
+			const apiBaseURL = localStorage.getItem('apiBaseURL');
+			if (!apiBaseURL) throw new Error('API Base URL is not set!');
+			const res = await fetch(`${apiBaseURL}/api/crawler/${jobId}/results`);
 			if (!res.ok) throw new Error('Failed to fetch crawler results.');
 
 			const { results = [] } = await res.json();

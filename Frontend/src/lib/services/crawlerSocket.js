@@ -17,14 +17,14 @@ let socket = null;
 export function connectToCrawlerWebSocket(jobId, retry = 0) {
 	const maxRetries = 5;
 
-	// Prevent duplicate connections if one is already open
-	if (socket && socket.readyState !== WebSocket.CLOSED) {
-		console.warn('[WebSocket] Already connected. Skipping duplicate connection.');
-		return;
+	const apiBaseURL = localStorage.getItem('apiBaseURL');
+	if (!apiBaseURL) {
+		throw new Error('API Base URL not set! Cannot connect to WebSocket.');
 	}
+	const wsBaseURL = apiBaseURL.replace('http', 'ws');
 
-	// Open a WebSocket connection to the backend endpoint
-	socket = new WebSocket(`ws://localhost:8000/ws/crawler/${jobId}`);
+	// Create WebSocket
+	socket = new WebSocket(`${wsBaseURL}/ws/crawler/${jobId}`);
 
 	// Triggered when the connection is successfully established
 	socket.onopen = () => {
