@@ -250,9 +250,6 @@
         await loadProjects();
     }
 
-
-
-
     let openDropdownId = null;
 
     function toggleDropdown(id) {
@@ -484,11 +481,11 @@
         />
     {/if}
 
-    <Alert
-            isOpen={showDeleteDialog}
-            title="Are you absolutely sure?"
-            message="This action cannot be undone."
-            onCancel={handleCancelDelete}
-            onContinue={handleConfirmedDelete}
-    />
+	<Alert
+		isOpen={showDeleteDialog}
+		title="Are you absolutely sure?"
+		message="This action cannot be undone."
+		onCancel={handleCancelDelete}
+		onContinue={handleConfirmedDelete}
+	/>
 </div>

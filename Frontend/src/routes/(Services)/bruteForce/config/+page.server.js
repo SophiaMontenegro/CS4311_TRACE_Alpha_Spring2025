@@ -5,15 +5,9 @@ import { validateField } from '$lib/validation/fieldValidatorFactory.js';
 export const actions = {
 	default: async ({ request }) => {
 		const rawFormData = await request.formData();
-
 		const wordlist = rawFormData.get('wordlist');
 		const formData = Object.fromEntries(rawFormData.entries());
 		delete formData.wordlist;
-
-		console.log('📥 Received wordlist:', wordlist?.name);
-		console.log('📦 File size:', wordlist?.size);
-		console.log('🧾 Form fields:', formData);
-
 		const fieldErrors = {};
 
 		for (const [id, value] of Object.entries(formData)) {
