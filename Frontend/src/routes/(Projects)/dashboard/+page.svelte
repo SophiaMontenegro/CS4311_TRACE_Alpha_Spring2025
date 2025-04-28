@@ -351,6 +351,7 @@
 										apiBaseURL = `http://${project.lead_ip}:8000`;
 										localStorage.setItem('apiBaseURL', apiBaseURL);  // Save to local storage
 										console.log('API BASE URL set to:', apiBaseURL);
+										goto(`/tool-dashboard?projectName=${encodeURIComponent(project.name)}`);
 									}
 								}}
 							>
