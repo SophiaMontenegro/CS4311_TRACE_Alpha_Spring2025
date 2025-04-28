@@ -1,14 +1,16 @@
-# intruder_tool_full.py
+# intruder_tool.py
 # Code by erick
 import requests
 from bs4 import BeautifulSoup
-from urllib.parse import urljoin, urlparse
+from urllib.parse import urljoin
 from typing import List, Dict, Optional
+
+
 
 class IntruderTool:
     """
-    Main Intruder Tool class.
-    Handles HTML form attacks, API JSON payload attacks, and URL-encoded attacks.
+    The main class for the Intruder Tool.
+    Handles HTML form attacks, JSON API payloads, and generic URL-based payloads.
     """
 
     def __init__(self, target_url: str):
@@ -21,6 +23,10 @@ class IntruderTool:
         self.results = []
 
     def fetch_target(self) -> int:
+        """
+        Fetch the HTML content of the target URL.
+        Returns the HTTP status code, or -1 if the request fails.
+        """
         try:
             response = requests.get(self.target_url)
             self.html = response.text
@@ -31,6 +37,10 @@ class IntruderTool:
             return -1
 
     def parse_forms(self) -> List[Dict]:
+        """
+        Parse the HTML to identify forms containing input fields.
+        Returns a list of form metadata with actions, methods, and input fields.
+        """
         soup = BeautifulSoup(self.html, "html.parser")
         for form in soup.find_all("form"):
             fields = [{"name": f.get("name"), "type": f.get("type")} for f in form.find_all("input")]
@@ -43,11 +53,20 @@ class IntruderTool:
         return self.forms
 
     def select_form(self, index: int):
+        """
+        Select a form to target based on its index in the forms list.
+        """
         if index >= len(self.forms) or index < 0:
             raise IndexError("Selected form index is out of range.")
         self.selected_form_index = index
 
     def get_http_request_preview(self) -> Dict:
+        """
+
+        Generate a preview of what the HTTP request would look like
+        for the selected form with placeholder values.
+
+        """
         form = self.forms[self.selected_form_index]
         full_action_url = urljoin(self.target_url, form["action"])
         return {
@@ -58,14 +77,23 @@ class IntruderTool:
         }
 
     def configure_attack(self, intrusion_field: str, payloads: List[str]):
+        """
+        Define the field to inject payloads into and provide the payload list.
+        """
         self.intrusion_field = intrusion_field
         self.payloads = payloads
 
+
     def run_html_form_attack(self) -> List[Dict]:
+        """
+        Execute the attack loop by sending payloads to the selected HTML form.
+        Returns a list of results including status code and response length.
+        """
         form = self.forms[self.selected_form_index]
         action_url = urljoin(self.target_url, form["action"])
         method = form["method"]
         self.results = []
+
 
         for payload in self.payloads:
             form_data = {
@@ -73,6 +101,7 @@ class IntruderTool:
                 if f["name"] and f["name"] != self.intrusion_field
             }
             form_data[self.intrusion_field] = payload
+
 
             try:
                 if method == "post":
@@ -86,6 +115,7 @@ class IntruderTool:
                 })
             except requests.exceptions.RequestException as e:
                 short_error = self._shorten_error(e)
+                print(f"Request failed for '{payload}': {short_error}")
                 self.results.append({
                     "payload": payload,
                     "status_code": None,
@@ -97,6 +127,9 @@ class IntruderTool:
 
     def run_api_attack(self, method: str, endpoint: str, base_body: Dict, intrusion_key: str,
                        payloads: List[str], headers: Optional[Dict] = None) -> List[Dict]:
+        """
+        Run payload injection on an API endpoint that accepts JSON.
+        """
         self.results = []
         headers = headers or {"Content-Type": "application/json"}
 
@@ -118,6 +151,7 @@ class IntruderTool:
                 })
             except requests.exceptions.RequestException as e:
                 short_error = self._shorten_error(e)
+                print(f"Request failed for '{payload}': {short_error}")
                 self.results.append({
                     "payload": payload,
                     "status_code": None,
@@ -129,6 +163,9 @@ class IntruderTool:
 
     def run_urlencoded_attack(self, method: str, endpoint: str, param_name: str,
                               payloads: List[str], headers: Optional[Dict] = None) -> List[Dict]:
+        """
+        Run generic URL-encoded attack against endpoints that accept raw form data.
+        """
         self.results = []
         headers = headers or {"Content-Type": "application/x-www-form-urlencoded"}
 
@@ -149,6 +186,7 @@ class IntruderTool:
                 })
             except requests.exceptions.RequestException as e:
                 short_error = self._shorten_error(e)
+                print(f"Request failed for '{payload}': {short_error}")
                 self.results.append({
                     "payload": payload,
                     "status_code": None,
@@ -159,6 +197,9 @@ class IntruderTool:
         return self.results
 
     def _shorten_error(self, e: Exception) -> str:
+        """
+        Utility method to extract a short, readable message from an exception.
+        """
         full_msg = str(e)
         if "Failed to resolve" in full_msg:
             return "DNS resolution failed"
@@ -166,33 +207,5 @@ class IntruderTool:
             return "Server unreachable (max retries)"
         if "Connection refused" in full_msg:
             return "Connection refused"
-        return full_msg.split(":")[0]
+        return full_msg.split(":")[0]  # fallback: just the first part
 
-    def detect_mode(self) -> str:
-        """
-        Detect the target content type to decide attack mode: html, json, or url.
-        """
-        try:
-            response = requests.get(self.target_url)
-            content_type = response.headers.get("Content-Type", "")
-            if "html" in content_type:
-                return "html"
-            elif "json" in content_type:
-                return "json"
-            else:
-                return "url"
-        except Exception as e:
-            print(f"Error detecting mode: {e}")
-            return "url"
-
-    def is_valid_url(self, url: Optional[str] = None) -> bool:
-        """
-        Validate if a URL is properly formatted.
-        If no URL is provided, validates the tool's target_url.
-        """
-        check_url = url or self.target_url
-        try:
-            result = urlparse(check_url)
-            return all([result.scheme in ["http", "https"], result.netloc])
-        except:
-            return False

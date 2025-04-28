@@ -1,69 +1,91 @@
 <script>
 	import { goto } from "$app/navigation";
+	import { targetUrlStore, modeStore } from '$lib/stores/intruder';
 	let targetUrl = '';
 	let forms = [];
 	let error = '';
+	let mode = '';
 	let selectedFormIndex = null;
 	let requestPreview = null;
+	let attackType = '';
 
-	async function sendSelectedForm() {
-	if (selectedFormIndex === null) return;
-
-	const res = await fetch("http://localhost:8000/api/intruder/select_form", {
-		method: "POST",
-		headers: { "Content-Type": "application/json" },
-		body: JSON.stringify({ index: selectedFormIndex })
-	});
-
-	if (res.ok) {
-		// goto("/intruder/configure");
-		goto(`/intruder/configure?formIndex=${selectedFormIndex}`);
-		// await fetchRequestPreview(); 
-	}
-}
-
-
-	async function fetchRequestPreview() {
-	const res = await fetch("http://localhost:8000/api/intruder/preview_request");
-	if (!res.ok) {
-		const data = await res.json();
-		console.error("Error:", data);
-		alert(data.detail || "Failed to get request preview");
-		return;
-	}
-
-	const preview = await res.json();
-	console.log("HTTP Request Preview:", preview);
-	// store it in a reactive variable if you want to show it
-	requestPreview = preview;
-	}
-
-
-
-
-	async function scanForms() {
-		try {
-			const response = await fetch('http://localhost:8000/api/intruder/parse_forms', {
+	async function scanTarget() {
+	try {
+		const response = await fetch('http://localhost:8000/api/intruder/reconnaissance', {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify({ url: targetUrl })
 		});
 
+		const data = await response.json();
+		mode = data.mode;
 
-			const data = await response.json();
-			if (data.forms) {
-				forms = data.forms;
-				error = '';
+		if (mode === 'html') {
+			await fetchRequestPreview();
+		}
+		if (data.error) {
+			error = data.error;
+			return;
+		}
+
+		if (data.forms && data.forms.length > 0) {
+			forms = data.forms;
+			mode = data.mode;
+			error = '';
+			modeStore.set(mode);
+			targetUrlStore.set(targetUrl);
+
+		} else {
+			if (data.mode === 'json' || data.mode === 'url') {
+				modeStore.set(mode);
+				targetUrlStore.set(targetUrl);
+				goto(`/intruder/configure?noForm=true`);
 			} else {
-				error = data.error || 'Unexpected error';
+				error = "Unknown or unsupported mode.";
 			}
+		}
+	} catch (err) {
+		error = "Failed to connect to backend.";
+		console.error(err);
+	}
+}
+
+	async function fetchRequestPreview() {
+		try {
+			const res = await fetch("http://localhost:8000/api/intruder/preview_request");
+			if (!res.ok) {
+				const data = await res.json();
+				console.error("Error:", data);
+				alert(data.detail || "Failed to get request preview");
+				return;
+			}
+			requestPreview = await res.json();
 		} catch (err) {
-			error = 'Failed to connect to backend.';
-			console.error(err);
+			console.error('Failed to fetch preview:', err);
+		}
+	}
+
+	async function sendSelectedForm() {
+		if (selectedFormIndex === null) return;
+
+		const res = await fetch("http://localhost:8000/api/intruder/select_form", {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({ index: selectedFormIndex })
+		});
+
+		if (res.ok) {
+			goto(`/intruder/configure?formIndex=${selectedFormIndex}&noForm=false`);
+		} else {
+			alert('Failed to select form.');
 		}
 	}
 </script>
 
+<!-- UI layout stays the same as yours -->
+
+
+<!-- HTML Markup -->
 <div class="pt-6 pb-6 max-w-4xl mx-auto" style="padding-left:100px;padding-right:100px;">
 	<!-- Target URL Input -->
 	<div class="space-y-6">
@@ -81,8 +103,8 @@
 		</div>
 
 		<!-- Scan Button -->
-		<button type="button" class="b-start" on:click={scanForms}>
-			Scan for Forms
+		<button type="button" class="b-start" on:click={scanTarget}>
+			Scan
 		</button>
 
 		{#if error}
@@ -94,63 +116,61 @@
 			<div class="mt-6">
 				<h3 class="font-semibold text-lg mb-2">Forms Found:</h3>
 				{#each forms as form, i}
-				<div class="border border-gray-300 p-4 rounded mb-4">
-					<label class="flex items-center space-x-2">
-						<input
-							type="radio"
-							name="formSelector"
-							bind:group={selectedFormIndex}
-							value={i}
-						/>
-						<span class="font-semibold">Form {i}</span>
-					</label>
+					<div class="border border-gray-300 p-4 rounded mb-4">
+						<label class="flex items-center space-x-2">
+							<input
+								type="radio"
+								name="formSelector"
+								bind:group={selectedFormIndex}
+								value={i}
+							/>
+							<span class="font-semibold">Form {i}</span>
+						</label>
 
-					<p><b>Action:</b> {form.action}</p>
-					<p><b>Method:</b> {form.method.toUpperCase()}</p>
+						<p><b>Action:</b> {form.action}</p>
+						<p><b>Method:</b> {form.method.toUpperCase()}</p>
 
-					<table class="w-full mt-2 text-sm border border-gray-300 rounded">
-						<thead class="bg-gray-100 text-left">
-							<tr>
-								<th class="px-4 py-2 border-b">Name</th>
-								<th class="px-4 py-2 border-b">Type</th>
-							</tr>
-						</thead>
-						<tbody>
-							{#each form.fields as field}
+						<table class="w-full mt-2 text-sm border border-gray-300 rounded">
+							<thead class="bg-gray-100 text-left">
 								<tr>
-									<td class="px-4 py-2 border-b">{field.name || '(no name)'}</td>
-									<td class="px-4 py-2 border-b">{field.type || 'text'}</td>
+									<th class="px-4 py-2 border-b">Name</th>
+									<th class="px-4 py-2 border-b">Type</th>
 								</tr>
-							{/each}
-						</tbody>
-					</table>
-				</div>
-			{/each}
-			
-			
-			{#if selectedFormIndex !== null}
-			<p class="mt-2 text-green-700">
-			 Selected Form: {selectedFormIndex}
-			</p>
-			{/if}
-			
-			</div>
-			<button on:click={sendSelectedForm} class="b-start mt-4">
-				Selected Form
-			</button>
-			{#if requestPreview}
-				<h3 class="mt-6 font-semibold text-lg">HTTP Request Preview</h3>
-				<pre class="bg-gray-100 text-sm p-4 rounded overflow-x-auto">
-				URL: {requestPreview.url}
-				Method: {requestPreview.method}
-				Headers: {JSON.stringify(requestPreview.headers, null, 2)}
+							</thead>
+							<tbody>
+								{#each form.fields as field}
+									<tr>
+										<td class="px-4 py-2 border-b">{field.name || '(no name)'}</td>
+										<td class="px-4 py-2 border-b">{field.type || 'text'}</td>
+									</tr>
+								{/each}
+							</tbody>
+						</table>
+					</div>
+				{/each}
 
-				Sample Body:
-				{JSON.stringify(requestPreview.sample_body, null, 2)}
+				{#if selectedFormIndex !== null}
+					<p class="mt-2 text-green-700">
+						Selected Form: {selectedFormIndex}
+					</p>
+				{/if}
+
+				<button on:click={sendSelectedForm} class="b-start mt-4">
+					Select Form
+				</button>
+
+				{#if requestPreview}
+					<h3 class="mt-6 font-semibold text-lg">HTTP Request Preview</h3>
+					<pre class="bg-gray-100 text-sm p-4 rounded overflow-x-auto">
+URL: {requestPreview.url}
+Method: {requestPreview.method}
+Headers: {JSON.stringify(requestPreview.headers, null, 2)}
+
+Sample Body:
+{JSON.stringify(requestPreview.sample_body, null, 2)}
 					</pre>
-			{/if}
-
-
+				{/if}
+			</div>
 		{/if}
 	</div>
 </div>

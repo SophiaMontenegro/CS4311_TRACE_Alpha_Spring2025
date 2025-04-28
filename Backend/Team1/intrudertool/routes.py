@@ -1,4 +1,5 @@
-# Team1/routes.py
+# Team1/routes.py (updated with /reconnaissance)
+
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from Team1.intrudertool.intruder_tool import IntruderTool
@@ -10,21 +11,40 @@ tool = None
 class URLRequest(BaseModel):
     url: str
 
-@router.post("/parse_forms")
-async def parse_forms(request: URLRequest):
+@router.post("/reconnaissance")
+def reconnaissance(request: URLRequest):
     global tool
-    try:
-        tool = IntruderTool(request.url)
+    tool = IntruderTool(request.url)
+
+    if not tool.is_valid_url():
+        raise HTTPException(status_code=400, detail="Invalid URL.")
+
+    mode = tool.detect_mode()
+    print(f"\nDetected mode: {mode}")
+    if mode == "html":
         status = tool.fetch_target()
-
         if status != 200:
-            raise HTTPException(status_code=status, detail="Failed to fetch target URL")
-
+            raise HTTPException(status_code=400, detail=f"Failed to fetch HTML content (Status {status})")
+        
         forms = tool.parse_forms()
-        return {"forms": forms}
 
-    except Exception as e:
-        return {"error": str(e)}
+        if not forms:
+            # If no forms found even though HTML, fallback to URL attack
+            return {"mode": "url", "forms": [], "message": "No forms found, switching to URL attack."}
+
+        return {"mode": "html", "forms": forms}
+
+    elif mode == "json":
+        # No need to fetch forms here
+        return {"mode": "json", "forms": []}
+
+    elif mode == "url":
+        # No forms for URL attacks
+        return {"mode": "url", "forms": []}
+
+    else:
+        raise HTTPException(status_code=400, detail="Unknown or unsupported mode.")
+
 
 class IndexRequest(BaseModel):
     index: int
@@ -44,15 +64,15 @@ def select_form(request: IndexRequest):
 @router.get("/preview_request")
 def preview_request():
     global tool
-    if not tool or tool.selected_form_index is None:
-        raise HTTPException(status_code=400, detail="No form selected.")
+    if not tool:
+        raise HTTPException(status_code=400, detail="Tool not initialized.")
+
+    if tool.selected_form_index is None:
+        return {"error": "No form selected, cannot preview."}
 
     preview = tool.get_http_request_preview()
     return preview
 
-# ----------------------
-# New Attack Handling!
-# ----------------------
 
 class AttackRequest(BaseModel):
     intrusion_field: str

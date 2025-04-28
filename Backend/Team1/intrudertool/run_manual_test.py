@@ -11,11 +11,11 @@ from urllib.parse import urlparse
 #url = "https://formspree.io/"
 #url = "https://postman-echo.com/post"
 #url = "https://www.w3schools.com/html/html_forms.asp"
-#url = "https://jsonplaceholder.typicode.com/posts"
+url = "https://jsonplaceholder.typicode.com/posts"
 #url = "https://httpbin.org/anything"
 #url = "https://api.publicapis.org/entries" #Note this is website is down which will give you "DNS resolution failed" error
 #url = "https://www.formsite.com/html5/"
-url = "https://juice-shop.herokuapp.com"
+# url = "https://juice-shop.herokuapp.com"
 
 # Validate URL format
 def is_valid_url(url: str) -> bool:

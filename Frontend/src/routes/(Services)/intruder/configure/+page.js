@@ -1,4 +1,9 @@
 export async function load({ url }) {
 	const formIndex = url.searchParams.get('formIndex');
-	// use it to fetch preview again if needed
+	const noForm = url.searchParams.get('noForm') === 'true';
+
+	return {
+		formIndex: formIndex ? parseInt(formIndex) : 0,
+		noForm
+	};
 }
