@@ -24,31 +24,44 @@
 		});
 
 	onMount(async () => {
-		try {
-			if (!noForm) {
-				const res = await fetch('http://localhost:8000/api/intruder/preview_request');
-				if (!res.ok) {
-					const data = await res.json();
-					error = data.detail || 'Failed to load preview.';
-					return;
-				}
-				requestPreview = await res.json();
-				if (detectedMode == 'json'){
-					attackType = 'api'; 
-					apiEndpoint = targetUrlValue;
-				}
-				else{
-					attackType = 'urlencoded'; 
-					apiEndpoint = targetUrlValue;
-				}
+	try {
+		if (noForm) {
+			// No form detected
+			if (detectedMode === 'json') {
+				attackType = 'api';
+				apiEndpoint = targetUrlValue;
+			} else if (detectedMode === 'url') {
+				attackType = 'urlencoded';
+				apiEndpoint = targetUrlValue;
 			} else {
-				attackType = 'html_form'; 
+				error = 'Unsupported detected mode.';
 			}
-		} catch (err) {
-			error = 'Server not reachable.';
-			console.error(err);
+		} else {
+			// There was a form detected → HTML attack
+			const res = await fetch('http://localhost:8000/api/intruder/preview_request');
+			if (!res.ok) {
+				const data = await res.json();
+				error = data.detail || 'Failed to load preview.';
+				return;
+			}
+			requestPreview = await res.json();
+
+			// ✅ Only set HTML Form Attack if detectedMode is actually HTML
+			if (detectedMode === 'html') {
+				attackType = 'html_form';
+			} else if (detectedMode === 'json') {
+				attackType = 'api';
+			} else if (detectedMode === 'url') {
+				attackType = 'urlencoded';
+			}
 		}
-	});
+	} catch (err) {
+		error = 'Server not reachable.';
+		console.error(err);
+	}
+});
+
+
 
 	async function startAttack() {
 		try {
@@ -100,7 +113,7 @@
 			const result = await res.json();
 			if (result.results) {
 				attackResults.set(result.results);
-				goto('/intruder/scan'); // ✅ After attack, go back to scan
+				goto('/intruder/scan'); 
 			} else {
 				error = 'Attack failed: No results returned.';
 			}
@@ -144,7 +157,7 @@
 	<div>
 		<label class="block mt-4 font-medium">Attack Type</label>
 		<select bind:value={attackType} class="input mt-1">
-			<option value="html_form" disabled={!noForm}>HTML Form Attack</option>
+			<option value="html_form" disabled={noForm}>HTML Form Attack</option>
 			<option value="api" disabled={noForm}>API (JSON) Attack</option>
 			<option value="urlencoded" disabled={noForm}>URL-Encoded Attack</option>
 		</select>

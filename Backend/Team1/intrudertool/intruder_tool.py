@@ -4,6 +4,7 @@ import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin, urlparse
 from typing import List, Dict, Optional
+import json
 
 class IntruderTool:
     """
@@ -169,18 +170,24 @@ class IntruderTool:
         return full_msg.split(":")[0]
 
     def detect_mode(self) -> str:
-        """
-        Detect the target content type to decide attack mode: html, json, or url.
-        """
         try:
             response = requests.get(self.target_url)
             content_type = response.headers.get("Content-Type", "")
-            if "html" in content_type:
-                return "html"
-            elif "json" in content_type:
+            body = response.text
+
+            if "json" in content_type:
                 return "json"
-            else:
-                return "url"
+            elif "html" in content_type:
+                return "html"
+
+            # Try parsing body to detect JSON
+            try:
+                json.loads(body)
+                return "json"
+            except Exception:
+                pass
+
+            return "url"
         except Exception as e:
             print(f"Error detecting mode: {e}")
             return "url"

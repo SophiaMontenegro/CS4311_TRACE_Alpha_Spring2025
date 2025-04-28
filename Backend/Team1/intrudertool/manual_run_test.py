@@ -3,11 +3,11 @@ from intruder_tool import IntruderTool
 
 # Set your test URL here
 # url = "https://httpbin.org/forms/post" 
-url = "https://reqres.in/api/users"
+# url = "https://reqres.in/api/users"
 # url = "https://formspree.io/"
 # url = "https://postman-echo.com/post"
 # url = "https://www.w3schools.com/html/html_forms.asp"
-# url = "https://jsonplaceholder.typicode.com/posts"
+url = "https://jsonplaceholder.typicode.com/posts"
 # url = "https://httpbin.org/anything"
 # url = "https://api.publicapis.org/entries"
 # url = "https://www.formsite.com/html5/"
