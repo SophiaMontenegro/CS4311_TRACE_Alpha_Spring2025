@@ -6,7 +6,7 @@ export const actions = {
 	default: async ({ request }) => {
 		const rawFormData = await request.formData();
 
-		const wordlist = rawFormData.get('wordlist'); // File
+		const wordlist = rawFormData.get('wordlist');
 		const formData = Object.fromEntries(rawFormData.entries());
 		delete formData.wordlist;
 

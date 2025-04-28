@@ -5,15 +5,9 @@ import { validateField } from '$lib/validation/fieldValidatorFactory.js';
 export const actions = {
 	default: async ({ request }) => {
 		const rawFormData = await request.formData();
-
 		const wordlistFile = rawFormData.get('wordlist');
 		const formData = Object.fromEntries(rawFormData.entries());
 		delete formData.wordlist;
-
-		console.log('📥 Received wordlist:', wordlistFile?.name);
-		console.log('📦 File size:', wordlistFile?.size);
-		console.log('🧾 Form fields:', formData);
-
 		const fieldErrors = {};
 
 		// Validate file
@@ -74,7 +68,6 @@ export const actions = {
 			let json;
 			try {
 				json = await response.json();
-				console.log("Backend response:", json);
 			} catch (e) {
 				console.warn("Could not parse JSON:", e.message);
 			}

@@ -17,7 +17,7 @@
 			size: {
 				default: "h-10 px-4 py-2 rounded-lg text-md font-medium",
 				sm: "h-9 px-3 rounded-lg text-sm font-small",
-				lg: "h-11 px-8 rounded-lg text-md font-medium",
+				lg: "h-11 px-8 rounded-lg text-md",
 				icon: "h-10 w-10",
 				circle: "h-10 w-10",
 				circlesm: "h-8 w-8",
