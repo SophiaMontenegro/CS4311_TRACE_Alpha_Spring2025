@@ -1,5 +1,10 @@
 import { serviceStatus } from '$lib/stores/projectServiceStore';
-import { scanProgress, stopScanProgress, startScanProgress, scanPaused} from '$lib/stores/scanProgressStore';
+import {
+	scanProgress,
+	stopScanProgress,
+	startScanProgress,
+	scanPaused
+} from '$lib/stores/scanProgressStore';
 import { serviceResults } from '$lib/stores/serviceResultsStore.js';
 import { get } from 'svelte/store';
 
@@ -24,6 +29,23 @@ export function connectToCrawlerWebSocket(jobId, retry = 0) {
 	// Triggered when the connection is successfully established
 	socket.onopen = () => {
 		console.log('[WebSocket] Connected to crawler job:', jobId);
+
+		// Checkpoint restore logic on successful (re)connect
+		const savedCheckpoint = localStorage.getItem(`checkpoint_${jobId}`);
+		if (savedCheckpoint) {
+			try {
+				const parsed = JSON.parse(savedCheckpoint);
+				if (Array.isArray(parsed) && parsed.length > 0) {
+					serviceResults.update((r) => ({
+						...r,
+						crawler: parsed
+					}));
+					console.log('[Restore] Checkpoint loaded for job:', jobId);
+				}
+			} catch (err) {
+				console.error('[Restore] Failed to parse checkpoint data:', err);
+			}
+		}
 	};
 
 	// Triggered whenever a message is received from the backend
@@ -34,33 +56,33 @@ export function connectToCrawlerWebSocket(jobId, retry = 0) {
 		switch (type) {
 			// Updates job status in the serviceStatus store
 			case 'status': {
-        const mappedStatus = data.status;
-        const current = get(serviceStatus);
-      
-        // Ignore downgrades from completed → idle
-        if (current.status === 'completed' && mappedStatus === 'idle') {
-          console.warn('[Crawler] Ignoring idle status after completion');
-          return;
-        }
-      
-        // handle pause/resume toggling
-        switch (mappedStatus) {
-          case 'paused':
-            scanPaused.set(true);
-            break;
-          case 'running':
-            scanPaused.set(false);
-            break;
-        }
-      
-        serviceStatus.set({
-          status: mappedStatus,
-          serviceType: 'crawler',
-          startTime: data.started_at || new Date().toISOString()
-        });
-        break;
-      }
-			
+				const mappedStatus = data.status;
+				const current = get(serviceStatus);
+
+				// Ignore downgrades from completed → idle
+				if (current.status === 'completed' && mappedStatus === 'idle') {
+					console.warn('[Crawler] Ignoring idle status after completion');
+					return;
+				}
+
+				// handle pause/resume toggling
+				switch (mappedStatus) {
+					case 'paused':
+						scanPaused.set(true);
+						break;
+					case 'running':
+						scanPaused.set(false);
+						break;
+				}
+
+				serviceStatus.set({
+					status: mappedStatus,
+					serviceType: 'crawler',
+					startTime: data.started_at || new Date().toISOString()
+				});
+				break;
+			}
+
 			// Updates the crawler result table with a new scanned row
 			case 'new_row':
 				serviceResults.update((r) => ({
@@ -93,14 +115,21 @@ export function connectToCrawlerWebSocket(jobId, retry = 0) {
 				break;
 
 			// Handles errors and resets UI state
-			case 'error':
+			case 'error': {
+				console.error('[Crawler Error]', data.message);
+
+				if (data.message?.includes('not found')) {
+					localStorage.removeItem(`checkpoint_${jobId}`);
+					serviceResults.update((r) => ({ ...r, crawler: [] }));
+				}
+
 				serviceStatus.set({
-					status: 'idle',
+					status: 'error',
 					serviceType: 'crawler',
 					startTime: null
 				});
-				console.error('[Crawler Error]', data.message);
 				break;
+			}
 
 			// Logs backend messages to console for debugging
 			case 'log':
@@ -113,9 +142,23 @@ export function connectToCrawlerWebSocket(jobId, retry = 0) {
 	socket.onerror = (e) => {
 		console.error('[WebSocket Error]', e);
 
+		// Set UI status to error
+		serviceStatus.set({
+			status: 'error',
+			serviceType: 'crawler',
+			startTime: null
+		});
+
 		if (retry < maxRetries) {
 			console.log(`[WebSocket] Retrying connection (${retry + 1}/${maxRetries})...`);
 			setTimeout(() => connectToCrawlerWebSocket(jobId, retry + 1), 1000);
+		} else {
+			// Close the socket and clean up after max retries
+			if (socket) {
+				socket.close();
+				socket = null;
+				console.warn('[WebSocket] Max retries reached. Socket forcibly closed.');
+			}
 		}
 	};
 
@@ -123,6 +166,16 @@ export function connectToCrawlerWebSocket(jobId, retry = 0) {
 	socket.onclose = () => {
 		console.log('[WebSocket] Connection closed');
 		socket = null;
+
+		// Only set error if the scan wasn't completed or manually stopped
+		const currentStatus = get(serviceStatus);
+		if (['running', 'paused'].includes(currentStatus.status)) {
+			serviceStatus.set({
+				status: 'error',
+				serviceType: 'crawler',
+				startTime: null
+			});
+		}
 	};
 }
 

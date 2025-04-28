@@ -40,7 +40,6 @@
 								.join(' ')
 						}))
 				: [];
-		console.log('[Derived Store] dynamicColumns:', columns);
 		return columns;
 	});
 

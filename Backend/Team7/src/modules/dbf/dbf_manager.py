@@ -69,11 +69,11 @@ class DirectoryBruteForceManager:
         self.response_processor.set_filters(show_only_status or [200], hide_status or [], length_filter)
         self.http_client.specify_target_system(target_url)
         
-        # Reset control flags
+        # Reset control flags and counters
         self._paused = False
         self._stopped = False
         self.current_index = 0
-        self.request_count = -1
+        self.request_count = 0
 
     async def start_scan(self) -> None:
         self.start_time = time.perf_counter()
@@ -84,7 +84,7 @@ class DirectoryBruteForceManager:
         total_requests = len(wordlist)
 
         for i, word in enumerate(wordlist):
-            self.request_count += 1
+            # Store current position
             self.current_index = i
                 
             while self._paused and not self._stopped:
@@ -110,7 +110,7 @@ class DirectoryBruteForceManager:
                 
                 # Create a result object that can be sent to frontend
                 result_item = {
-                    "id": self.request_count,
+                    "id": self.request_count + 1,
                     "url": full_url,
                     "status": response["status_code"],
                     "payload": word,
@@ -123,12 +123,13 @@ class DirectoryBruteForceManager:
                     self.on_new_row(result_item)
                     
                 logging.info("Scanned %s [%d]", full_url, response["status_code"])
+                self.request_count += 1
 
                 self.progress_callback(self.request_count, total_requests, word, None)
                 
                 # Add a small delay to avoid overwhelming the server
-                await asyncio.sleep(0.5)
-
+                await asyncio.sleep(0.3)
+                
             except Exception as e:
                 logging.error("Request error for %s: %s", full_url, str(e))
                 error_response = MockResponse(full_url, 0, str(e))
@@ -138,7 +139,7 @@ class DirectoryBruteForceManager:
                 
                 # Create an error result object
                 error_item = {
-                    "id": self.request_count,
+                    "id": self.request_count + 1,
                     "url": full_url,
                     "status": 0,
                     "payload": word,
@@ -150,7 +151,7 @@ class DirectoryBruteForceManager:
                 if callable(self.on_new_row):
                     self.on_new_row(error_item)
                     
-                # self.request_count += 1
+                self.request_count += 1
                 
                 self.progress_callback(self.request_count, total_requests, word, str(e))
         
@@ -205,7 +206,7 @@ class DirectoryBruteForceManager:
                 
         return filtered_results
     
-    def save_results_to_txt(self, filename: str = "Team7/src/database/dbf/dbf_results.txt") -> None:
+    def save_results_to_txt(self, filename: str = "dbf_results.txt") -> None:
         """Save the filtered results to a text file"""
         results = self.get_filtered_results()
         with open(filename, "w", encoding="utf-8") as f:
