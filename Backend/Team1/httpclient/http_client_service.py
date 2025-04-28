@@ -39,14 +39,21 @@ def get_job_filename(project_folder: str, job_id: str):
 def save_job_to_disk(project_name: str, job_data: dict):
     """
     Saves a single HTTP job into its own file under the project folder.
+    If the project folder doesn't exist, it tries to create it.
     """
     project_folder = get_project_folder(project_name)
-    os.makedirs(project_folder, exist_ok=True)  # Ensure folder exists
+
+    try:
+        if not os.path.exists(project_folder):
+            os.makedirs(project_folder)
+    except Exception as e:
+        raise RuntimeError(f"Failed to create project folder '{project_folder}': {e}")
 
     filepath = get_job_filename(project_folder, job_data['job_id'])
 
     with open(filepath, "w", encoding="utf-8") as f:
         json.dump(job_data, f, indent=2)
+
 
 def add_log_entry(job_id: str, message: str):
     """
@@ -95,9 +102,10 @@ def send_http_request_service(target_system: str, crafted_request: dict, project
         running_http_jobs[job_id]['status'] = "error"
         running_http_jobs[job_id]['response'] = {"error": str(e)}
         add_log_entry(job_id, f"Exception occurred: {str(e)}")
-
-    save_job_to_disk(project_name, running_http_jobs[job_id])
-
+    try:
+        save_job_to_disk(project_name, running_http_jobs[job_id])
+    except Exception as e:
+        add_log_entry(job_id, f"Failed to save job to disk: {str(e)}")
     return {
         "job_id": job_id,
         "message": "Request processed"
