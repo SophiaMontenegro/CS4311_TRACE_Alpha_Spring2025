@@ -16,9 +16,9 @@
 	import { scanProgress, stopScanProgress } from '$lib/stores/scanProgressStore.js';
 
 	export let data;
+	let projectName;
 	$: $serviceStatus;
 	let showExitDialog = false;
-	let projectName = '';
 
 	function handleExitClick() {
 		showExitDialog = true;
@@ -79,6 +79,7 @@
 	}
 
 	onMount(() => {
+		projectName = localStorage.getItem('currentProjectName');
 		const status = get(serviceStatus).status;
 		const type = get(serviceStatus).serviceType;
 
@@ -248,25 +249,23 @@
 			<div class="card">
 				<div class="tool-name">{tool.name}</div>
 
-
-					<div class="tool-actions">
-						<div class="status-group">
-							<div class="status-icon {display.rawStatus}">
-								{#if display.rawStatus === 'completed'}
-									<span class="icon"><Check /></span>
-								{:else if display.rawStatus === 'error'}
-									<span class="icon"><X /></span>
-								{:else}
-									<div class="center-dot"></div>
-								{/if}
-							</div>
+				<div class="tool-actions">
+					<div class="status-group">
+						<div class="status-icon {display.rawStatus}">
+							{#if display.rawStatus === 'completed'}
+								<span class="icon"><Check /></span>
+							{:else if display.rawStatus === 'error'}
+								<span class="icon"><X /></span>
+							{:else}
+								<div class="center-dot"></div>
+							{/if}
 						</div>
-						<span>
-							<span class="percent">{display.percent}</span>
-							<span class="status-text"> {display.statusText}</span>
-						</span>
 					</div>
-
+					<span>
+						<span class="percent">{display.percent}</span>
+						<span class="status-text"> {display.statusText}</span>
+					</span>
+				</div>
 
 				<div class="buttons-container">
 					<Button

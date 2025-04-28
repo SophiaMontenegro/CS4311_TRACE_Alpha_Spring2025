@@ -8,7 +8,7 @@ import os
 import json
 from typing import List, Optional
 
-# Cralwer Routers and Services
+# Crawler Routers and Services
 from Team7.src.modules.crawler.service.crawler_service_router import get_service_routers as get_crawler_routers
 from Team7.src.modules.crawler.service.crawler_service_router import get_websocket_handlers as get_crawler_websocket_handlers
 from Team7.src.modules.crawler.service.crawler_service import job_results as crawler_job_results, running_jobs as crawler_running_jobs
