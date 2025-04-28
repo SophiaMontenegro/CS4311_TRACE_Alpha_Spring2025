@@ -72,7 +72,7 @@
     function handleLogout() {
         localStorage.removeItem('analyst_id');
         localStorage.removeItem('analyst_initials');
-        window.location.href = '/login';
+        window.location.href = '/';
     }
 
     function confirmDelete(project) {
@@ -165,7 +165,7 @@
     }
 </script>
 
-<div class="p-6">
+<div class="p-8">
     <header class="flex justify-between items-center mb-8">
         <h1 class="text-3xl font-bold">Project Selection</h1>
         <div class="flex items-center gap-4">

@@ -4,8 +4,10 @@
 	import { Folder, FolderTree, Trash2, Settings } from 'lucide-svelte';
 	import { toggleMode, mode } from 'mode-watcher';
 	import { goto } from '$app/navigation';
+	import Modal from '$lib/components/ui/modal/Modal.svelte';
 
 	let selectedIndex;
+	let showSettingsModal = false;
 
 	function isSelected(index, route) {
 		selectedIndex = index;
@@ -78,11 +80,13 @@
 		{/each}
 	</div>
 	<div class="settings-button">
-		<Button onclick={toggleMode} variant="circle" size="circle" type="button" title="Settings">
+		<Button onclick={() => (showSettingsModal = true)} variant="circle" size="circle" type="button" title="Settings">
 			<Settings style="width: 20px; height: 20px;" />
 		</Button>
 	</div>
 </div>
+
+<Modal isOpen={showSettingsModal} onClose={() => (showSettingsModal = false)} />
 
 <style>
 	.sidebar {
