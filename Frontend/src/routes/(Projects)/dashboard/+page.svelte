@@ -39,6 +39,8 @@
 	let projectToDelete = null;
 	let showDeleteDialog = false; //come back
 
+	let apiBaseURL = '';
+
 	onMount(async () => {
 		analystInitials = localStorage.getItem('analyst_initials') || '';
 		analystId = localStorage.getItem('analyst_id') || '';
@@ -52,9 +54,8 @@
 	});
 
 	async function loadProjects() {
-		isLoading = true;
-		error = null;
-
+	isLoading = true;
+	error = null;
 		try {
 			const response = await fetch(`http://127.0.0.1:8000/team3/projects/analyst/${analystId}`);
 			if (!response.ok) throw new Error('Failed to load projects');
@@ -68,6 +69,26 @@
 			isLoading = false;
 		}
 	}
+
+	// Commented out, used for testing getting job ids. 
+	//  Make API Call to leads backend
+	// async function fetchProjectSpecificData() {
+	// 	if (!apiBaseURL) {
+	// 		console.error('API Base URL not set!');
+	// 		return;
+	// 	}
+
+	// 	const response = await fetch(`${apiBaseURL}/graphql`, {
+	// 		method: 'POST',
+	// 		headers: { 'Content-Type': 'application/json' },
+	// 		body: JSON.stringify({
+	// 			query: `query { getCrawlerJobStatus(jobId: "4d72c256-73f5-4076-9f3a-799d29897b00") }`
+	// 		})
+	// 	});
+
+	// 	const data = await response.json();
+	// 	console.log('Project-specific data:', data);
+	// }
 
 	function openCreateModal() {
 		showCreateModal = true;
@@ -325,8 +346,10 @@
 						{#if project}
 							<button
 								class="rounded-md bg-[var(--secondary)] px-4 py-2 text-sm font-medium text-[var(--secondary-foreground)] hover:bg-[color:var(--secondary)/90]"
-								on:click={() => {
+								on:click={async () => {
 									if (!project.locked) {
+										apiBaseURL = `http://${project.lead_ip}:8000`;
+										console.log('API BASE URL set to:', apiBaseURL); // TESTING		
 										goto(`/tool-dashboard?projectName=${encodeURIComponent(project.name)}`);
 									}
 								}}

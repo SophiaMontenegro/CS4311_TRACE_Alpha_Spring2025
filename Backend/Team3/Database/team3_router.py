@@ -170,7 +170,8 @@ async def get_analyst_projects(analyst_id: str):
                 "start_date": project.get("start_date"),
                 "end_date": project.get("end_date"),
                 "locked": project.get("locked", False),
-                "created_at": project.get("created_at")
+                "created_at": project.get("created_at"),
+                "lead_ip": project.get("lead_ip")
             })
             
         return {"projects": formatted_projects}
