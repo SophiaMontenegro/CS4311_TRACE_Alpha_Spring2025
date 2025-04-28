@@ -188,6 +188,7 @@
         }
     }
 
+
     window.toggleProjectLock = toggleProjectLock;
 
     async function deleteProject(name) {
@@ -392,19 +393,17 @@
                         {/if}
 
                         {#if project}
-                            <Button
-                                    type="button"
-                                    class="w-[100px] h-[48px]"
-                                    variant="default"
-                                    size="lg"
-                                    on:click={() => handleProjectClick(project)}
+                            <button
+                                    class="flex items-center bg-[var(--accent)] text-[var(--accent-foreground)] text-sm font-medium px-4 py-2 rounded-md shadow hover:bg-[var(--accent3)] disabled:opacity-60 disabled:cursor-not-allowed"
+                                    on:click={() => {
+									if (!project.locked) {
+                                        localStorage.setItem('currentProjectName', project.name);
+										goto(`/tool-dashboard?projectName=${encodeURIComponent(project.name)}`);
+									}
+								}}
                             >
-                                {#if project.locked}
-                                    View
-                                {:else}
-                                    Run Scan
-                                {/if}
-                            </Button>
+                                {project.locked ? 'View' : 'Run Scan'}
+                            </button>
                       {/if}
                       
                         <!-- Drop Down: Lock, Delete, and Edit -->

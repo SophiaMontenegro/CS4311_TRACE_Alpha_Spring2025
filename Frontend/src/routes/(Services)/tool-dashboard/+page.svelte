@@ -9,11 +9,12 @@
 	import { connectToFuzzerWebSocket } from '$lib/services/fuzzerSocket';
 	import { connectToBruteForceWebSocket } from '$lib/services/bruteForceSocket';
 
-    export let project;
     export let data;
+    let projectName;
 	$: $serviceStatus;
 
 	onMount(() => {
+        projectName = localStorage.getItem('currentProjectName');
 		const status = get(serviceStatus).status;
 		const type = get(serviceStatus).serviceType;
 
@@ -84,7 +85,7 @@
 <div class="dashboard">
 	<div class="title-section">
 		<div class="title">Dashboard</div>
-		<div class="proj-name">{data.projectName}</div>
+		<div class="proj-name">{projectName}</div>
 	</div>
 
 	<div class="cards-container">
@@ -113,16 +114,22 @@
 		{/each}
 	</div>
 	<div class="exit-button">
-		<Button
-			default="secondary"
-			size="lg"
-			onclick={() => goto('/dashboard')}
-			class="px-10"
-			aria-label="Settings"
-			title="Settings"
-		>
-			Exit
-		</Button>
+        <Button
+                default="secondary"
+                size="lg"
+                on:click={() => {
+                    // Remove project name from localStorage
+                    localStorage.removeItem('currentProjectName');
+
+                    // Navigate to /dashboard
+                    goto('/dashboard');
+                }}
+                class="px-10"
+                aria-label="Settings"
+                title="Settings"
+        >
+            Exit
+        </Button>
 	</div>
 </div>
 
