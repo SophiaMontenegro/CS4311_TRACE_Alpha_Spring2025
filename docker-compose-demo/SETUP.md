@@ -1,4 +1,4 @@
-#  Docker DVWA + Apache + NGINX Testing Stack
+# Docker DVWA + Apache + NGINX Testing Stack
 
 This repo sets up a local Docker-based testing environment using:
 - [DVWA] (Damn Vulnerable Web App)
@@ -6,86 +6,143 @@ This repo sets up a local Docker-based testing environment using:
 - MySQL 5.7
 - NGINX (as reverse proxy)
 
-
 ---
 
 ## Requirements
 
-- [Docker Desktop](https://www.docker.com/products/docker-desktop)
-- If using Windows, make sure WSL option is enabled for Docker
+- [Docker Desktop](https://www.docker.com/products/docker-desktop) (for Mac/Windows)
+- [Docker Engine](https://docs.docker.com/engine/install/) (for Linux)
+- If using **Windows**, ensure WSL option is enabled for Docker
 - Terminal or PowerShell access
 
 ---
 
 ## How to Run
 
-### 1. Clone or download this repo and navigate to testing folder.
+### **For Mac (M1/M2/M3), Windows (WSL2)**
+
+#### 1. Clone or download this repo and navigate to the testing folder.
 
 ```bash
-git clone https://github.com/SophiaMontenegro/TRACE_Team_1_3_7.git
-cd docker-dvwa-stack
+git clone https://github.com/SophiaMontenegro/CS4311_TRACE_Alpha_Spring2025.git
+cd docker-compose-demo
 ```
 
-### 2. Start Docker
+#### 2. Start Docker Desktop
 
-### 3. Pull Image
+#### 3. Pull DVWA image (amd64 platform)
 
 ```bash
 docker pull --platform linux/amd64 vulnerables/web-dvwa
 ```
 
-### 4. Launch the Stack
+#### 4. Launch the Stack
 
 ```bash
 docker-compose up -d
 ```
-This sets up the containers, mounts volumes, and starts services.
 
-### 5. Verify services are accessible
+---
 
-You can do this by opening a web browser and searching for
-- DVWA http://localhost:8080
-- Apache http://localhost:8081
-- NGINX Reverse Proxy http://localhost/
-- Apache through NGINX http://localhost/apache
+### **For Linux (ARM64) on Mac (e.g., Kali Linux on UTM with M1/M2)**
 
-Note: DVWA default login is :
-- User: admin
-- Password: password
+#### 1. Clone or download this repo and navigate to the testing folder.
 
-#### The environment is running and ready for testing.
+```bash
+git clone https://github.com/SophiaMontenegro/CS4311_TRACE_Alpha_Spring2025.git
+cd docker-compose-demo
+```
+
+#### 2. Install Docker Engine (if not already installed)
+
+Refer to Docker’s official guide:  
+https://docs.docker.com/engine/install/
+
+#### 3. Install QEMU for cross-platform emulation
+
+```bash
+docker run --rm --privileged tonistiigi/binfmt --install all
+```
+
+This allows **amd64** containers to run on your **ARM64** system.
+
+#### 4. Test cross-architecture support
+
+```bash
+docker run --rm --platform linux/amd64 alpine uname -m
+```
+
+You should see `x86_64` confirming emulation is working.
+
+#### 5. Launch the Stack
+
+```bash
+sudo docker-compose up -d
+```
+
+---
+
+## 5. Verify services are accessible
+
+Open a web browser and navigate to:
+
+- DVWA: http://localhost:8080
+- Apache: http://localhost:8081
+- NGINX Reverse Proxy: http://localhost/
+- Apache through NGINX: http://localhost/apache
+
+**DVWA default login:**
+- User: `admin`
+- Password: `password`
+
+---
 
 ## Want to drop your own files?
 
-### You may place index.html and other html into apache2/ OR html/ and see them served.
+- Place `index.html` and other files in:
+  - `apache2/` (served by Apache)
+  - `html/` (served by NGINX)
 
-### 6. Managing the environment
-To stop, 
+---
+
+## Managing the environment
+
+To stop:
+
 ```bash
 docker-compose down
 ```
+
 Check logs:
+
 ```bash
 docker-compose logs
 docker-compose logs <service-name>
 ```
+
 Check running containers:
+
 ```bash
 docker ps
 ```
-Restart one service:
+
+Restart a service:
+
 ```bash
 docker-compose restart dvwa
 ```
 
+---
+
 ## Final Notes
-This was tested on Windows 10 with WSL2/Hyper-V Enabled for Docker, and on Silicon MacOS(M1,M2,M3)
 
-- You can try dropping an ```index.html``` in ```apache2/``` -> that will show on http://localhost:8081
-- You can also try the same in the ```html/``` folder
+- Tested on:
+  - **Windows 10** with **WSL2/Hyper-V**
+  - **MacOS (M1/M2/M3)** with **Docker Desktop**
+  - **Linux (ARM64)** (e.g., Kali Linux on UTM on M1/M2) with **Docker Engine + QEMU binfmt**
 
-- Use ```init.sql``` to pre-load data into MySQL for SQL testing.
+- Example:
+  - Drop an `index.html` in `apache2/` → see it on http://localhost:8081
+  - Drop an `index.html` in `html/` → served by NGINX
 
-
-
-
+- Use `init.sql` to pre-load data into MySQL for SQL testing.
