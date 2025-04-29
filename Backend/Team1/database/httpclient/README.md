@@ -1,0 +1,1 @@
+Here will reside any http request results that went through http_client_service, every project will have its own folder and under every .json  is a single http request
