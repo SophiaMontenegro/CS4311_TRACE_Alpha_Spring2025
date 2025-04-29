@@ -59,17 +59,20 @@ async def get_sqlmap_results(project_name: str, job_id: str):
         print("✅ Tool Directory:", tool_directory)
         # Move result_file and log_file to my tool_directory
 
-        # Construct paths based on the job_id
-        # results_dir = "sqlmap_results"
-        source_result = f"Team3/SQL_Injection/sqlmap_results/sql_results_{job_id}.csv"
-        source_log = f"Team3/SQL_Injection/sqlmap_results/sql_log_{job_id}.csv"
+        # Filenames
         result_filename = f"sql_results_{job_id}.csv"
         log_filename = f"sql_log_{job_id}.csv"
 
-        
+        # Construct cross-platform source paths
+        source_dir = os.path.join("Team3", "SQL_Injection", "sqlmap_results")
+        source_result = os.path.join(source_dir, result_filename)
+        source_log = os.path.join(source_dir, log_filename)
+
+        # Target paths
         result_path = os.path.join(tool_directory, result_filename) # adding the results
         log_path = os.path.join(tool_directory, log_filename) # adding the log
 
+        # Move files
         shutil.move(source_result, result_path)
         shutil.move(source_log, log_path)
 

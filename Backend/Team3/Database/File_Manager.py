@@ -277,7 +277,8 @@ class FileManager:
 
         tool_nodes = []
         for tool_name in tools:
-            full_path = f"{base_file_path}\\{project_name}\\{tool_name}"  # Windows-style path
+
+            full_path = os.path.join(base_file_path, project_name, tool_name)
             tool_nodes.append({
                 "name": tool_name,
                 "file_path": full_path,

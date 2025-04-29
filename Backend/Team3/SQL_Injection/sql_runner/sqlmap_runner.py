@@ -133,7 +133,7 @@ def run_sqlmap(base_url, port, params="", custom_flags=""):
     # Directly save in sqlmap_results folder
     os.makedirs(RESULTS_DIR, exist_ok=True)
 
-    existing = [int(name.replace("sql_results_", "").replace(".csv", "")) for name in os.listdir(RESULTS_DIR) if name.startswith("sql_results_")]
+    #existing = [int(name.replace("sql_results_", "").replace(".csv", "")) for name in os.listdir(RESULTS_DIR) if name.startswith("sql_results_")]
     #next_job_id = max(existing, default=6999) + 1
     next_job_id = str(uuid.uuid4())
 
