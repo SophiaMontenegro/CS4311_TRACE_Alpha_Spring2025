@@ -24,6 +24,8 @@
 	const { data } = $props();
 	let showStopDialog = $state(false);
 	let intervalId;
+    let projectName;
+
 
 	// Derived stores
 	const sqlInjectionResults = derived(serviceResults, ($serviceResults) => $serviceResults.sqlinjection);
@@ -98,13 +100,13 @@
             fetchResults(jobId);
             return;
         }
-    
+
         // connectToSQLInjectionWebSocket(jobId);
         const stopSimulation = simulateProgress();
         
         // Immediately try to fetch results once at startup
         fetchResults(jobId);
-        
+
         // Store the interval ID for result fetching
         resultIntervalId = setInterval(() => {
             // Only fetch results if the scan is not completed
@@ -161,7 +163,7 @@
         
         try {
             // Make the actual API call to get the results
-            const res = await fetch(`http://localhost:8000/sqlmap/results/${jobId}`);
+            const res = await fetch(`http://localhost:8000/sqlmap/results/${projectName}/${jobId}`); // saving results
             if (!res.ok) {
                 throw new Error(`Failed to fetch results: ${res.statusText}`);
             }
@@ -171,7 +173,7 @@
             // Check if we have a result file path
             if (data && data.result_file) {
                 // Fetch the CSV content from the result file
-                const csvRes = await fetch(`http://localhost:8000/sqlmap/csv/${jobId}`);
+                const csvRes = await fetch(`http://localhost:8000/sqlmap/csv/${projectName}/${jobId}`);
                 if (!csvRes.ok) {
                     throw new Error(`Failed to fetch CSV: ${csvRes.statusText}`);
                 }
@@ -180,11 +182,11 @@
                 
                 // Log the received CSV text for debugging
                 console.log('[SQLInjection] Received CSV:', csvText.substring(0, 200) + '...');
-                
+
                 // Parse CSV to JSON
                 const parsedResults = parseCSV(csvText);
                 console.log('[SQLInjection] Parsed results:', parsedResults);
-                
+
                 // Set into shared store under "sqlinjection"
                 serviceResults.update((r) => ({
                     ...r,
@@ -375,7 +377,7 @@
 		try {
 			// Get column information from the dynamicColumns store
 			const columns = get(dynamicColumns);
-			
+
 			// Use column keys and labels for the export
 			const exportFields = columns.map(col => col.key);
 			const headers = columns.map(col => col.label);
@@ -383,7 +385,7 @@
 			// Build CSV content
 			const csvRows = [
 				headers.join(','), // Header row
-				...results.map((row) => 
+				...results.map((row) =>
 					exportFields.map((key) => {
 						// Properly escape and quote values for CSV
 						const value = row[key] === null || row[key] === undefined ? '' : String(row[key]);
@@ -400,7 +402,7 @@
 
 			const jobId = localStorage.getItem('currentSQLInjectionJobId') || 'results';
 			const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-			
+
 			const a = document.createElement('a');
 			a.href = url;
 			a.download = `sql_results_${jobId}.csv`;
@@ -409,13 +411,41 @@
 			a.remove();
 
 			URL.revokeObjectURL(url);
-			
+
 			toast.success('Export completed!');
 		} catch (error) {
 			console.error('[SQLInjection Export Error]', error);
 			toast.error('Failed to export results.');
 		}
 	}
+
+	// Restore checkpoint on mount
+	onMount(() => {
+        projectName = localStorage.getItem('currentProjectName');
+        const jobId = localStorage.getItem('currentSQLInjectionJobId') || generateFJobId();
+        fJobId.set(jobId);
+        localStorage.setItem('currentSQLInjectionJobId', jobId);
+
+        connectToSQLInjectionWebSocket(jobId);
+        const stopSimulation = simulateProgress();
+        
+        // Store the interval ID so we can clear it later
+        const resultInterval = setInterval(() => {
+            // Only fetch results if the scan is not completed
+            if ($serviceStatus.status !== 'completed') {
+                fetchResults(jobId);
+            }
+        }, 5000);
+        
+        // Save the interval ID to clear it on component destroy
+        intervalId = resultInterval;
+
+        return () => {
+            stopSimulation();
+            clearInterval(resultInterval);
+            closeSQLInjectionWebSocket();
+        };
+    });
 
 	onDestroy(() => {
         clearAllIntervals();
