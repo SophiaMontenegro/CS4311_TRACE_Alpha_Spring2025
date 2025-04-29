@@ -53,31 +53,31 @@
 				: 'config'
 	);
 
-	// Create a new store for the fake progress
-	const fakeProgress = writable(0);
+	// Create a new store for the progress
+	const fProgress = writable(0);
 
 	// Function to simulate progress
 	function simulateProgress() {
 	    let progress = 0;
         const interval = setInterval(() => {
             // Check if progress already reached 100 or if service is completed
-            if (progress >= 95 || $fakeProgress >= 100 || $serviceStatus.status === 'completed') {
+            if (progress >= 95 || $fProgress >= 100 || $serviceStatus.status === 'completed') {
                 clearInterval(interval);
                 return;
             }
             
             progress += Math.random() * 10;
-            fakeProgress.set(Math.min(progress, 95));
+            fProgress.set(Math.min(progress, 95));
         }, 1000);
     
         return () => clearInterval(interval);
 	}
 
-	// Create a new store for the fake job ID
-	const fakeJobId = writable(null);
+	// Create a new store for the job ID
+	const fJobId = writable(null);
 	
-	// Function to generate a fake job ID
-	function generateFakeJobId() {
+	// Function to generate a job ID
+	function generateFJobId() {
 	    return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 	}
 	
@@ -85,21 +85,25 @@
     let checkpointIntervalId;
     let completionTracked = false;
 
-    // Modify the onMount function 
     onMount(() => {
-        const jobId = localStorage.getItem('currentSQLInjectionJobId') || generateFakeJobId();
-        fakeJobId.set(jobId);
+        const jobId = localStorage.getItem('currentSQLInjectionJobId') || generateFJobId();
+        fJobId.set(jobId);
         localStorage.setItem('currentSQLInjectionJobId', jobId);
         
         // Check if we're already in completed status
         if (get(serviceStatus).status === 'completed') {
-            completionTracked = true;
-            console.log('[SQLInjection] Skipping intervals as scan is already completed');
+            console.log('[SQLInjection] Status is already completed, trying to fetch results one more time');
+            // Even if completed, try to fetch results one more time
+            // IMPORTANT: Don't set completionTracked here to allow one final fetch
+            fetchResults(jobId);
             return;
         }
-
-        connectToSQLInjectionWebSocket(jobId);
+    
+        // connectToSQLInjectionWebSocket(jobId);
         const stopSimulation = simulateProgress();
+        
+        // Immediately try to fetch results once at startup
+        fetchResults(jobId);
         
         // Store the interval ID for result fetching
         resultIntervalId = setInterval(() => {
@@ -113,7 +117,7 @@
                 completionTracked = true;
                 clearAllIntervals();
             }
-        }, 5000);
+        }, 2000);  // Reduced from 5000 to 2000 ms for more frequent checks
         
         // Store the interval ID for checkpoint saving
         checkpointIntervalId = setInterval(() => {
@@ -174,8 +178,12 @@
                 
                 const csvText = await csvRes.text();
                 
+                // Log the received CSV text for debugging
+                console.log('[SQLInjection] Received CSV:', csvText.substring(0, 200) + '...');
+                
                 // Parse CSV to JSON
                 const parsedResults = parseCSV(csvText);
+                console.log('[SQLInjection] Parsed results:', parsedResults);
                 
                 // Set into shared store under "sqlinjection"
                 serviceResults.update((r) => ({
@@ -184,8 +192,8 @@
                 }));
                 
                 // Set progress to 100% when results are received
-                if ($fakeProgress < 100) {
-                    fakeProgress.set(100);
+                if ($fProgress < 100) {
+                    fProgress.set(100);
                     scanProgress.set(100);
                 }
                 
@@ -357,42 +365,32 @@
 	}
 
 	async function handleExport() {
-		const jobId = localStorage.getItem('currentSQLInjectionJobId');
-		if (!jobId) {
-			console.log('SQLInjection job ID not found.');
+		// Get the current data from the store
+		const results = get(sqlInjectionResults);
+		if (!results || results.length === 0) {
+			toast.error('No results to export.');
 			return;
 		}
 
 		try {
-			const res = await fetch(`http://localhost:8000/api/sqlinjection/${jobId}/results`);
-			if (!res.ok) throw new Error('Failed to fetch SQLInjection results.');
-
-			const { results = [] } = await res.json();
-
-			// Fields you want to include in the export - adjust these to match SQLInjection results
-			const exportFields = [
-				'url',
-				'parameter',
-				'vulnerabilityType',
-				'severity',
-				'details',
-				'status'
-			];
-
-			// Optional: Human-readable column names
-			const headers = [
-				'URL',
-				'Parameter',
-				'Vulnerability Type',
-				'Severity',
-				'Details',
-				'Status'
-			];
+			// Get column information from the dynamicColumns store
+			const columns = get(dynamicColumns);
+			
+			// Use column keys and labels for the export
+			const exportFields = columns.map(col => col.key);
+			const headers = columns.map(col => col.label);
 
 			// Build CSV content
 			const csvRows = [
 				headers.join(','), // Header row
-				...results.map((row) => exportFields.map((key) => JSON.stringify(row[key] ?? '')).join(','))
+				...results.map((row) => 
+					exportFields.map((key) => {
+						// Properly escape and quote values for CSV
+						const value = row[key] === null || row[key] === undefined ? '' : String(row[key]);
+						// Escape quotes and wrap in quotes if needed
+						return `"${value.replace(/"/g, '""')}"`;
+					}).join(',')
+				)
 			];
 
 			// Create blob and trigger download
@@ -400,45 +398,24 @@
 			const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
 			const url = URL.createObjectURL(blob);
 
+			const jobId = localStorage.getItem('currentSQLInjectionJobId') || 'results';
+			const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+			
 			const a = document.createElement('a');
 			a.href = url;
-			a.download = `sqlinjection_${jobId}_results.csv`;
+			a.download = `sql_results_${jobId}.csv`;
 			document.body.appendChild(a);
 			a.click();
 			a.remove();
 
 			URL.revokeObjectURL(url);
+			
+			toast.success('Export completed!');
 		} catch (error) {
 			console.error('[SQLInjection Export Error]', error);
+			toast.error('Failed to export results.');
 		}
 	}
-
-	// Restore checkpoint on mount
-	onMount(() => {
-        const jobId = localStorage.getItem('currentSQLInjectionJobId') || generateFakeJobId();
-        fakeJobId.set(jobId);
-        localStorage.setItem('currentSQLInjectionJobId', jobId);
-
-        connectToSQLInjectionWebSocket(jobId);
-        const stopSimulation = simulateProgress();
-        
-        // Store the interval ID so we can clear it later
-        const resultInterval = setInterval(() => {
-            // Only fetch results if the scan is not completed
-            if ($serviceStatus.status !== 'completed') {
-                fetchResults(jobId);
-            }
-        }, 5000);
-        
-        // Save the interval ID to clear it on component destroy
-        intervalId = resultInterval;
-
-        return () => {
-            stopSimulation();
-            clearInterval(resultInterval);
-            closeSQLInjectionWebSocket();
-        };
-    });
 
 	onDestroy(() => {
         clearAllIntervals();
@@ -464,9 +441,9 @@
 			<div class="progress-bar-container">
 				<div class="progress-info">
 					<div class="text-sm font-medium">Progress</div>
-					<div class="text-2xl font-bold">{$fakeProgress.toFixed(1)}% scanned</div>
+					<div class="text-2xl font-bold">{$fProgress.toFixed(1)}% scanned</div>
 				</div>
-				<Progress value={$fakeProgress} max={100} class="w-[100%]" />
+				<Progress value={$fProgress} max={100} class="w-[100%]" />
 			</div>
 		{:else}
 			<Spinner />
@@ -479,7 +456,7 @@
 				<p>No vulnerabilities found on the target.</p>
 			</div>
 		{:else}
-			<p>Waiting for results...</p>
+			<p>Please Wait A Moment...</p>
 		{/if}
 	</div>
 
@@ -545,7 +522,7 @@
 				</Button>
 			{/if}
 		</div>
-		<div class="single-button">
+		<!-- <div class="single-button">
 			<Button
 				variant="secondary"
 				size="default"
@@ -555,7 +532,7 @@
 			>
 				Terminal
 			</Button>
-		</div>
+		</div> -->
 	</div>
 
 	<Alert

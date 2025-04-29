@@ -8,6 +8,8 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
+RESULTS_DIR = "Team3/SQL_Injection/sqlmap_results"
+
 class SQLInjectionRequest(BaseModel):
     target_url: str
     port: str
@@ -42,12 +44,12 @@ async def get_sqlmap_results(job_id: str):
     logger.debug(f"Fetching results for SQL injection job: {job_id}")
     try:
         # Construct paths based on the job_id
-        results_dir = "sqlmap_results"
+        #results_dir = "sqlmap_results"
         result_filename = f"sql_results_{job_id}.csv"
         log_filename = f"sql_log_{job_id}.csv"
         
-        result_path = os.path.join(results_dir, result_filename)
-        log_path = os.path.join(results_dir, log_filename)
+        result_path = os.path.join(RESULTS_DIR, result_filename)
+        log_path = os.path.join(RESULTS_DIR, log_filename)
         
         # Check if results file exists
         if not os.path.exists(result_path):
@@ -70,9 +72,9 @@ async def get_sqlmap_csv(job_id: str):
     """Returns the raw CSV content for a specific SQLMap job"""
     logger.debug(f"Fetching CSV for SQL injection job: {job_id}")
     try:
-        results_dir = "sqlmap_results"
+        #results_dir = "sqlmap_results"
         result_filename = f"sql_results_{job_id}.csv"
-        csv_path = os.path.join(results_dir, result_filename)
+        csv_path = os.path.join(RESULTS_DIR, result_filename)
         
         if not os.path.exists(csv_path):
             logger.warning(f"CSV file not found for job {job_id}")

@@ -15,7 +15,9 @@ from datetime import datetime
 if platform.system() == "Windows":
     import ctypes
 
-HISTORY_FILE = "sqlmap_results/injection_history.json"
+# Define the results directory path - one level up from this script
+RESULTS_DIR = "Team3/SQL_Injection/sqlmap_results"
+HISTORY_FILE = os.path.join(RESULTS_DIR, "injection_history.json")
 Program = True
 
 # Utility to handle file permission issues
@@ -28,7 +30,7 @@ def reset_service():
     resetConfirm = input("Are you sure you would like to reset (y/n): ").strip().lower()
     if resetConfirm == 'y':
         try:
-            shutil.rmtree("sqlmap_results", onerror=handle_remove)
+            shutil.rmtree(RESULTS_DIR, onerror=handle_remove)
             print("[+] All previous results have been removed")
         except Exception as e:
             print(f"[-] Failed to reset: {e}")
@@ -41,7 +43,7 @@ def print_progress(percent, width=40):
 
 # Save scan history
 def save_to_history(entry):
-    os.makedirs("sqlmap_results", exist_ok=True)
+    os.makedirs(RESULTS_DIR, exist_ok=True)
     if os.path.exists(HISTORY_FILE):
         with open(HISTORY_FILE, "r") as f:
             history = json.load(f)
@@ -128,16 +130,16 @@ def run_sqlmap(base_url, port, params="", custom_flags=""):
     print(f"\n[+] Final Target: {base_url}")
 
     # Directly save in sqlmap_results folder
-    os.makedirs("sqlmap_results", exist_ok=True)
+    os.makedirs(RESULTS_DIR, exist_ok=True)
 
-    existing = [int(name.replace("sql_results_", "").replace(".csv", "")) for name in os.listdir("sqlmap_results") if name.startswith("sql_results_")]
+    existing = [int(name.replace("sql_results_", "").replace(".csv", "")) for name in os.listdir(RESULTS_DIR) if name.startswith("sql_results_")]
     next_job_id = max(existing, default=6999) + 1
 
     result_filename = f"sql_results_{next_job_id}.csv"
     log_filename = f"sql_log_{next_job_id}.csv"
 
-    result_path = os.path.join("sqlmap_results", result_filename)
-    log_path = os.path.join("sqlmap_results", log_filename)
+    result_path = os.path.join(RESULTS_DIR, result_filename)
+    log_path = os.path.join(RESULTS_DIR, log_filename)
 
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
