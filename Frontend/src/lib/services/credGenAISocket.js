@@ -7,6 +7,7 @@ import {
 } from '$lib/stores/scanProgressStore';
 import { serviceResults } from '$lib/stores/serviceResultsStore.js';
 import { get } from 'svelte/store';
+import { getApiBaseURL } from '$lib/utils/apiBaseURL';
 
 let socket = null;
 
@@ -28,7 +29,10 @@ export function connectToCredGenAIWebSocket(jobId, retry = 0) {
 		return;
 	}
 
-	socket = new WebSocket(`ws://localhost:8000/ws/ml/${jobId}`);
+	const apiBaseURL = getApiBaseURL();
+	const wsBaseURL = apiBaseURL.replace('http', 'ws');
+
+	socket = new WebSocket(`${wsBaseURL}/ws/ml/${jobId}`);
 
 	socket.onopen = () => {
 		console.log('[WebSocket] Connected to credGenAI job:', jobId);
@@ -40,11 +44,7 @@ export function connectToCredGenAIWebSocket(jobId, retry = 0) {
 
 		switch (type) {
 			case 'status': {
-				let mappedStatus = data.status;
-
-				if (mappedStatus === 'initializing') {
-					mappedStatus = 'running';
-				}
+				let mappedStatus = data.status === 'initializing' ? 'running' : data.status;
 
 				serviceStatus.set({
 					status: mappedStatus,
@@ -54,7 +54,7 @@ export function connectToCredGenAIWebSocket(jobId, retry = 0) {
 				break;
 			}
 
-			case 'progress':
+			case 'progress': {
 				if (get(serviceStatus).status === 'completed') {
 					console.warn('[credGenAI] Ignoring late progress update');
 					return;
@@ -64,6 +64,7 @@ export function connectToCredGenAIWebSocket(jobId, retry = 0) {
 					scanProgress.set(Math.min(data.progress, 99));
 				}
 				break;
+			}
 
 			case 'completed': {
 				scanProgress.set(100);
@@ -77,7 +78,9 @@ export function connectToCredGenAIWebSocket(jobId, retry = 0) {
 				const jobId = localStorage.getItem('currentCredGenAIJobId');
 				if (jobId) {
 					console.log('[WebSocket] Fetching final results for job:', jobId);
-					fetch(`http://localhost:8000/api/ml/${jobId}/results`)
+
+					const apiBaseURL = getApiBaseURL();
+					fetch(`${apiBaseURL}/api/ml/${jobId}/results`)
 						.then((res) => res.json())
 						.then((json) => {
 							const parsed = Array.isArray(json) ? json : (json.results ?? []);
@@ -89,7 +92,7 @@ export function connectToCredGenAIWebSocket(jobId, retry = 0) {
 				break;
 			}
 
-			case 'error':
+			case 'error': {
 				console.error('[CredGenAI Error]', data.message);
 				localStorage.removeItem('currentCredGenAIJobId');
 				serviceStatus.set({
@@ -98,6 +101,7 @@ export function connectToCredGenAIWebSocket(jobId, retry = 0) {
 					startTime: null
 				});
 				break;
+			}
 
 			case 'log':
 				console.log(`[CredGenAI Log] ${data.message}`);
@@ -107,9 +111,12 @@ export function connectToCredGenAIWebSocket(jobId, retry = 0) {
 
 	socket.onerror = (e) => {
 		console.error('[WebSocket Error]', e);
+
 		if (retry < maxRetries) {
 			console.log(`[WebSocket] Retrying connection (${retry + 1}/${maxRetries})...`);
 			setTimeout(() => connectToCredGenAIWebSocket(jobId, retry + 1), 1000);
+		} else {
+			console.warn('[WebSocket] Max retries reached. Giving up.');
 		}
 	};
 

@@ -1,5 +1,6 @@
 import { writable, get } from 'svelte/store';
 import { serviceStatus } from './projectServiceStore';
+import { getApiBaseURL } from '$lib/utils/apiBaseURL';
 
 export const scanProgress = writable(0);
 export const scanPaused = writable(false);
@@ -61,11 +62,13 @@ export function stopScanProgress(markComplete = false) {
 
 export async function pauseScan(service) {
 	const jobId = localStorage.getItem(`current${capitalize(service)}JobId`);
-	console.log('[CAPALIZE]', capitalize(service), jobId, get(serviceStatus).status);
+	console.log('[PauseScan] Service:', capitalize(service), 'JobId:', jobId, 'Status:', get(serviceStatus).status);
+
 	if (!jobId || get(serviceStatus).status !== 'running') return false;
 
 	try {
-		const res = await fetch(`http://localhost:8000/api/${service}/${jobId}/pause`, {
+		const apiBaseURL = getApiBaseURL();
+		const res = await fetch(`${apiBaseURL}/api/${service}/${jobId}/pause`, {
 			method: 'POST'
 		});
 		if (!res.ok) throw new Error('Pause failed');
@@ -82,10 +85,13 @@ export async function pauseScan(service) {
 
 export async function resumeScan(service) {
 	const jobId = localStorage.getItem(`current${capitalize(service)}JobId`);
+	console.log('[ResumeScan] Service:', capitalize(service), 'JobId:', jobId, 'Status:', get(serviceStatus).status);
+
 	if (!jobId || get(serviceStatus).status !== 'paused') return false;
 
 	try {
-		const res = await fetch(`http://localhost:8000/api/${service}/${jobId}/resume`, {
+		const apiBaseURL = getApiBaseURL();
+		const res = await fetch(`${apiBaseURL}/api/${service}/${jobId}/resume`, {
 			method: 'POST'
 		});
 		if (!res.ok) throw new Error('Resume failed');

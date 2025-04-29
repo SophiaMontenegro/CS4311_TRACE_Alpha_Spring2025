@@ -20,6 +20,7 @@
 		pauseScan,
 		resumeScan
 	} from '$lib/stores/scanProgressStore.js';
+	import { getApiBaseURL } from '$lib/utils/apiBaseURL';
 
 	const { data } = $props();
 	let showStopDialog = $state(false);
@@ -56,7 +57,8 @@
 	// Fetch results from the server
 	async function fetchResults(jobId) {
 		try {
-			const res = await fetch(`http://localhost:8000/api/fuzzer/${jobId}/results`);
+			const apiBaseURL = getApiBaseURL();
+			const res = await fetch(`${apiBaseURL}/api/fuzzer/${jobId}/results`);
 			const response = await res.json();
 			const parsed = Array.isArray(response) ? response : (response.results ?? []);
 
@@ -133,7 +135,8 @@
 
 		// Tell the backend to stop
 		try {
-			const res = await fetch(`http://localhost:8000/api/fuzzer/${jobId}/stop`, {
+			const apiBaseURL = getApiBaseURL();
+			const res = await fetch(`${apiBaseURL}/api/fuzzer/${jobId}/stop`,  {
 				method: 'POST'
 			});
 			if (res.ok) {
@@ -181,7 +184,8 @@
 		}
 
 		try {
-			const res = await fetch(`http://localhost:8000/api/fuzzer/${jobId}/results`);
+			const apiBaseURL = getApiBaseURL();
+			const res = await fetch(`${apiBaseURL}/api/fuzzer/${jobId}/results`);
 			if (!res.ok) throw new Error('Failed to fetch fuzzer results.');
 
 			const { results = [] } = await res.json();

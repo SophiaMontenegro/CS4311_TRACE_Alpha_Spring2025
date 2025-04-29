@@ -11,10 +11,17 @@
 	import FormField from '$lib/components/ui/form/FormField.svelte';
 	import * as Accordion from '$lib/components/ui/accordion/index.js';
 	import { connectToBruteForceWebSocket } from '$lib/services/bruteForceSocket.js';
+	import { getApiBaseURL } from '$lib/utils/apiBaseURL';
+	import { browser } from '$app/environment';
 
 	let formData = {};
 	let fieldErrors = {};
 	let selectedFile = null;
+	let apiBaseURL = '';
+
+	if (browser) {
+		apiBaseURL = getApiBaseURL();
+	}
 
 	let inputFields = [
 		{
@@ -205,6 +212,8 @@
 		</Accordion.Root>
 
 		<div class="pb-8">
+			<input type="hidden" name="api-base-url" value={apiBaseURL} />
+
 			<Button
 				type="submit"
 				variant="default"
