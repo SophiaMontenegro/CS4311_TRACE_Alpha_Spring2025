@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { attackResults, targetUrlStore, modeStore} from '$lib/stores/intruder'; 
-
+	import {Button} from '$lib/components/ui/button';
 	export let formIndex = 0;
 	export let noForm = false;
 	let detectedMode = '';
@@ -169,12 +169,12 @@
 		<div class="mt-4">
 			<h2 class="font-semibold">HTTP Request Preview</h2>
 			<pre class="bg-gray-100 p-4 rounded text-sm overflow-x-auto">
-URL: {requestPreview?.url || 'N/A'}
-Method: {requestPreview?.method || 'N/A'}
-Headers: {JSON.stringify(requestPreview?.headers || {}, null, 2)}
+				URL: {requestPreview?.url || 'N/A'}
+				Method: {requestPreview?.method || 'N/A'}
+				Headers: {JSON.stringify(requestPreview?.headers || {}, null, 2)}
 
-Sample Body:
-{JSON.stringify(requestPreview?.sample_body || {}, null, 2)}
+				Sample Body:
+				{JSON.stringify(requestPreview?.sample_body || {}, null, 2)}
 			</pre>
 		</div>
 

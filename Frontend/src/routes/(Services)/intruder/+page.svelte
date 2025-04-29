@@ -1,6 +1,7 @@
 <script>
 	import { goto } from "$app/navigation";
 	import { targetUrlStore, modeStore } from '$lib/stores/intruder';
+	import {Button} from '$lib/components/ui/button';
 	let targetUrl = '';
 	let forms = [];
 	let error = '';
@@ -102,8 +103,7 @@
 			/>
 		</div>
 
-		<!-- Scan Button -->
-		<button type="button" class="b-start" on:click={scanTarget}>
+		<button variant="outline" type="button"class="bg-cyan-500 text-white px-4 py-2 rounded transition-colors duration-100 ease-in-out hover:bg-gray-400" on:click={scanTarget}>
 			Scan
 		</button>
 
@@ -155,7 +155,7 @@
 					</p>
 				{/if}
 
-				<button on:click={sendSelectedForm} class="b-start mt-4">
+				<button variant="outline" on:click={sendSelectedForm} class="b-start mt-4">
 					Select Form
 				</button>
 
@@ -180,17 +180,5 @@ Sample Body:
 
 	.input {
 		@apply block w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-black/80 focus:border-black/80 transition;
-	}
-
-	.b-start {
-		background-color: #06b6d4;
-		color: white;
-		padding: 0.5rem 1rem;
-		border-radius: 0.25rem;
-		transition: background-color 0.1s ease-in-out;
-	}
-
-	.b-start:hover {
-		background-color: #4b5563;
 	}
 </style>
