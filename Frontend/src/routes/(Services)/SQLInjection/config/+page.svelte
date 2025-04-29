@@ -8,6 +8,7 @@
     import FormField from '$lib/components/ui/form/FormField.svelte';
 
     let analystInitials = '';
+    let projectName;
 
     let formData = {
         targetUrl: '',
@@ -215,6 +216,7 @@
     }
 
     onMount(() => {
+        projectName = localStorage.getItem('currentProjectName');
         analystInitials = localStorage.getItem('analyst_initials') || '';
         if (!analystInitials) goto('/login');
         fetchHistory();

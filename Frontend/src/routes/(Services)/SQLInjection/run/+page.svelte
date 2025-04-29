@@ -88,6 +88,7 @@
     let completionTracked = false;
 
     onMount(() => {
+        projectName = localStorage.getItem('currentProjectName');
         const jobId = localStorage.getItem('currentSQLInjectionJobId') || generateFJobId();
         fJobId.set(jobId);
         localStorage.setItem('currentSQLInjectionJobId', jobId);

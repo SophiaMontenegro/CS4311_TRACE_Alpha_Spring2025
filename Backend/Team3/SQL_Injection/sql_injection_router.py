@@ -1,19 +1,18 @@
 import logging
 import os
+import shutil
 from fastapi import APIRouter, HTTPException, Response
 from pydantic import BaseModel
 from .sql_runner.sqlmap_runner import handle_sqlmap_request
+
+from Team3.Database.File_Manager import FileManager
+from Team3.Database.Database_Manager import Database_Manager
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
-
-
-from Team3.Database.File_Manager import FileManager
-from Team3.Database.Database_Manager import DatabaseManager
-
-db_manager = DatabaseManager()
+db_manager = Database_Manager()
 file_manager = FileManager(db_manager)
 
 RESULTS_DIR = "Team3/SQL_Injection/sqlmap_results"
@@ -57,16 +56,24 @@ async def get_sqlmap_results(project_name: str, job_id: str):
         tool_directory = file_manager.get_tool_directory(project_name, tool_name) # return the path for SQL
         if not tool_directory:
             raise HTTPException(status_code=404, detail=f"Tool directory not found for project '{project_name}' and tool '{tool_name}'")
+        print("✅ Tool Directory:", tool_directory)
+        # Move result_file and log_file to my tool_directory
 
         # Construct paths based on the job_id
         # results_dir = "sqlmap_results"
-        #results_dir = "sqlmap_results"
+        source_result = f"Team3/SQL_Injection/sqlmap_results/sql_results_{job_id}.csv"
+        source_log = f"Team3/SQL_Injection/sqlmap_results/sql_log_{job_id}.csv"
         result_filename = f"sql_results_{job_id}.csv"
         log_filename = f"sql_log_{job_id}.csv"
+
         
         result_path = os.path.join(tool_directory, result_filename) # adding the results
         log_path = os.path.join(tool_directory, log_filename) # adding the log
 
+        shutil.move(source_result, result_path)
+        shutil.move(source_log, log_path)
+
+        # Update database with job_id
         append_success = file_manager.append_job_id_to_tool(project_name, tool_name, job_id)
         if not append_success:
             raise HTTPException(status_code=500, detail="Failed to append job_id to tool")
@@ -90,7 +97,7 @@ async def get_sqlmap_results(project_name: str, job_id: str):
         }
 
 
-    except Exception as e:
+    except Exception as e: # here
         logger.error(f"Error fetching SQL injection results: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
