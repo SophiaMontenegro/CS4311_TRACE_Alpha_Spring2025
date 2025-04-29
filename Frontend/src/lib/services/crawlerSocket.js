@@ -7,6 +7,7 @@ import {
 } from '$lib/stores/scanProgressStore';
 import { serviceResults } from '$lib/stores/serviceResultsStore.js';
 import { get } from 'svelte/store';
+import { getApiBaseURL } from '$lib/utils/apiBaseURL';
 
 let socket = null;
 
@@ -17,13 +18,17 @@ let socket = null;
 export function connectToCrawlerWebSocket(jobId, retry = 0) {
 	const maxRetries = 5;
 
-	const apiBaseURL = localStorage.getItem('apiBaseURL');
-	if (!apiBaseURL) {
-		throw new Error('API Base URL not set! Cannot connect to WebSocket.');
+	// Prevent duplicate connections if one is already open
+	if (socket && socket.readyState !== WebSocket.CLOSED) {
+		console.warn('[WebSocket] Already connected. Skipping duplicate connection.');
+		return;
 	}
+
+	// apiBaseURL is fetched from a utility function
+	const apiBaseURL = getApiBaseURL();
 	const wsBaseURL = apiBaseURL.replace('http', 'ws');
 
-	// Create WebSocket
+	// Open a WebSocket connection to the backend endpoint
 	socket = new WebSocket(`${wsBaseURL}/ws/crawler/${jobId}`);
 
 	// Triggered when the connection is successfully established
@@ -104,7 +109,7 @@ export function connectToCrawlerWebSocket(jobId, retry = 0) {
 				break;
 
 			// Marks the scan as completed and finalizes UI
-			case 'completed':
+			case 'completed': 
 				scanProgress.set(100);
 				stopScanProgress(true);
 				serviceStatus.set({

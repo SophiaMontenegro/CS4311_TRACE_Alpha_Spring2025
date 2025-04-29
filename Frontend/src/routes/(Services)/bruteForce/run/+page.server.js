@@ -1,3 +1,5 @@
+import { getApiBaseURL } from '$lib/utils/apiBaseURL';
+
 export async function load({ fetch, url }) {
 	let jobId = url.searchParams.get('jobId');
 
@@ -11,9 +13,9 @@ export async function load({ fetch, url }) {
 	console.log('[Fetcher] Fetching brute force results for job:', jobId);
 
 	try {
-		const res = await fetch(`http://127.0.0.1:8000/api/dbf/${jobId}/results`);
+		const apiBaseURL = getApiBaseURL();
+		const res = await fetch(`${apiBaseURL}/api/dbf/${jobId}/results`);
 		const json = await res.json();
-		console.log('[BruteForce Results]', json.results);
 		return {
 			tableData: json.results ?? [],
 			tableColumns: [

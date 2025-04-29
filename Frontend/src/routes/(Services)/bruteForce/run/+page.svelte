@@ -23,6 +23,7 @@
 		pauseScan,
 		resumeScan
 	} from '$lib/stores/scanProgressStore.js';
+	import { getApiBaseURL } from '$lib/utils/apiBaseURL';
 
 	const { data } = $props();
 	let showStopDialog = $state(false);
@@ -62,7 +63,8 @@
 	// Fetch results from the server
 	async function fetchResults(jobId) {
 		try {
-			const res = await fetch(`http://localhost:8000/api/dbf/${jobId}/results`);
+			const apiBaseURL = getApiBaseURL();
+			const res = await fetch(`${apiBaseURL}/api/dbf/${jobId}/results`);
 			const response = await res.json();
 			const parsed = Array.isArray(response) ? response : (response.results ?? []);
 
@@ -137,7 +139,8 @@
 
 		// Tell the backend to stop
 		try {
-			const res = await fetch(`http://localhost:8000/api/dbf/${jobId}/stop`, {
+			const apiBaseURL = getApiBaseURL();
+			const res = await fetch(`${apiBaseURL}/api/dbf/${jobId}/stop`, {
 				method: 'POST'
 			});
 			if (res.ok) {
@@ -191,7 +194,8 @@
 		if (!data || data.length === 0) {
 			console.log('[Export] No results found in store. Fetching from API...');
 			try {
-				const res = await fetch(`http://localhost:8000/api/dbf/${jobId}/results`);
+				const apiBaseURL = getApiBaseURL();
+				const res = await fetch(`${apiBaseURL}/api/dbf/${jobId}/results`);
 				if (!res.ok) throw new Error('Failed to fetch brute force results.');
 				const { results = [] } = await res.json();
 				data = results;

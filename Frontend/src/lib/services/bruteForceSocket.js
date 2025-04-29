@@ -7,6 +7,7 @@ import {
 } from '$lib/stores/scanProgressStore';
 import { serviceResults } from '$lib/stores/serviceResultsStore.js';
 import { get } from 'svelte/store';
+import { getApiBaseURL } from '$lib/utils/apiBaseURL';
 
 let socket = null;
 
@@ -23,8 +24,12 @@ export function connectToBruteForceWebSocket(jobId, retry = 0) {
 		return;
 	}
 
+	// apiBaseURL is fetched from a utility function
+	const apiBaseURL = getApiBaseURL();
+	const wsBaseURL = apiBaseURL.replace('http', 'ws');
+
 	// Open a WebSocket connection to the backend endpoint
-	socket = new WebSocket(`ws://localhost:8000/ws/dbf/${jobId}`);
+	socket = new WebSocket(`${wsBaseURL}/ws/dbf/${jobId}`);
 
 	// Triggered when the connection is successfully established
 	socket.onopen = () => {

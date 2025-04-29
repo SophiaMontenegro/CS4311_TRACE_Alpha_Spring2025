@@ -13,6 +13,7 @@
 		closeCredGenAIWebSocket
 	} from '$lib/services/credGenAISocket.js';
 	import { derived, get, writable, readable } from 'svelte/store';
+	import { getApiBaseURL } from '$lib/utils/apiBaseURL';
 
 	const { data } = $props();
 	let value = $state(15);
@@ -53,7 +54,8 @@
 
 	async function fetchResults(jobId) {
 		try {
-			const res = await fetch(`http://localhost:8000/api/ml/${jobId}/results`);
+			const apiBaseURL = getApiBaseURL();
+			const res = await fetch(`${apiBaseURL}/api/ml/${jobId}/results`);
 			const response = await res.json();
 			const parsed = Array.isArray(response) ? response : (response.results ?? []);
 
@@ -101,7 +103,8 @@
 			const jobId = localStorage.getItem('currentCredGenAIJobId');
 			if (!jobId) throw new Error('Job ID not found');
 
-			const res = await fetch(`http://localhost:8000/api/ml/${jobId}/results`);
+			const apiBaseURL = getApiBaseURL();
+			const res = await fetch(`${apiBaseURL}/api/ml/${jobId}/stop`);
 			if (!res.ok) throw new Error('Failed to fetch results');
 
 			const json = await res.json();

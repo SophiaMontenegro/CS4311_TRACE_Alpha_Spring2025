@@ -14,9 +14,11 @@
 	} from '$lib/services/bruteForceSocket';
 	import { serviceResults } from '$lib/stores/serviceResultsStore.js';
 	import { scanProgress, stopScanProgress } from '$lib/stores/scanProgressStore.js';
+	import { getApiBaseURL } from '$lib/utils/apiBaseURL';
 
 	export let data;
 	$: $serviceStatus;
+
 	let showExitDialog = false;
 	let projectName = '';
 
@@ -53,13 +55,10 @@
 
 		if (jobId) {
 			closeSocketFn();
-
-			// Dynamically build the stop URL
-			await fetch(`http://localhost:8000/api/${toolType}/${jobId}/stop`, {
+			const apiBaseURL = getApiBaseURL();
+			await fetch(`${apiBaseURL}/api/${toolType}/${jobId}/stop`, {
 				method: 'POST'
 			});
-
-			// Clear results and local storage
 			serviceResults.update((r) => ({ ...r, [serviceKey]: [] }));
 			localStorage.removeItem(jobIdKey);
 		}
@@ -82,6 +81,7 @@
 		const status = get(serviceStatus).status;
 		const type = get(serviceStatus).serviceType;
 
+		// Restore WebSocket connection if needed
 		if (status === 'running' || status === 'paused') {
 			switch (type) {
 				case 'crawler': {
@@ -101,9 +101,8 @@
 				}
 			}
 		}
-	});
 
-	onMount(() => {
+		// Set project name
 		const urlParams = new URLSearchParams(window.location.search);
 		const queryProjectName = urlParams.get('projectName');
 
@@ -156,13 +155,10 @@
 		if ($serviceStatus.serviceType === type) {
 			switch ($serviceStatus.status) {
 				case 'running':
-					console.log('Tool is running:', tool.name);
 					return 'In Progress';
 				case 'paused':
-					console.log('Tool is paused:', tool.name);
 					return 'Paused';
 				case 'completed':
-					console.log('Tool has completed:', tool.name);
 					return 'Finished';
 				default:
 					return 'Not Started';
@@ -187,36 +183,16 @@
 		if ($serviceStatus.serviceType === type) {
 			switch ($serviceStatus.status) {
 				case 'running':
-					return {
-						rawStatus: 'running',
-						percent: `${$scanProgress}%`,
-						statusText: 'Scanning...'
-					};
+					return { rawStatus: 'running', percent: `${$scanProgress}%`, statusText: 'Scanning...' };
 				case 'paused':
-					return {
-						rawStatus: 'paused',
-						percent: `${$scanProgress}%`,
-						statusText: 'Paused'
-					};
+					return { rawStatus: 'paused', percent: `${$scanProgress}%`, statusText: 'Paused' };
 				case 'completed':
-					return {
-						rawStatus: 'completed',
-						percent: '100%',
-						statusText: 'Completed'
-					};
+					return { rawStatus: 'completed', percent: '100%', statusText: 'Completed' };
 				case 'error':
-					return {
-						rawStatus: 'error',
-						percent: `${$scanProgress}%`,
-						statusText: 'ERROR!'
-					};
+					return { rawStatus: 'error', percent: `${$scanProgress}%`, statusText: 'ERROR!' };
 			}
 		}
-		return {
-			rawStatus: 'idle',
-			percent: '0%',
-			statusText: 'Ready to Go!'
-		};
+		return { rawStatus: 'idle', percent: '0%', statusText: 'Ready to Go!' };
 	}
 </script>
 
@@ -248,25 +224,23 @@
 			<div class="card">
 				<div class="tool-name">{tool.name}</div>
 
-
-					<div class="tool-actions">
-						<div class="status-group">
-							<div class="status-icon {display.rawStatus}">
-								{#if display.rawStatus === 'completed'}
-									<span class="icon"><Check /></span>
-								{:else if display.rawStatus === 'error'}
-									<span class="icon"><X /></span>
-								{:else}
-									<div class="center-dot"></div>
-								{/if}
-							</div>
+				<div class="tool-actions">
+					<div class="status-group">
+						<div class="status-icon {display.rawStatus}">
+							{#if display.rawStatus === 'completed'}
+								<span class="icon"><Check /></span>
+							{:else if display.rawStatus === 'error'}
+								<span class="icon"><X /></span>
+							{:else}
+								<div class="center-dot"></div>
+							{/if}
 						</div>
-						<span>
-							<span class="percent">{display.percent}</span>
-							<span class="status-text"> {display.statusText}</span>
-						</span>
 					</div>
-
+					<span>
+						<span class="percent">{display.percent}</span>
+						<span class="status-text"> {display.statusText}</span>
+					</span>
+				</div>
 
 				<div class="buttons-container">
 					<Button

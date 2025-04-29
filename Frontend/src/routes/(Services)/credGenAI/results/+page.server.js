@@ -1,3 +1,5 @@
+import { getApiBaseURL } from '$lib/utils/apiBaseURL';
+
 export async function load({ fetch, url }) {
 	const jobId = url.searchParams.get('jobId');  
 
@@ -9,7 +11,8 @@ export async function load({ fetch, url }) {
 	}
 
 	try {
-		const res = await fetch(`http://127.0.0.1:8000/api/ml/${jobId}/results`);
+		const apiBaseURL = getApiBaseURL();
+		const res = await fetch(`${apiBaseURL}/api/ml/${jobId}/results`);
 		const json = await res.json();
 		return {
 			tableData: json.results ?? [],

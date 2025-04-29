@@ -1,3 +1,5 @@
+import { getApiBaseURL } from '$lib/utils/apiBaseURL';
+
 export async function load({ fetch, url }) {
 	const jobId = url.searchParams.get('jobId');  
 
@@ -9,8 +11,7 @@ export async function load({ fetch, url }) {
 	}
 
 	try {
-		const apiBaseURL = localStorage.getItem('apiBaseURL');
-		if (!apiBaseURL) throw new Error('API Base URL is not set!');
+		const apiBaseURL = getApiBaseURL();
 		const res = await fetch(`${apiBaseURL}/api/crawler/${jobId}/results`);
 		const json = await res.json();
 		return {
