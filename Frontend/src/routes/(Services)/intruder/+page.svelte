@@ -1,93 +1,196 @@
 <script>
-	import { goto } from '$app/navigation';
-
+	import { goto } from "$app/navigation";
+	import { targetUrlStore, modeStore } from '$lib/stores/intruder';
+	import {Button} from '$lib/components/ui/button';
 	let targetUrl = '';
+	let forms = [];
+	let error = '';
+	let mode = '';
+	let selectedFormIndex = null;
+	let requestPreview = null;
 	let attackType = '';
-	let header = '';
-	let payloads = '';
-	let injectionPoints = '';
-	let hideStatusCodes = '';
-	let showOnlyStatusCodes = '';
-	let proxy = '';
-	let additionalParams = '';
 
+	async function scanTarget() {
+	try {
+		const response = await fetch('http://localhost:8000/api/intruder/reconnaissance', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ url: targetUrl })
+		});
 
-	function handleSubmit() {
-		const payload = {
-			targetUrl,
-			attackType,
-			header,
-			payloads,
-			injectionPoints,
-			hideStatusCodes,
-			showOnlyStatusCodes,
-			proxy,
-			additionalParams
-		};
+		const data = await response.json();
+		mode = data.mode;
 
-		console.log('Sending:', payload);
+		if (mode === 'html') {
+			await fetchRequestPreview();
+		}
+		if (data.error) {
+			error = data.error;
+			return;
+		}
 
-		const query = new URLSearchParams(payload).toString();
+		if (data.forms && data.forms.length > 0) {
+			forms = data.forms;
+			mode = data.mode;
+			error = '';
+			modeStore.set(mode);
+			targetUrlStore.set(targetUrl);
 
-		goto(`/intruder/scan?${query}`);
+		} else {
+			if (data.mode === 'json' || data.mode === 'url') {
+				modeStore.set(mode);
+				targetUrlStore.set(targetUrl);
+				goto(`/intruder/configure?noForm=true`);
+			} else {
+				error = "Unknown or unsupported mode.";
+			}
+		}
+	} catch (err) {
+		error = "Failed to connect to backend.";
+		console.error(err);
+	}
+}
+
+	async function fetchRequestPreview() {
+		try {
+			const res = await fetch("http://localhost:8000/api/intruder/preview_request");
+			if (!res.ok) {
+				const data = await res.json();
+				console.error("Error:", data);
+				alert(data.detail || "Failed to get request preview");
+				return;
+			}
+			requestPreview = await res.json();
+		} catch (err) {
+			console.error('Failed to fetch preview:', err);
+		}
+	}
+
+	async function sendSelectedForm() {
+		if (selectedFormIndex === null) return;
+
+		const res = await fetch("http://localhost:8000/api/intruder/select_form", {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({ index: selectedFormIndex })
+		});
+
+		if (res.ok) {
+			targetUrlStore.set(targetUrl);
+			modeStore.set(mode);
+			goto(`/intruder/configure?formIndex=${selectedFormIndex}&noForm=false`);
+		} else {
+			alert('Failed to select form.');
+		}
 	}
 </script>
 
-<!-- So for anyone that is modifying this part
- please make sure to make work the handle submit and sends it tothe backend!!!!!!!-->
+<div class="pt-6 pb-6 max-w-4xl mx-auto" style="padding-left:100px;padding-right:100px;">
 
-<div class="pt-6 pb-6 max-w-4xl mx-auto" style="padding-left:100px;padding-right: 100px;">
-	<form class="space-y-6" on:submit|preventDefault={handleSubmit}>
-
+	<div class="space-y-6">
 		<div>
-			<label for="targetUrl" class="block text-sm font-medium text-gray-800 mb-1">Target URL <span class="text-red-500">*</span></label>
-			<input id="targetUrl" class="input" type="text" placeholder="https://juice-shop.herokuapp.com" bind:value={targetUrl} />
+			<label for="targetUrl" class="block text-sm font-medium text-gray-800 mb-1 dark:text-foreground">
+				Target URL <span class="text-red-500">*</span>
+			</label>
+			<input
+				id="targetUrl"
+				class="input"
+				type="text"
+				placeholder="https://juice-shop.herokuapp.com"
+				bind:value={targetUrl}
+			/>
 		</div>
+		<!-- 
+		
+		<!-- <button variant="outline" type="button"class="bg-cyan-500 text-white px-4 py-2 rounded transition-colors duration-100 ease-in-out hover:bg-gray-400" on:click={scanTarget}>
+			Scan
+		</button> -->
+		<Button 
+			type="button" 
+			variant="outline" 
+			size="default" 
+			onclick={scanTarget} 
+			class="bg-cyan-500 var(--foreground) px-4 py-2 rounded transition-colors duration-100 ease-in-out hover:bg-gray-400"
+			>
+			scan
+		</Button>
 
-		<div>
-			<label for="attackType" class="block text-sm font-medium text-gray-800 mb-1">Attack Type</label>
-			<input id="attackType" class="input" type="text" placeholder="Sniper" bind:value={attackType} />
-		</div>
+		{#if error}
+			<p class="text-red-500 mt-2">{error}</p>
+		{/if}
 
-		<div>
-			<label for="header" class="block text-sm font-medium text-gray-800 mb-1">Header</label>
-			<input id="header" class="input text-gray-400" type="text" placeholder="application/json" bind:value={header} />
-		</div>
+		<!-- Results -->
+		{#if forms.length > 0}
+			<div class="mt-6">
+				<h3 class="font-semibold text-lg mb-2 dark:text-foreground">Forms Found:</h3>
+				{#each forms as form, i}
+					<div class="border border-gray-300 p-4 rounded mb-4 dark:bg-background3 dark:text-background3-foreground">
+						<label class="flex items-center space-x-2">
+							<input
+								type="radio"
+								name="formSelector"
+								bind:group={selectedFormIndex}
+								value={i}
+							/>
+							<span class="font-semibold">Form {i}</span>
+						</label>
 
-		<div>
-			<label for="payloads" class="block text-sm font-medium text-gray-800 mb-1">Payloads</label>
-			<input id="payloads" class="input" type="text" placeholder="?id =, ?username" bind:value={payloads} />
-		</div>
+						<p><b>Action:</b> {form.action}</p>
+						<p><b>Method:</b> {form.method.toUpperCase()}</p>
 
-		<div>
-			<label for="injectionPoints" class="block text-sm font-medium text-gray-800 mb-1">Injection Points</label>
-			<input id="injectionPoints" class="input" type="text" placeholder="?id =, ?username" bind:value={injectionPoints} />
-		</div>
+						<table class="w-full mt-2 text-sm border border-gray-300 rounded ">
+							<thead class="bg-gray-100 text-left">
+								<tr>
+									<th class="px-4 py-2 border-b dark:bg-accent">Name</th>
+									<th class="px-4 py-2 border-b dark:bg-accent">Type</th>
+								</tr>
+							</thead>
+							<tbody>
+								{#each form.fields as field}
+									<tr>
+										<td class="px-4 py-2 border-b">{field.name || '(no name)'}</td>
+										<td class="px-4 py-2 border-b">{field.type || 'text'}</td>
+									</tr>
+								{/each}
+							</tbody>
+						</table>
+					</div>
+				{/each}
 
-		<div>
-			<label for="hideStatusCodes" class="block text-sm font-medium text-gray-800 mb-1">Hide Status Code</label>
-			<input id="hideStatusCodes" class="input" type="text" placeholder="403, etc." bind:value={hideStatusCodes} />
-		</div>
+				{#if selectedFormIndex !== null}
+					<p class="mt-2 text-green-700 dark:text-accent2">
+						Selected Form: {selectedFormIndex}
+					</p>
+				{/if}
 
-		<div>
-			<label for="showOnlyStatusCodes" class="block text-sm font-medium text-gray-800 mb-1">Show Only Status Code</label>
-			<input id="showOnlyStatusCodes" class="input" type="text" placeholder="200, 500, etc." bind:value={showOnlyStatusCodes} />
-		</div>
+				<!-- <button variant="outline" on:click={sendSelectedForm} class="b-start mt-4 outline ">
+					Select Form
+				</button> -->
 
-		<div>
-			<label for="proxy" class="block text-sm font-medium text-gray-800 mb-1">Proxy</label>
-			<input id="proxy" class="input" type="text" placeholder="https://proxy.example.com:3128" bind:value={proxy} />
-		</div>
+				<Button 
+				type="button" 
+				variant="outline" 
+				size="default" 
+				onclick={sendSelectedForm} 
+				class="bg-cyan-500 var(--foreground) px-4 py-2 rounded transition-colors duration-100 ease-in-out hover:bg-gray-400"
+				>
+				Select Form
+			</Button>
 
-		<div>
-			<label for="additionalParams" class="block text-sm font-medium text-gray-800 mb-1">Additional Parameters (if applicable)</label>
-			<input id="additionalParams" class="input" type="text" placeholder="NULL" bind:value={additionalParams} />
-		</div>
+				<!-- {#if requestPreview}
+					<h3 class="mt-6 font-semibold text-lg">HTTP Request Preview</h3>
+					<pre class="bg-gray-100 text-sm p-4 rounded overflow-x-auto">
+URL: {requestPreview.url}
+Method: {requestPreview.method}
+Headers: {JSON.stringify(requestPreview.headers, null, 2)}
 
-		<button type="submit" class="b-start">
-		Start Attack
-		</button>
-	</form>
+Sample Body:
+{JSON.stringify(requestPreview.sample_body, null, 2)}
+					</pre>
+				{/if} -->
+			</div>
+		{/if}
+	</div>
 </div>
 
 <style lang="postcss">
@@ -96,17 +199,4 @@
 	.input {
 		@apply block w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-black/80 focus:border-black/80 transition;
 	}
-
-	.b-start {
-	background-color: #06b6d4; 
-	color: white;
-	padding: 0.5rem 1rem; 
-	border-radius: 0.25rem;
-	transition: background-color 0.1s ease-in-out;
-	}
-
-	.b-start:hover {
-	background-color: #4b5563; 
-	}
-
 </style>
