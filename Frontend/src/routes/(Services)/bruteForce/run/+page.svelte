@@ -27,6 +27,7 @@
 	const { data } = $props();
 	let showStopDialog = $state(false);
 	let intervalId;
+	let fetchedOnce = false;
 
 	// Derived stores
 	const bruteForceResults = derived(
@@ -78,11 +79,12 @@
 
 	// WebSocket connection
 	$effect(() => {
-		if ($currentStep === 'results' && $bruteForceResults.length === 0) {
+		if (!fetchedOnce && $currentStep === 'results' && $bruteForceResults.length === 0) {
 			const jobId = localStorage.getItem('currentDbfJobId');
 			if (jobId) {
 				console.log('[Fetcher] Fetching results for job:', jobId);
 				fetchResults(jobId);
+				fetchedOnce = true;
 			}
 		}
 	});
@@ -206,29 +208,29 @@
 			return;
 		}
 
-	// These are the fields expected by the UI
-	const exportFields = ['id', 'url', 'status', 'payload', 'length', 'error'];
-	const headers = ['ID', 'URL', 'Status Code', 'Payload', 'Length', 'Error'];
+		// These are the fields expected by the UI
+		const exportFields = ['id', 'url', 'status', 'payload', 'length', 'error'];
+		const headers = ['ID', 'URL', 'Status Code', 'Payload', 'Length', 'Error'];
 
-	// Build CSV content
-	const csvRows = [
-		headers.join(','),
-		...data.map((row) => exportFields.map((key) => JSON.stringify(row[key] ?? '')).join(','))
-	];
+		// Build CSV content
+		const csvRows = [
+			headers.join(','),
+			...data.map((row) => exportFields.map((key) => JSON.stringify(row[key] ?? '')).join(','))
+		];
 
-	const csvContent = csvRows.join('\n');
-	const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-	const url = URL.createObjectURL(blob);
+		const csvContent = csvRows.join('\n');
+		const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+		const url = URL.createObjectURL(blob);
 
-	const a = document.createElement('a');
-	a.href = url;
-	a.download = `bruteForce_${jobId}_results.csv`;
-	document.body.appendChild(a);
-	a.click();
-	a.remove();
+		const a = document.createElement('a');
+		a.href = url;
+		a.download = `bruteForce_${jobId}_results.csv`;
+		document.body.appendChild(a);
+		a.click();
+		a.remove();
 
-	URL.revokeObjectURL(url);
-}
+		URL.revokeObjectURL(url);
+	}
 
 	// Restore checkpoint on mount
 	onMount(() => {
@@ -283,7 +285,11 @@
 			<Spinner />
 		{/if}
 
-		<Table data={$bruteForceResults} columns={$dynamicColumns} />
+		{#if $bruteForceResults.length > 0}
+			<Table data={$bruteForceResults} columns={$dynamicColumns} />
+		{:else if $serviceStatus.status === 'completed'}
+			<p class="no-results-text">No results were found.</p>
+		{/if}
 	</div>
 
 	<div class="button-section">
@@ -433,5 +439,13 @@
 		flex-direction: column;
 		justify-content: flex-start;
 		width: 100%;
+	}
+
+	.no-results-text {
+		margin-top: 2rem;
+		font-size: 1.5rem;
+		color: var(--foreground);
+		font-weight: 500;
+		text-align: center;
 	}
 </style>
