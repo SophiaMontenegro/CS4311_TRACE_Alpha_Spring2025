@@ -27,7 +27,7 @@
     let isVerifying = false;
 
     let directoryPath: string = '';
-    let port; //integer
+    let lead_ip: string = '';
 
 
     let errors = {
@@ -35,7 +35,7 @@
         startDate: '',
         endDate: '',
         saveDirectory: '',
-        port: ''
+        lead_ip: ''
     };
 
     function removeFile(index: number) {
@@ -86,7 +86,7 @@
     async function validateForm(): boolean {
         let valid = true;
         // Force a reactive reset
-        errors = { ...errors, projectName: '', startDate: '', endDate: '', saveDirectory: '' };
+        errors = { ...errors, projectName: '', startDate: '', endDate: '', saveDirectory: '', lead_ip: '' };
 
         const trimmedName = projectName.trim();
 
@@ -126,11 +126,12 @@
                 valid = false;
             }
         }
-        if (!port) {
-            errors.port = 'Port number is required.';
+        const ipRegex = /^(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}$/;
+        if (!lead_ip) {
+            errors.lead_ip = 'Lead IP address is required.';
             valid = false;
-        } else if (isNaN(Number(port)) || Number(port) < 1 || Number(port) > 65535) {
-            errors.port = 'Invalid port number.';
+        } else if (!ipRegex.test(lead_ip)) {
+            errors.lead_ip = 'Invalid Lead IP address.';
             valid = false;
         }
 
@@ -238,7 +239,7 @@
                 startDate,
                 endDate,
                 userList,
-                port,
+                lead_ip,
                 directoryPath,
                 analystId,
                 analystInitials
@@ -312,12 +313,12 @@
                 <Textarea bind:value={description} class="h-24" placeholder="Enter project description" />
             </div>
 
-            <!-- Port Number -->
+            <!-- Lead IP Address -->
             <div class="space-y-2 md:col-span-2">
-                <label class="text-sm font-medium">Port *</label>
-                <Input type="text" class="input-class" bind:value={port} placeholder="Enter port number" />
-                {#if errors.port}
-                    <p class="text-red-500 text-sm">{errors.port}</p>
+                <label class="text-sm font-medium">Lead IP *</label>
+                <Input type="text" class="input-class" bind:value={lead_ip} placeholder="Enter lead IP address" />
+                {#if errors.lead_ip}
+                    <p class="text-red-500 text-sm">{errors.lead_ip}</p>
                 {/if}
             </div>
             <!-- Save Directory Selection -->

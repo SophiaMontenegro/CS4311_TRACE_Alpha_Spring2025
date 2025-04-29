@@ -8,7 +8,7 @@ class ProjectManager:
 
 
 
-    def create_project(self, analyst_id, project_name, start_date, end_date, description, userList, port, directory_path, lead_ip):
+    def create_project(self, analyst_id, project_name, start_date, end_date, description, userList, lead_ip, directory_path):
 
         try:
             logging.debug(f"Creating project: analyst_name={analyst_id}, name={project_name}")
@@ -34,7 +34,6 @@ class ProjectManager:
                 lead_ip: $lead_ip,
                 created_at: datetime(),
                 last_edited: datetime(),
-                port: $port,
                 directory_path: $directory_path
             })
             CREATE (a)-[:OWNS]->(p)
@@ -50,7 +49,6 @@ class ProjectManager:
                 "start_date": start_date_str,
                 "end_date": end_date_str,
                 "lead_ip": lead_ip,
-                "port": port,
                 "directory_path": directory_path
             }
 
@@ -549,7 +547,7 @@ class ProjectManager:
         print(f"Successfully updated last edited of '{project}'.")
         return True
 
-    def edit_port(self, project, analyst_name, port):
+    def edit_lead_ip(self, project, analyst_name, lead_ip):
         if not self.analyst_manager.check_if_lead(analyst_name, project):
             print(f"Error: Analyst '{analyst_name}' isn't part of the current project or doesn't have permission.")
             return None
@@ -566,8 +564,8 @@ class ProjectManager:
         update_query = """
         MATCH (p:Project)
         WHERE p.name = $project
-        SET p.port = $port
+        SET p.lead_ip = $lead_ip
         """
-        self.db_manager.run_query(update_query, {"project": project, "port": port})
-        print(f"Successfully updated port of '{project}' to {port}.")
+        self.db_manager.run_query(update_query, {"project": project, "lead_ip": lead_ip})
+        print(f"Successfully updated lead_ip of '{project}' to {lead_ip}.")
         return True

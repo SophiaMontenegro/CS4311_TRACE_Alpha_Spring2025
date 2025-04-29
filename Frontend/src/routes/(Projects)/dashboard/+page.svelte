@@ -86,7 +86,7 @@
                     end_date: projectData.endDate,
                     description: projectData.description || '',
                     userList: projectData.userList || [],
-                    port: projectData.port,
+                    lead_ip: projectData.lead_ip,
                     directory_path: projectData.directoryPath
                 })
             });
