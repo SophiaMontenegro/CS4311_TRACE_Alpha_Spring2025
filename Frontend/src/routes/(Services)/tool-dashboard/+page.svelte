@@ -17,10 +17,10 @@
 	import { getApiBaseURL } from '$lib/utils/apiBaseURL';
 
 	export let data;
+	let projectName;
 	$: $serviceStatus;
 
 	let showExitDialog = false;
-	let projectName = '';
 
 	function handleExitClick() {
 		showExitDialog = true;
@@ -78,6 +78,7 @@
 	}
 
 	onMount(() => {
+		projectName = localStorage.getItem('currentProjectName');
 		const status = get(serviceStatus).status;
 		const type = get(serviceStatus).serviceType;
 

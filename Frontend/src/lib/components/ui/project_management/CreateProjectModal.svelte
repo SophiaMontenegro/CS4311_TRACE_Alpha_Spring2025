@@ -23,53 +23,203 @@
 
     let userList: string[] = [];
     let newUser = '';
+    let userError = '';
+    let isVerifying = false;
+
+    let directoryPath: string = '';
+    let port; //integer
+
 
     let errors = {
         projectName: '',
         startDate: '',
-        endDate: ''
+        endDate: '',
+        saveDirectory: '',
+        port: ''
     };
-
-    function handleFileUpload(event: Event) {
-        const input = event.target as HTMLInputElement;
-        if (input.files) {
-            files = [...files, ...Array.from(input.files)];
-        }
-    }
 
     function removeFile(index: number) {
         files.splice(index, 1);
         files = [...files];
     }
 
-    function validateForm(): boolean {
-        let valid = true;
-        errors = { projectName: '', startDate: '', endDate: '' };
+    async function check_name(name) {
 
-        if (!projectName.trim()) {
-            errors.projectName = 'Project name is required';
+        try {
+            const response = await fetch('http://127.0.0.1:8000/team3/project_name/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    project_name: name,
+                    analyst_initials: analystInitials,
+                })
+            });
+
+            const responseData = await response.json();
+
+            if (!response.ok) {
+                let errorMessage = 'Failed to verify project name';
+                if (responseData.detail) {
+                    errorMessage = typeof responseData.detail === 'string'
+                        ? responseData.detail
+                        : JSON.stringify(responseData.detail);
+                } else if (typeof responseData === 'object') {
+                    errorMessage = JSON.stringify(responseData);
+                }
+
+                throw new Error(errorMessage);
+            }
+
+            // Check if name is taken
+            if (responseData.status === "taken") {
+                return false;
+            }
+
+            return true;
+        } catch (err) {
+            console.error("check_name error:", err);
+            return false;
+        }
+    }
+
+
+    async function validateForm(): boolean {
+        let valid = true;
+        // Force a reactive reset
+        errors = { ...errors, projectName: '', startDate: '', endDate: '', saveDirectory: '' };
+
+        const trimmedName = projectName.trim();
+
+        if (!trimmedName) {
+            errors.projectName = 'Project name is required.';
             valid = false;
+        } else {
+            const verify_name = await check_name(trimmedName); // ✅ await async call
+
+            if (verify_name === false) {
+                errors.projectName = 'Project name already exists.';
+                valid = false;
+            }
         }
 
         if (!startDate) {
-            errors.startDate = 'Start date is required';
+            errors.startDate = 'Start date is required.';
             valid = false;
         } else if (!endDate) {
-            errors.endDate = 'End date is required';
+            errors.endDate = 'End date is required.';
             valid = false;
         } else if (new Date(endDate) < new Date(startDate)) {
-            errors.startDate = 'End date must be after start date';
+            errors.startDate = 'End date must be after start date.';
+            valid = false;
+        }
+
+        const trimmedPath = directoryPath.trim();
+        console.log("PATH boolean: ", !trimmedPath);
+        if (!trimmedPath) {
+            errors.saveDirectory = 'Directory needs to be added.';
+            valid = false;
+        }
+        else {
+            const valid_path= await verifyPath(trimmedPath); // ✅ await async call
+            if (valid_path === false) {
+                errors.saveDirectory = 'Directory is invalid';
+                valid = false;
+            }
+        }
+        if (!port) {
+            errors.port = 'Port number is required.';
+            valid = false;
+        } else if (isNaN(Number(port)) || Number(port) < 1 || Number(port) > 65535) {
+            errors.port = 'Invalid port number.';
             valid = false;
         }
 
         return valid;
     }
 
-    function addUser() {
-        const trimmed = newUser.trim();
-        if (trimmed && !userList.includes(trimmed)) {
-            userList = [...userList, trimmed];
-            newUser = '';
+    async function verifyPath(path) {
+        try {
+            const response = await fetch('http://127.0.0.1:8000/team3/directory_path_verify/', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    directory_path: path
+                })
+            });
+
+            const responseData = await response.json();
+
+            if (!response.ok) {
+                let errorMessage = 'Failed to verify path';
+                if (responseData.detail) {
+                    errorMessage = typeof responseData.detail === 'string'
+                        ? responseData.detail
+                        : JSON.stringify(responseData.detail);
+                } else if (typeof responseData === 'object') {
+                    errorMessage = JSON.stringify(responseData);
+                }
+
+                throw new Error(errorMessage);
+            }
+
+            // Check if name is taken
+            if (responseData.status === "invalid") {
+                return false;
+            }
+
+            return true;
+        } catch (err) {
+            console.error("verify path error:", err);
+            return false;
+        }
+    }
+
+    async function addUser() {
+        const trimmed = newUser.trim().toUpperCase();
+        userError = '';
+
+        if (!trimmed) return; // empty
+
+        // Check if already added
+        if (userList.includes(trimmed)) {
+            userError = `User "${trimmed}" is already added.`;
+            return;
+        }
+        // Check if trying to add self
+        if (analystInitials === trimmed) {
+            userError = `User "${trimmed}" is yourself.`;
+            return;
+        }
+
+        isVerifying = true;
+
+        try {
+            const response = await fetch(`http://127.0.0.1:8000/team3/analysts/verify`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ initials: trimmed }),
+            });
+
+            if (!response.ok) {
+                userError = `User "${trimmed}" is not valid.`;
+                return;
+            }
+
+            const data = await response.json();
+
+            // Assuming your backend returns { valid: true/false }
+            if (data.analyst_id) {
+                newUser = '';
+            } else {
+                userError = `User "${trimmed}" is not valid.`;
+            }
+
+        } catch (error) {
+            userError = `Network error: ${error.message}`;
+        } finally {
+            isVerifying = false;
         }
     }
 
@@ -78,19 +228,22 @@
         userList = [...userList];
     }
 
-    function handleSubmit() {
-        if (validateForm()) {
+    async function handleSubmit() {
+        const isValid = await validateForm();
+
+        if (isValid) {
             const projectData = {
                 projectName,
                 description,
                 startDate,
                 endDate,
                 userList,
+                port,
+                directoryPath,
                 analystId,
                 analystInitials
             };
 
-            console.log('Submitting project data:', projectData);
             dispatch('create', projectData);
             handleClose();
         }
@@ -159,57 +312,89 @@
                 <Textarea bind:value={description} class="h-24" placeholder="Enter project description" />
             </div>
 
-            <!-- Upload Files -->
+            <!-- Port Number -->
             <div class="space-y-2 md:col-span-2">
-                <label class="text-sm font-medium">Upload NMap</label>
-                <Input type="file" multiple class="input-class" on:change={handleFileUpload} />
-                <div class="space-y-1 mt-2">
-                    {#each files as file, index}
+                <label class="text-sm font-medium">Port *</label>
+                <Input type="text" class="input-class" bind:value={port} placeholder="Enter port number" />
+                {#if errors.port}
+                    <p class="text-red-500 text-sm">{errors.port}</p>
+                {/if}
+            </div>
+            <!-- Save Directory Selection -->
+            <div class="space-y-2 md:col-span-2">
+                <label class="text-sm font-medium">Save Directory Path *</label>
+
+                <Input
+                        type="text"
+                        class="input-class"
+                        placeholder="Enter full directory path..."
+                        bind:value={directoryPath}
+                />
+
+                {#if directoryPath}
+                    <div class="space-y-1 mt-2">
                         <div class="flex items-center justify-between bg-muted px-3 py-2 rounded-md text-sm">
                             <div class="flex items-center gap-2">
                                 <Check class="w-4 h-4 text-green-500" />
-                                <span>{file.name}</span>
+                                <span class="break-all">{directoryPath}</span>
                             </div>
-                            <button type="button" on:click={() => removeFile(index)}>
+                            <button type="button" on:click={() => (directoryPath = '')}>
                                 <Trash2 class="w-4 h-4 text-destructive" />
                             </button>
                         </div>
-                    {/each}
-                </div>
+                    </div>
+                {/if}
+                {#if errors.saveDirectory}
+                    <p class="text-red-500 text-sm">{errors.saveDirectory}</p>
+                {/if}
             </div>
+
+
+
 
             <!-- Team Members -->
             <div class="space-y-2 md:col-span-2">
                 <label class="text-sm font-medium">Team Members</label>
                 <div class="flex gap-2">
                     <Input type="text" class="input-class" bind:value={newUser} placeholder="Enter initials" />
-                    <Button class="btn-class" variant="default" size="sm" on:click={addUser}>
+                    <button class="flex items-center bg-[var(--accent)] text-[var(--accent-foreground)] text-sm font-small px-4 py-2 rounded-md shadow hover:bg-[var(--accent3)]"
+                            on:click={addUser}>
                         <UserPlus class="w-4 h-4 mr-1" /> Add
-                    </Button>
+                    </button>
                 </div>
-                <ul class="space-y-1 mt-2">
+                <div class="flex flex-wrap gap-2 mt-2">
                     {#each userList as user, i}
-                        <li class="flex items-center justify-between bg-muted px-3 py-2 rounded-md text-sm">
-                            <span><Mail class="inline-block w-4 h-4 mr-1" /> {user}</span>
-                            <button type="button" on:click={() => removeUser(i)}>
-                                <Trash2 class="w-4 h-4 text-destructive" />
+                        <div class="flex items-center bg-muted text-sm px-3 py-1 rounded-full">
+                            <div class="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center mr-2 text-xs font-bold">
+                                {user}
+                            </div>
+                            <button type="button" on:click={() => removeUser(i)} class="text-gray-500 hover:text-red-500 ml-1">
+                                <X class="w-4 h-4" />
                             </button>
-                        </li>
+                        </div>
                     {/each}
-                </ul>
+                </div>
             </div>
         </div>
+
+        {#if userError}
+            <p class="text-sm text-red-500 mt-2">{userError}</p>
+        {/if}
+
+        {#if isVerifying}
+            <p class="text-sm text-gray-500 mt-2">Verifying...</p>
+        {/if}
 
         <!-- Action Buttons -->
         <div class="flex justify-end gap-2">
             <Button class="btn-class" variant="ghost" size="sm" onclick={handleClose}>Cancel</Button>
             <!-- Not in a form -->
-            <Button class="btn-class" variant="default" size="sm" onclick={() => {
-                console.log("Button clicked!");
-                handleSubmit();
-                }}>
+            <Button class="btn-class" variant="default" size="sm" onclick={async () => {
+                await handleSubmit();
+            }}>
                 Create
             </Button>
+
 
         </div>
     </div>
