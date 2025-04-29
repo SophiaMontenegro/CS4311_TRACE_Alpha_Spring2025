@@ -30,6 +30,7 @@ class crawler_manager:
 
     def __init__(self):
         self.config = {}
+        self.jobid = ''
         self.proxy = ProxyServer()
         self.http_client = HTTPClient(self.proxy)
         self.processor = CrawlerResponseProcessor()
@@ -67,7 +68,7 @@ class crawler_manager:
         """
         self.progress_callback = callback
 
-    def configure_crawler(self, target_url: str, depth: int, limit: int, user_agent: str, delay: int, proxy: str, crawl_date: str = None, crawl_time: str = None, excluded_urls: str = None) -> None:
+    def configure_crawler(self, target_url: str, jobid: str, depth: int, limit: int, user_agent: str, delay: int, proxy: str, crawl_date: str = None, crawl_time: str = None, excluded_urls: str = None) -> None:
         """
         configure_crawler configures the crawler with user defined settings.
 
@@ -97,6 +98,7 @@ class crawler_manager:
         """
         self.config = {
             "target_url": target_url,
+            "jobid": jobid,
             "depth": depth,
             "limit": limit,
             "user_agent": user_agent,
@@ -151,7 +153,7 @@ class crawler_manager:
                 "url": parsed.path or "/",
                 "headers": headers 
             }
-            response = self.http_client.send_request(request)
+            response = self.http_client.send_request(request, self.config.get('jobid', ''))
             raw_html = response["body"]
             await asyncio.sleep(self.config.get("delay", 0) / 1000.0)
 

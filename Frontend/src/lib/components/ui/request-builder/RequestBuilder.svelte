@@ -1,7 +1,5 @@
 <script>
 	import { onMount } from 'svelte';
-
-	/* shadcn‑svelte UI bits */
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { Textarea } from '$lib/components/ui/textarea';
@@ -10,68 +8,76 @@
 	import { Card, CardContent } from '$lib/components/ui/card';
 	import { Tabs, TabsContent, TabsList, TabsTrigger } from '$lib/components/ui/tabs';
 	import { createEventDispatcher } from 'svelte';
+	import { validateForm } from '$lib/validation/httpRequestValidation.js';
 
-	import { validateHeaders } from '$lib/validation/validateHeaders';
+	import Prism from 'prismjs';
+	import 'prismjs/components/prism-http';
+	import 'prismjs/plugins/line-numbers/prism-line-numbers.js';
 
 	export let formRef = null;
 	export let activeTab;
+	export let rawRequest = '';
 
 	let method = 'GET';
 	let targetUrl = '';
 	let headers = '';
 	let cookies = '';
 	let requestBody = '';
-	export let rawRequest = ''; // Now user-editable
 	let rawEnabled = false;
+	let validationErrors = [];
 
 	const STORAGE_KEY = 'httpTesterFormData';
 
 	// Refresh raw request manually from parent
-  export function refreshRawRequest() {
-	console.log('🛠️ refreshRawRequest() called');
-	console.log('method:', method);
-	console.log('targetUrl:', targetUrl);
-	console.log('headers:', headers);
-	console.log('cookies:', cookies);
-	console.log('requestBody:', requestBody);
-
-	rawRequest = buildRawRequest();
-	rawEnabled = !!rawRequest;
-
-	console.log('🚀 rawRequest generated:\n', rawRequest);
-}
-
-
-function buildRawRequest() {
-	try {
-		let safeUrl = targetUrl.trim();
-		if (!safeUrl.startsWith('http://') && !safeUrl.startsWith('https://')) {
-			safeUrl = 'http://' + safeUrl;
-		}
-
-		const u = new URL(safeUrl);
-
-		let raw = `${method} ${u.pathname || '/'} HTTP/1.1\n`;
-		raw += 'Accept: */*\n';
-		raw += `Host: ${u.host}\n`;
-		if (method !== 'GET') raw += 'Content-Type: application/json\n';
-		raw += 'User-Agent: TRACE-system\n';
-
-		headers.split('\n').forEach((h) => {
-			const trimmed = h.trim();
-			if (trimmed) raw += trimmed + '\n';
-		});
-
-		if (cookies.trim()) raw += `Cookie: ${cookies}\n`;
-		raw += `\n${requestBody}`;
-
-		return raw;
-	} catch (err) {
-		console.warn('⚠️ Failed to build raw request:', err);
-		return '';
+	export function refreshRawRequest() {
+		rawRequest = buildRawRequest();
+		rawEnabled = !!rawRequest;
 	}
-}
 
+	function buildRawRequest() {
+		try {
+			// 1. Require a full URL (including scheme)
+			let safeUrl = targetUrl.trim();
+			if (!safeUrl.startsWith('http://') && !safeUrl.startsWith('https://')) {
+				safeUrl = 'http://' + safeUrl;
+			}
+
+			// 2. Let URL throw if malformed, but catch and return early
+			let u;
+			try {
+				u = new URL(safeUrl);
+			} catch (urlErr) {
+				console.warn('Invalid URL provided to buildRawRequest:', safeUrl, urlErr);
+				return '';
+			}
+
+			// 3. Build the raw request
+			let raw = `${method} ${u.pathname || '/'}${u.search || ''} HTTP/1.1\n`;
+			raw += 'Accept: */*\n';
+			raw += `Host: ${u.host}\n`;
+			if (method !== 'GET') raw += 'Content-Type: application/json\n';
+			raw += 'User-Agent: TRACE-system\n';
+
+			// 4. Custom headers
+			headers.split('\n').forEach((h) => {
+				const t = h.trim();
+				if (t) raw += t + '\n';
+			});
+
+			// 5. Cookies
+			if (cookies.trim()) {
+				raw += `Cookie: ${cookies.trim()}\n`;
+			}
+
+			// 6. Body
+			raw += `\n${requestBody}`;
+
+			return raw;
+		} catch (err) {
+			console.warn('Failed to build raw request:', err);
+			return '';
+		}
+	}
 
 	onMount(() => {
 		const saved = localStorage.getItem(STORAGE_KEY);
@@ -99,40 +105,17 @@ function buildRawRequest() {
 		}
 	}
 
-	let validationErrors = [];
+	export function onSubmit(e) {
+		validationErrors = validateForm({
+			activeTab,
+			targetUrl,
+			headers,
+			cookies,
+			requestBody,
+			rawRequest,
+			method
+		});
 
-	function validateForm() {
-		const errors = [];
-
-		if (!targetUrl.trim()) {
-			errors.push('Target URL is required.');
-		} else if (!/^https?:\/\/[^\s]+$/.test(targetUrl.trim())) {
-			errors.push('Target URL must start with http:// or https://');
-		}
-
-		const headerValidation = validateHeaders(headers);
-		if (headerValidation.error) errors.push(`Headers: ${headerValidation.message}`);
-
-		if (
-			cookies.trim() &&
-			!/^[^=]+=[^;]+(?:;\s*[^=]+=[^;]+)*$/.test(cookies.trim())
-		) {
-			errors.push('Cookies must be in key=value format, separated by semicolons.');
-		}
-
-		if (method !== 'GET' && requestBody.trim()) {
-			try {
-				JSON.parse(requestBody);
-			} catch {
-				errors.push('Request body must be valid JSON.');
-			}
-		}
-
-		return errors;
-	}
-
-	function onSubmit(e) {
-		validationErrors = validateForm();
 		if (validationErrors.length) {
 			e.preventDefault();
 		}
@@ -144,25 +127,31 @@ function buildRawRequest() {
 			formRef.requestSubmit();
 		}
 	}
+
+	$: highlightedRequest = rawRequest
+		? Prism.highlight(rawRequest, Prism.languages.http, 'http')
+		: '';
+
+	$: lineCount = rawRequest.split('\n').length || 1;
 </script>
 
 <svelte:window on:keydown={handleKeydown} />
 
-<Card class="h-full w-full flex flex-col shadow-lg overflow-hidden">
-	<CardContent class="flex-1 flex flex-col p-3">
-		<h2 class="text-xl font-bold mb-4">Request Builder</h2>
+<Card class="flex h-full w-full flex-col overflow-hidden shadow-lg">
+	<CardContent class="flex flex-1 flex-col p-3">
+		<h2 class="mb-4 text-xl font-bold">Request Builder</h2>
 
 		{#if validationErrors.length}
-			<div class="mb-3 rounded-lg bg-error/10 text-error p-3 space-y-1 text-sm">
+			<div class="bg-error/10 text-error mb-3 space-y-1 rounded-lg p-3 text-sm">
 				{#each validationErrors as err}
-					<p>• {err}</p>
+					<p>• {err}</p>
 				{/each}
 			</div>
 		{/if}
 
-		<div class="flex-1 flex flex-col overflow-hidden">
-			<Tabs bind:value={activeTab} class="flex-1 flex flex-col overflow-hidden">
-				<TabsList class="border-b shrink-0">
+		<div class="flex flex-1 flex-col overflow-hidden">
+			<Tabs bind:value={activeTab} class="flex flex-1 flex-col overflow-hidden">
+				<TabsList class="shrink-0 border-b">
 					<TabsTrigger value="request">Request</TabsTrigger>
 					<TabsTrigger value="headers">Headers</TabsTrigger>
 					<TabsTrigger value="body">Body</TabsTrigger>
@@ -172,7 +161,7 @@ function buildRawRequest() {
 				</TabsList>
 
 				<!-- Request tab -->
-				<TabsContent value="request" class="flex-1 overflow-auto p-4 space-y-4">
+				<TabsContent value="request" class="flex-1 space-y-4 overflow-auto p-4">
 					<div>
 						<Label for="targetUrl">URL*</Label>
 						<Input id="targetUrl" name="targetUrl" bind:value={targetUrl} required />
@@ -203,12 +192,7 @@ function buildRawRequest() {
 					/>
 
 					<Label for="cookies" class="mt-4">Cookies</Label>
-					<Input
-						id="cookies"
-						name="cookies"
-						bind:value={cookies}
-						placeholder="session=abc123"
-					/>
+					<Input id="cookies" name="cookies" bind:value={cookies} placeholder="session=abc123" />
 				</TabsContent>
 
 				<!-- Body tab -->
@@ -226,13 +210,51 @@ function buildRawRequest() {
 				<!-- Raw tab -->
 				<TabsContent value="raw" class="flex-1 overflow-auto p-4">
 					<Label>Raw HTTP Request</Label>
-					<Textarea rows="15" bind:value={rawRequest} class="font-mono" />
+
+					<div class="codeblock">
+						<div class="gutter">
+							{#each Array(lineCount) as _, i}
+								<div class="ln">{i + 1}</div>
+							{/each}
+						</div>
+
+						<Textarea
+							name="rawRequest"
+							bind:value={rawRequest}
+							rows={lineCount}
+							class="code-textarea"
+						/>
+					</div>
 				</TabsContent>
 			</Tabs>
 		</div>
 
-		<div class="border-t p-4 flex justify-end">
-			<Button type="submit" class="px-4 h-8">Send</Button>
+		<div class="flex justify-end border-t p-4">
+			<Button type="submit" class="h-8 px-4">Send</Button>
 		</div>
 	</CardContent>
 </Card>
+
+<style>
+	/* container for gutter + textarea */
+	.codeblock {
+		display: flex;
+		border: 1px solid var(--border);
+		border-radius: 4px;
+		overflow: hidden;
+		font-family: monospace;
+	}
+
+	/* left gutter with line numbers */
+	.gutter {
+		background: var(--muted);
+		padding: 0.5em 0.25em;
+		text-align: right;
+		user-select: none;
+	}
+	.ln {
+		line-height: 1.4em;
+		height: 1.4em;
+		color: var(--secondary);
+	}
+</style>

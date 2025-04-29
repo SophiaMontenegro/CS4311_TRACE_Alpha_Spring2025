@@ -7,7 +7,8 @@ import csv
 import os 
 import urllib.parse
 #import aiofiles
-
+import glob
+from pathlib import Path
 class WebScraper:
     """
     Asynchronous web scraper to extract text content from web pages,
@@ -27,7 +28,7 @@ class WebScraper:
         async _scrape_pages_async(self) -> List
     """
     
-    def __init__(self, urls: List, concurrency: int=5):
+    def __init__(self, concurrency: int=5, folder_path: str="Team1/database/raw_html"):
         """
         Initialize with list of URLs and optional concurrency limit.
         
@@ -35,7 +36,12 @@ class WebScraper:
             urls (list): List of URLs to scrape.
             concurrency (int): Max number of parallel fetches.
         """
-        self.urls = urls
+        base_dir = Path(__file__).resolve().parents[3]
+        print("Base dir: ", base_dir)
+        self.folder_path = os.path.join(base_dir, folder_path)
+        
+        
+        self.files = glob.glob(f"{self.folder_path}*.txt") + glob.glob(f"{self.folder_path}*.html")
         self.concurrency = concurrency
         self.filename = None
         
@@ -44,8 +50,10 @@ class WebScraper:
         """
         Public main method to run the async scraping from sync code.
         """
+        base_dir = Path(__file__).resolve().parents[3]
         data = await self._scrape_pages_async()
-        filename = "Team7/src/database/ai/" + filename
+        filename = "src/database/ai/" + filename
+        filename = os.path.join(base_dir, filename)
  
         # Save the results
         with open(filename, 'w', newline='', encoding='utf-8') as csvfile:
@@ -57,7 +65,7 @@ class WebScraper:
         self.filename = filename
         return filename
 
-    async def _fetch_url(self, url: str) -> str:
+    async def _fetch_file(self, file_path: str) -> str:
         """
         Fetch the HTML content of a single URL asynchronously.
 
@@ -67,44 +75,14 @@ class WebScraper:
         Returns:
             str: The raw HTML text is successful, or an empty string if an error occurs.
         """
-        # TODO: Update to fetch the URLs from the database.
-        """
+        # instead of checking urls.
         try:
-            async with aiofiles.open(url, 'r', encoding='utf-8') as f:
-                return await f.read()
+            with open(file_path, "r", encoding="utf-8") as f:
+                return f.read()
         except Exception as e:
-            print(f"[ERROR] Could not fetch {url}")
-            return ""
-        """
-        parsed_url = urllib.parse.urlparse(url)
-        if parsed_url.scheme == "file":
-            local_path = os.path.normpath(parsed_url.path)
-            try:
-                with open(local_path, "r", encoding="utf-8") as f:
-                    return f.read()
-                
-            except Exception as e:
-                print(f"[ERROR] Could not open local file: {e}")
-                return ""
-        else:
-            try:
-                async with aiohttp.ClientSession() as session:
-                    async with session.get(url) as response:
-                        response.raise_for_status()
-                        return await response.text()
-            except aiohttp.ClientError as e:
-                print(f"[ERROR] Could not fetch {url}: {e}")
-                return ""
-        """
-
-        try:
-            async with aiohttp.ClientSession() as session:
-                async with session.get(url) as response:
-                    response.raise_for_status()
-                    return await response.text()
-        except aiohttp.ClientError as e:
-            print(f"[ERROR] Could not fetch {url}: {e}")
-        """
+            print(f"[ERROR] Could not open local file: {e}")
+            return ""     
+       
 
     def _extract_text_content(self, html: str) -> str:
         """
@@ -167,19 +145,26 @@ class WebScraper:
         """
         results = []
         sem = asyncio.Semaphore(self.concurrency)
-
+        print(f"[INFO] Scraping {len(self.files)} files with concurrency {self.concurrency}.")
+        for file in self.files:
+            print(f"[INFO] Scraping file: {file}")
         async with aiohttp.ClientSession() as session:
-            async def scrape_page(i, url):
+            async def scrape_page(i, file_path):
+                
                 async with sem:
-                    html = await self._fetch_url(url)
-                    if html:
-                        text_content = self._extract_text_content(html)
+                    content = await self._fetch_file(file_path)
+                    if content:
+                        if file_path.endswith('.html'):
+                            text_content = self._extract_text_content(content)
+                            results.append((i, text_content, file_path))
+                        elif file_path.endswith('.txt'):
+                            text_content = content
+                            results.append((i, text_content, file_path))
                     else:
-                        text_content = ""
-                    results.append((i, text_content, url))
-
+                        results.append((i, "", file_path))
+                    
             tasks = []
-            for i, url in enumerate(self.urls, start=1):
+            for i, url in enumerate(self.files, start=1):
                 tasks.append(scrape_page(i, url))
 
             await asyncio.gather(*tasks)
@@ -190,3 +175,24 @@ class WebScraper:
     
     
         print(f"CSV file '{filename}' has been generated.")
+
+
+async def test_scraper():
+    start = time.time()
+    scraper = WebScraper()
+    output = await scraper.scrape_pages("scraped_output_test.csv")
+    end = time.time()
+    assert os.path.exists(scraper.filename), "CSV file was not created."
+    with open(scraper.filename, 'r', encoding='utf-8') as f:
+        reader = csv.reader(f)
+        header = next(reader)  
+        rows =  list(reader)
+        
+        content = [row[1] for row in rows]
+        assert len(content) == 2, "CSV file does not contain the expected number of columns."
+        assert any(c.strip() for c in content), "CSV file does not contain any content."
+    print(f"[INFO] Test completed in {end - start:.5f} seconds.")
+
+
+if __name__ == "__main__":
+    asyncio.run(test_scraper())
