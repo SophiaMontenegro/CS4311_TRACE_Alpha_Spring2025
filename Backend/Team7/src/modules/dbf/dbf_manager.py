@@ -9,6 +9,7 @@ from typing import List, Dict, Callable, Optional
 from Team1.httpclient.proxy_server import ProxyServer
 from Team1.httpclient.http_client import HTTPClient
 from Team7.src.modules.dbf.dbf_response_processor import ResponseProcessor
+import aiohttp
 
 log_path = os.path.join(os.path.dirname(__file__), "directory_bruteforce.log")
 logging.basicConfig(
@@ -168,7 +169,7 @@ class DirectoryBruteForceManager:
         filtered_results = self.get_filtered_results()
 
         for result in filtered_results:
-            self.send_update(target_ip, result["url"], result["status"])
+            await self.send_update(target_ip, result["url"], result["status"])
 
     async def _wait_pause(self, interval=0.5):
         """Helper method to wait during pause state"""
@@ -192,7 +193,7 @@ class DirectoryBruteForceManager:
         if not self.end_time:
             self.end_time = time.perf_counter()
 
-    def send_update(self, ip: str, full_url: str, severity: int):
+    async def send_update(self, ip: str, full_url: str, severity: int):
         """
         Sets up the call to send the responses to webtree
         """
@@ -204,8 +205,10 @@ class DirectoryBruteForceManager:
                 "path": path,
                 "severity": severity
             }
-            response = requests.post("http://localhost:8000/api/tree/update", json=payload)
-            print(f"Sent {path}: {response.status_code} - {response.json()}")
+            async with aiohttp.ClientSession() as session:
+                async with session.post("http://localhost:8000/api/tree/update", json=payload) as response:
+                    response_text = await response.text()
+                    print(f"Sent {path}: {response.status} - {response_text}")
         except Exception as e:
             print(f"Error sending update for {full_url}: {e}")
     

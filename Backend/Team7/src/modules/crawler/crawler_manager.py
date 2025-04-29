@@ -3,7 +3,6 @@
 import json
 import asyncio
 import datetime
-import requests
 import socket
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
@@ -11,6 +10,7 @@ from urllib.parse import urlparse
 from Team1.httpclient.http_client import HTTPClient
 from Team1.httpclient.proxy_server import ProxyServer
 from Team7.src.modules.crawler.crawler_response import CrawlerResponseProcessor
+import aiohttp
 
 class crawler_manager:
     """
@@ -69,7 +69,7 @@ class crawler_manager:
         """
         self.progress_callback = callback
     
-    def send_update(self, ip: str, full_url: str, severity: int):
+    async def send_update(self, ip: str, full_url: str, severity: int):
         """
         Sets up the call to send the responses to webtree
         """
@@ -81,8 +81,10 @@ class crawler_manager:
                 "path": path,
                 "severity": severity
             }
-            response = requests.post("http://localhost:8000/api/tree/update", json=payload)
-            print(f"Sent {path}: {response.status_code} - {response.json()}")
+            async with aiohttp.ClientSession() as session:
+                async with session.post("http://localhost:8000/api/tree/update", json=payload) as response:
+                    response_text = await response.text()
+                    print(f"Sent {path}: {response.status} - {response_text}")
         except Exception as e:
             print(f"Error sending update for {full_url}: {e}")
     
@@ -277,7 +279,7 @@ class crawler_manager:
         target_ip = self.get_ip_from_target_url(self.config["target_url"])
 
         for result in self.results:
-            self.send_update(target_ip, result["url"], 200)
+            await self.send_update(target_ip, result["url"], 200)
             print(target_ip, "Target ip Address")
         
         return self.results
