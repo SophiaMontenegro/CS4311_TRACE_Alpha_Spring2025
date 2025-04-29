@@ -23,12 +23,11 @@
     let showDeleteDialog = false;
 
     let searchQuery = '';
+	let apiBaseURL = '';
 
     $: filteredProjects = projects.filter(p =>
         p.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
-
-	let apiBaseURL = '';
 
     onMount(async () => {
         analystInitials = localStorage.getItem('analyst_initials') || '';
