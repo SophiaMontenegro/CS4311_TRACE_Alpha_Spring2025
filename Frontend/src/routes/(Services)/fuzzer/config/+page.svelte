@@ -12,11 +12,18 @@
 	import * as Accordion from '$lib/components/ui/accordion/index.js';
 	import * as RadioGroup from '$lib/components/ui/radio-group/index.js';
 	import { connectToFuzzerWebSocket } from '$lib/services/fuzzerSocket.js';
-
+	import { getApiBaseURL } from '$lib/utils/apiBaseURL';
+	import { browser } from '$app/environment';
+	
 	let formData = {};
 	let fieldErrors = {};
 	let selectedFile = null;
 	let httpMethod = 'GET';
+	let apiBaseURL = '';
+
+	if (browser) {
+		apiBaseURL = getApiBaseURL();
+	}
 
 	let inputFields = [
 		{
@@ -226,6 +233,8 @@
 		</Accordion.Root>
 
 		<div class="pb-8">
+			<input type="hidden" name="api-base-url" value={apiBaseURL} />
+
 			<Button
 				type="submit"
 				variant="default"

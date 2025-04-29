@@ -11,16 +11,26 @@
 	import FormField from '$lib/components/ui/form/FormField.svelte';
 	import * as Accordion from '$lib/components/ui/accordion/index.js';
 	import { connectToCrawlerWebSocket } from '$lib/services/crawlerSocket';
+	import { getApiBaseURL } from '$lib/utils/apiBaseURL';
+	import { browser } from '$app/environment';
+
+	// let formData = {};
+	// let fieldErrors = {};
+	// let apiBaseURL = '';
+
+	// onMount(() => {
+	// 	if (typeof localStorage !== 'undefined') {
+	// 		apiBaseURL = getApiBaseURL();
+	// 	}
+	// });
 
 	let formData = {};
 	let fieldErrors = {};
 	let apiBaseURL = '';
 
-	onMount(() => {
-		if (typeof localStorage !== 'undefined') {
-			apiBaseURL = localStorage.getItem('apiBaseURL') || '';
-		}
-	});
+	if (browser) {
+		apiBaseURL = getApiBaseURL();
+	}
 
 	let inputFields = [
 		{

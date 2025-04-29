@@ -20,6 +20,7 @@
 		pauseScan,
 		resumeScan
 	} from '$lib/stores/scanProgressStore.js';
+	import { getApiBaseURL } from '$lib/utils/apiBaseURL';
 
 	const { data } = $props();
 	let showStopDialog = $state(false);
@@ -56,8 +57,7 @@
 	// Fetch results from the server
 	async function fetchResults(jobId) {
 		try {
-			const apiBaseURL = localStorage.getItem('apiBaseURL');
-			if (!apiBaseURL) throw new Error('API Base URL is not set!');
+			const apiBaseURL = getApiBaseURL();
 			const res = await fetch(`${apiBaseURL}/api/crawler/${jobId}/results`);
 			const response = await res.json();
 			const parsed = Array.isArray(response) ? response : (response.results ?? []);
@@ -133,8 +133,7 @@
 
 		// Tell the backend to stop
 		try {
-			const apiBaseURL = localStorage.getItem('apiBaseURL');
-			if (!apiBaseURL) throw new Error('API Base URL is not set!');
+			const apiBaseURL = getApiBaseURL();
 			const res = await fetch(`${apiBaseURL}/api/crawler/${jobId}/stop`, {
 				method: 'POST'
 			});
@@ -183,8 +182,7 @@
 		}
 
 		try {
-			const apiBaseURL = localStorage.getItem('apiBaseURL');
-			if (!apiBaseURL) throw new Error('API Base URL is not set!');
+			const apiBaseURL = getApiBaseURL();
 			const res = await fetch(`${apiBaseURL}/api/crawler/${jobId}/results`);
 			if (!res.ok) throw new Error('Failed to fetch crawler results.');
 
@@ -255,7 +253,7 @@
 				localStorage.setItem(`checkpoint_${jobId}`, JSON.stringify(data));
 				console.log(`[Auto] Checkpoint saved for job ${jobId}`);
 			}
-		}, 10000);
+		}, 30000);
 	});
 
 	onDestroy(() => {
