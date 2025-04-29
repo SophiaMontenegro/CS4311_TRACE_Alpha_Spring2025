@@ -37,10 +37,10 @@ class Credential_Generator:
         self,
         csv_path: str | None = None,
         wordlist_path: str | None = None,
-        min_username_length: int = 12,
+        min_username_length: int = 8,
         username_caps: bool = True,
         username_numbers: bool = True,
-        username_special_chars: bool = True,
+        username_special_chars: bool = False,
         min_password_length: int = 12,
         password_caps: bool = True,
         password_numbers: bool = True,
@@ -79,7 +79,7 @@ class Credential_Generator:
             username_numbers if username_numbers is not None else True
         )
         self.username_special_chars = (
-            username_special_chars if username_special_chars is not None else True
+            username_special_chars if username_special_chars is not None else False
         )
         self.min_password_length = (
             min_password_length if min_password_length is not None else 12
@@ -236,9 +236,9 @@ class Credential_Generator:
         
         # Build configuration string
         config_str = (
-            f"Length: {username_length}+ characters. "
+            f"Length must be {username_length}. "
             f"Include numbers: {include_numbers}. "
-            f"Include special characters: {include_special_chars}. "
+            f"DON'T Include special characters. "
             f"Include capitalization: {include_capitalization}."
         )
         
@@ -256,7 +256,6 @@ class Credential_Generator:
             f"2. Preserving some aspect of the original username\n"
             f"3. Following the configuration requirements exactly\n"
             f"4. Making it unique but not overly complex\n\n"
-            f"Special character options (only if requested): _ . -\n\n"
             f"Return ONLY the new username with no explanation."
         )
 
@@ -275,9 +274,6 @@ class Credential_Generator:
                 
             if include_numbers and not any(char.isdigit() for char in improved_username):
                 improved_username += str(random.randint(1, 99))
-                
-            if include_special_chars and not any(char in "_.-" for char in improved_username):
-                improved_username += "_"
                 
             if include_capitalization and improved_username.islower():
                 # Capitalize a random character
@@ -423,8 +419,8 @@ class Credential_Generator:
 
         username_score = self.calculate_username_strength(username)
         username = self._suggest_username(username, username_score)
-        if self._get_username_status(username) != 0b111:
-            username = self._improve_username(username)
+        # if self._get_username_status(username) != 0b111:
+        #     username = self._improve_username(username)
         self.username_mdp.used_usernames.add(username)
 
         # -- Generate password --

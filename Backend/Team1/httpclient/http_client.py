@@ -1,4 +1,5 @@
 from urllib.parse import urlparse
+import os
 
 class HTTPClient:
     def __init__(self, proxy_server):
@@ -20,7 +21,7 @@ class HTTPClient:
             return True
         return False
 
-    def send_request(self, request):
+    def send_request(self, request, job_id=None):
         """
         Send an HTTP request (dict with keys 'method', 'url', optional 'headers' & 'body')
         through the configured proxy_server. Returns either:
@@ -46,6 +47,15 @@ class HTTPClient:
             if resp.get("error"):
                 self.log_activity(request, resp)
                 return {"error": resp["error"]}
+            
+            if job_id:
+                raw_html_location = f'Team1/database/raw_html/raw_html_{job_id}.txt'
+                if not os.path.exists(raw_html_location):
+                    with open(raw_html_location, 'w', encoding='utf-8') as f:
+                        pass
+
+                with open(raw_html_location, 'a', encoding='utf-8') as f:
+                    f.write(resp['body'])
 
             # 5) Otherwise log success and normalize the payload
             self.log_activity(request, resp)

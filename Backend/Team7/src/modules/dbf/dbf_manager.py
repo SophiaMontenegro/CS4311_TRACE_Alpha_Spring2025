@@ -18,6 +18,7 @@ logging.basicConfig(
 class MockResponse:
     def __init__(self, url: str, status: int, text: str):
         self.url = url
+        self.jobid = ''
         self.status_code = status
         self.text = text
         self.payload = None
@@ -44,6 +45,7 @@ class DirectoryBruteForceManager:
     def configure_scan(
         self,
         target_url: str,
+        jobid: str,
         wordlist: List[str],
         top_dir: str = '',
         hide_status: List[int] = None,
@@ -57,6 +59,7 @@ class DirectoryBruteForceManager:
 
         self.config = {
             "target_url": target_url.rstrip('/'),
+            "jobid": jobid,
             "wordlist": wordlist,
             "top_dir": top_dir.strip('/'),
             "hide_status": hide_status or [],
@@ -102,7 +105,7 @@ class DirectoryBruteForceManager:
                     "url": f"/{path.lstrip('/')}",
                     "headers": headers
                 }
-                response = self.http_client.send_request(request)
+                response = self.http_client.send_request(request, self.config.get('jobid', ''))
                 mock = MockResponse(full_url, response["status_code"], response["body"])
                 mock.payload = word
                 mock.error = response["status_code"] not in [200, 403]

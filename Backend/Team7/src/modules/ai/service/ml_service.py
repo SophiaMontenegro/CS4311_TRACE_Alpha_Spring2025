@@ -30,10 +30,10 @@ class MLConfig(BaseModel):
     """
     credential_count: Optional[int] = 10
     wordlist: Optional[str] = None
-    min_username_length: Optional[int] = 12
+    min_username_length: Optional[int] = 8
     username_caps: Optional[bool] = True
     username_numbers: Optional[bool] = True
-    username_symbols: Optional[bool] = True
+    username_symbols: Optional[bool] = False
     min_password_length: Optional[int] = 12
     password_caps: Optional[bool] = True
     password_numbers: Optional[bool] = True
@@ -167,7 +167,7 @@ async def run_ml_task(job_id: str, config: MLConfig):
         step = tracker.next_step()
         tracker.add_log("Starting web scraping")
 
-        database_path = "Team7/src/database/raw_html"
+        database_path = "Team1/database/raw_html"
         scraper = WebScraper(folder_path=database_path)
         csv_file = await scraper.scrape_pages()
 
@@ -237,7 +237,7 @@ async def run_ml_task(job_id: str, config: MLConfig):
 
             credential_dicts.append(
                 {
-                    "id": i,
+                    "id": i+1,
                     "username": username,
                     "username_score": username_score,
                     "password": password,

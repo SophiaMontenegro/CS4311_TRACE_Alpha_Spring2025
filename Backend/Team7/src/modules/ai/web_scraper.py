@@ -28,7 +28,7 @@ class WebScraper:
         async _scrape_pages_async(self) -> List
     """
     
-    def __init__(self, concurrency: int=5, folder_path: str="Team7/src/database/raw_html/"):
+    def __init__(self, concurrency: int=5, folder_path: str="Team1/database/raw_html"):
         """
         Initialize with list of URLs and optional concurrency limit.
         
@@ -52,7 +52,7 @@ class WebScraper:
         """
         base_dir = Path(__file__).resolve().parents[3]
         data = await self._scrape_pages_async()
-        filename = "Team7/src/database/ai/" + filename
+        filename = "src/database/ai/" + filename
         filename = os.path.join(base_dir, filename)
  
         # Save the results
