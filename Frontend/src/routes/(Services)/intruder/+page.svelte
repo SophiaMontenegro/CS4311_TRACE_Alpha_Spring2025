@@ -76,6 +76,8 @@
 		});
 
 		if (res.ok) {
+			targetUrlStore.set(targetUrl);
+			modeStore.set(mode);
 			goto(`/intruder/configure?formIndex=${selectedFormIndex}&noForm=false`);
 		} else {
 			alert('Failed to select form.');
@@ -83,15 +85,11 @@
 	}
 </script>
 
-<!-- UI layout stays the same as yours -->
-
-
-<!-- HTML Markup -->
 <div class="pt-6 pb-6 max-w-4xl mx-auto" style="padding-left:100px;padding-right:100px;">
-	<!-- Target URL Input -->
+
 	<div class="space-y-6">
 		<div>
-			<label for="targetUrl" class="block text-sm font-medium text-gray-800 mb-1">
+			<label for="targetUrl" class="block text-sm font-medium text-gray-800 mb-1 dark:text-foreground">
 				Target URL <span class="text-red-500">*</span>
 			</label>
 			<input
@@ -102,10 +100,20 @@
 				bind:value={targetUrl}
 			/>
 		</div>
-
-		<button variant="outline" type="button"class="bg-cyan-500 text-white px-4 py-2 rounded transition-colors duration-100 ease-in-out hover:bg-gray-400" on:click={scanTarget}>
+		<!-- 
+		
+		<!-- <button variant="outline" type="button"class="bg-cyan-500 text-white px-4 py-2 rounded transition-colors duration-100 ease-in-out hover:bg-gray-400" on:click={scanTarget}>
 			Scan
-		</button>
+		</button> -->
+		<Button 
+			type="button" 
+			variant="outline" 
+			size="default" 
+			onclick={scanTarget} 
+			class="bg-cyan-500 var(--foreground) px-4 py-2 rounded transition-colors duration-100 ease-in-out hover:bg-gray-400"
+			>
+			scan
+		</Button>
 
 		{#if error}
 			<p class="text-red-500 mt-2">{error}</p>
@@ -114,9 +122,9 @@
 		<!-- Results -->
 		{#if forms.length > 0}
 			<div class="mt-6">
-				<h3 class="font-semibold text-lg mb-2">Forms Found:</h3>
+				<h3 class="font-semibold text-lg mb-2 dark:text-foreground">Forms Found:</h3>
 				{#each forms as form, i}
-					<div class="border border-gray-300 p-4 rounded mb-4">
+					<div class="border border-gray-300 p-4 rounded mb-4 dark:bg-background3 dark:text-background3-foreground">
 						<label class="flex items-center space-x-2">
 							<input
 								type="radio"
@@ -130,11 +138,11 @@
 						<p><b>Action:</b> {form.action}</p>
 						<p><b>Method:</b> {form.method.toUpperCase()}</p>
 
-						<table class="w-full mt-2 text-sm border border-gray-300 rounded">
+						<table class="w-full mt-2 text-sm border border-gray-300 rounded ">
 							<thead class="bg-gray-100 text-left">
 								<tr>
-									<th class="px-4 py-2 border-b">Name</th>
-									<th class="px-4 py-2 border-b">Type</th>
+									<th class="px-4 py-2 border-b dark:bg-accent">Name</th>
+									<th class="px-4 py-2 border-b dark:bg-accent">Type</th>
 								</tr>
 							</thead>
 							<tbody>
@@ -150,16 +158,26 @@
 				{/each}
 
 				{#if selectedFormIndex !== null}
-					<p class="mt-2 text-green-700">
+					<p class="mt-2 text-green-700 dark:text-accent2">
 						Selected Form: {selectedFormIndex}
 					</p>
 				{/if}
 
-				<button variant="outline" on:click={sendSelectedForm} class="b-start mt-4">
+				<!-- <button variant="outline" on:click={sendSelectedForm} class="b-start mt-4 outline ">
 					Select Form
-				</button>
+				</button> -->
 
-				{#if requestPreview}
+				<Button 
+				type="button" 
+				variant="outline" 
+				size="default" 
+				onclick={sendSelectedForm} 
+				class="bg-cyan-500 var(--foreground) px-4 py-2 rounded transition-colors duration-100 ease-in-out hover:bg-gray-400"
+				>
+				Select Form
+			</Button>
+
+				<!-- {#if requestPreview}
 					<h3 class="mt-6 font-semibold text-lg">HTTP Request Preview</h3>
 					<pre class="bg-gray-100 text-sm p-4 rounded overflow-x-auto">
 URL: {requestPreview.url}
@@ -169,7 +187,7 @@ Headers: {JSON.stringify(requestPreview.headers, null, 2)}
 Sample Body:
 {JSON.stringify(requestPreview.sample_body, null, 2)}
 					</pre>
-				{/if}
+				{/if} -->
 			</div>
 		{/if}
 	</div>

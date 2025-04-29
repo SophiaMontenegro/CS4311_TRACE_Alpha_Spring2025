@@ -2,8 +2,15 @@
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
+from fastapi.responses import FileResponse
 from Team1.intrudertool.intruder_tool import IntruderTool
 from typing import List, Dict, Optional
+import os
+import shutil
+import logging as logger
+from fastapi.responses import JSONResponse
+from Team3.Database import File_Manager as file_manager
+
 
 router = APIRouter()
 tool = None
@@ -123,3 +130,24 @@ def run_attack(request: AttackRequest):
         raise HTTPException(status_code=400, detail="Unknown attack type.")
 
     return {"results": results}
+
+
+
+@router.post("/export_results")
+def export_results():
+    global tool
+    if not tool or not tool.results:
+        raise HTTPException(status_code=400, detail="No results available to export.")
+
+    export_info = tool.export_results_to_csv()
+    tool.export_log_to_csv(
+        job_id=export_info["job_id"],
+        mode="unknown",  # You can improve this later if you store the attack_type
+        job_dir=export_info["job_dir"]
+    )
+
+    return {
+        "message": "Export successful.",
+        "job_id": export_info["job_id"],
+        "job_dir": export_info["job_dir"]
+    }

@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup
 from urllib.parse import urljoin, urlparse
 from typing import List, Dict, Optional
 import json
-import csv
+import csv  
 import os
 import uuid
 from datetime import datetime
@@ -229,30 +229,30 @@ class IntruderTool:
                 "failures": failed
             })
 
-def export_results_to_csv(self, output_dir: str = None) -> Dict[str, str]:
-    """Export detailed attack results to a CSV file inside a unique job folder."""
-    if output_dir is None:
-        base_dir = os.path.dirname(__file__)
-        output_dir = os.path.join(base_dir, "exports")
+    def export_results_to_csv(self, output_dir: str = None) -> Dict[str, str]:
+        """Export detailed attack results to a CSV file inside a unique job folder."""
+        if output_dir is None:
+            base_dir = os.path.dirname(__file__)
+            output_dir = os.path.join(base_dir, "exports")
 
-    job_id = str(uuid.uuid4())
-    job_dir = os.path.join(output_dir, job_id)
+        job_id = str(uuid.uuid4())
+        job_dir = os.path.join(output_dir, job_id)
 
-    if not os.path.exists(job_dir):
-        os.makedirs(job_dir)
+        if not os.path.exists(job_dir):
+            os.makedirs(job_dir)
 
-    results_file = os.path.join(job_dir, "intruder_results.csv")
+        results_file = os.path.join(job_dir, "intruder_results.csv")
 
-    with open(results_file, mode='w', newline='') as f:
-        writer = csv.DictWriter(f, fieldnames=["timestamp", "payload", "status_code", "length", "error"])
-        writer.writeheader()
-        for result in self.results:
-            writer.writerow({
-                "timestamp": datetime.now().isoformat(),
-                "payload": result.get("payload"),
-                "status_code": result.get("status_code"),
-                "length": result.get("length"),
-                "error": result.get("error")
-            })
+        with open(results_file, mode='w', newline='') as f:
+            writer = csv.DictWriter(f, fieldnames=["timestamp", "payload", "status_code", "length", "error"])
+            writer.writeheader()
+            for result in self.results:
+                writer.writerow({
+                    "timestamp": datetime.now().isoformat(),
+                    "payload": result.get("payload"),
+                    "status_code": result.get("status_code"),
+                    "length": result.get("length"),
+                    "error": result.get("error")
+                })
 
-    return {"job_id": job_id, "results_file": results_file, "job_dir": job_dir}
+        return {"job_id": job_id, "results_file": results_file, "job_dir": job_dir}

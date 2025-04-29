@@ -1,0 +1,2 @@
+timestamp,job_id,target_url,attack_type,payloads_tried,success,failures
+2025-04-29T14:42:08.135203,f76663c5-8509-4cf3-9ee7-d4eda51bb0ae,https://www.w3schools.com/html/html_forms.asp,unknown,3,3,0

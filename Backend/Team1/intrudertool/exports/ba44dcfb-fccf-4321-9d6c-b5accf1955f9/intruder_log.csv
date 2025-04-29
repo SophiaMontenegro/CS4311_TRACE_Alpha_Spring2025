@@ -1,0 +1,2 @@
+timestamp,job_id,target_url,attack_type,payloads_tried,success,failures
+2025-04-29T14:44:29.500892,ba44dcfb-fccf-4321-9d6c-b5accf1955f9,https://httpbin.org/forms/post,unknown,3,3,0

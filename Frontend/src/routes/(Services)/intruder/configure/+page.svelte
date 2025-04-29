@@ -2,7 +2,10 @@
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { attackResults, targetUrlStore, modeStore} from '$lib/stores/intruder'; 
-	import {Button} from '$lib/components/ui/button';
+	import { Button } from '$lib/components/ui/button';
+	import { mode, toggleMode  } from 'mode-watcher';
+	import { get } from 'svelte/store';
+
 	export let formIndex = 0;
 	export let noForm = false;
 	let detectedMode = '';
@@ -16,15 +19,17 @@
 	let paramName = '';
 	let baseBody = '{}'; // JSON as string
 
-	targetUrlStore.subscribe(value => {
-		targetUrlValue = value;
-	});
-	modeStore.subscribe(value => {
-    detectedMode = value;
-		});
+	// targetUrlStore.subscribe(value => {
+	// 	targetUrlValue = value;
+	// });
+	// modeStore.subscribe(value => {
+    // detectedMode = value;
+	// 	});
 
 	onMount(async () => {
 	try {
+		targetUrlValue = get(targetUrlStore);
+		detectedMode = get(modeStore)
 		if (noForm) {
 			// No form detected
 			if (detectedMode === 'json') {
@@ -46,13 +51,14 @@
 			}
 			requestPreview = await res.json();
 
-			// ✅ Only set HTML Form Attack if detectedMode is actually HTML
 			if (detectedMode === 'html') {
 				attackType = 'html_form';
 			} else if (detectedMode === 'json') {
 				attackType = 'api';
+				apiEndpoint = targetUrlValue;
 			} else if (detectedMode === 'url') {
 				attackType = 'urlencoded';
+				apiEndpoint = targetUrlValue;
 			}
 		}
 	} catch (err) {
@@ -123,7 +129,6 @@
 		}
 	}
 
-	// ✅ Validation helpers
 	function isValidUrl(url) {
 		try {
 			new URL(url);
@@ -144,7 +149,6 @@
 </script>
 
 
-<!-- UI layout stays the same as yours -->
 
 <div class="p-6 max-w-3xl mx-auto space-y-6">
 	<h1 class="text-2xl font-bold">Attack Configuration</h1>
@@ -168,7 +172,7 @@
 	{#if !noForm && requestPreview && requestPreview.sample_body}
 		<div class="mt-4">
 			<h2 class="font-semibold">HTTP Request Preview</h2>
-			<pre class="bg-gray-100 p-4 rounded text-sm overflow-x-auto">
+			<pre class="bg-gray-100 p-4 rounded text-sm overflow-x-auto dark:bg-background3 dark:text-brackground-foreground">
 				URL: {requestPreview?.url || 'N/A'}
 				Method: {requestPreview?.method || 'N/A'}
 				Headers: {JSON.stringify(requestPreview?.headers || {}, null, 2)}
@@ -179,8 +183,8 @@
 		</div>
 
 		<div>
-			<label class="block mt-4 font-medium">Select Intrusion Field</label>
-			<select bind:value={intrusionField} class="input mt-1">
+			<label class="block mt-4 font-medium  dark:text-background3-foreground">Select Intrusion Field</label>
+			<select bind:value={intrusionField} class="input mt-1 dark:bg-background3">
 				<option disabled selected value="">-- Select --</option>
 				{#each Object.keys(requestPreview.sample_body) as field}
 					<option value={field}>{field}</option>
@@ -193,7 +197,7 @@
 	{#if noForm || attackType !== 'html_form'}
 		<div>
 			<label class="block mt-4 font-medium">Intrusion Field (Param / JSON Key)</label>
-			<input type="text" bind:value={intrusionField} class="input mt-1" placeholder="e.g., username or search" />
+			<input type="text" bind:value={intrusionField} class="input mt-1 dark:bg-background3" placeholder="e.g., username or search" />
 		</div>
 	{/if}
 
@@ -205,8 +209,8 @@
 		</div>
 
 		<div>
-			<label class="block mt-4 font-medium">Base JSON Body</label>
-			<textarea bind:value={baseBody} class="input mt-1 w-full h-32"></textarea>
+			<label class="block mt-4 font-medium ">Base JSON Body</label>
+			<textarea bind:value={baseBody} class="input mt-1 w-full h-32 dark:bg-background3"></textarea>
 		</div>
 	{/if}
 
@@ -228,9 +232,9 @@
 		<label class="block mt-4 font-medium">Payloads (one per line)</label>
 		<textarea bind:value={payloads} class="input mt-1 w-full h-32" placeholder="admin\n123\n' OR 1=1 --"></textarea>
 	</div>
-
+		
 	<!-- Start Attack -->
-	<button on:click={startAttack} class="b-start mt-4">
+	<button on:click={startAttack} class="bg-cyan-500 text-white px-4 py-2 rounded transition-colors duration-100 ease-in-out hover:bg-gray-400">
 		Start Attack
 	</button>
 </div>
@@ -242,15 +246,5 @@
 		@apply block w-full px-4 py-2 border border-gray-300 rounded bg-white text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500;
 	}
 
-	.b-start {
-		background-color: #06b6d4;
-		color: white;
-		padding: 0.5rem 1rem;
-		border-radius: 0.25rem;
-		transition: background-color 0.1s ease-in-out;
-	}
-
-	.b-start:hover {
-		background-color: #4b5563;
-	}
+	
 </style>

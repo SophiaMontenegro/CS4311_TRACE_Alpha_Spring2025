@@ -2,7 +2,7 @@
 from intruder_tool import IntruderTool
 
 # Set your test URL here
-# url = "https://httpbin.org/forms/post" 
+# url = "https://httpbin.org/forms/post"
 # url = "https://reqres.in/api/users"
 # url = "https://formspree.io/"
 # url = "https://postman-echo.com/post"
@@ -16,7 +16,7 @@ url = "https://jsonplaceholder.typicode.com/posts"
 # Step 1: Create the tool
 tool = IntruderTool(url)
 
-# Step 2: Validate the URL using the instance
+# Step 2: Validate the URL
 if not tool.is_valid_url():
     print("Invalid URL format. Must start with http:// or https://")
     exit(1)
@@ -27,6 +27,8 @@ print(f"\nDetected mode: {mode}")
 print(f"Target URL: {url}")
 
 # Step 4: Run based on mode
+results = []
+
 if mode == "html":
     status = tool.fetch_target()
     print(f"Fetched status: {status}")
@@ -41,7 +43,7 @@ if mode == "html":
     print(tool.get_http_request_preview())
 
     tool.configure_attack(
-        intrusion_field="custname",  # adjust if the form has different fields
+        intrusion_field="custname",  # adjust if needed
         payloads=["123456", "admin", "admin123"]
     )
 
@@ -63,7 +65,7 @@ elif mode == "url":
     results = tool.run_urlencoded_attack(
         method="POST",
         endpoint=url,
-        param_name="input",  # key for URL-encoded param
+        param_name="input",
         payloads=["123456", "admin", "admin123"]
     )
 
@@ -71,7 +73,14 @@ else:
     print("Unsupported or undetectable mode.")
     exit(1)
 
-# Step 5: Print results
+# Step 5: Print attack results
 print("\nAttack Results:")
 for result in results:
     print(result)
+
+# Step 6: Save to CSV and log
+export_info = tool.export_results_to_csv()
+tool.export_log_to_csv(export_info["job_id"], mode, export_info["job_dir"])
+
+print(f"Results saved to: {export_info['results_file']}")
+print(f"Job log saved to: {export_info['job_dir']}/intruder_log.csv")
