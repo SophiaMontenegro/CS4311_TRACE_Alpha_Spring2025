@@ -272,6 +272,7 @@ class crawler_manager:
 
         @ensures result is a list of processed crawl results;
         """
+
         await self.crawl_recursive(self.config.get("target_url"), self.config.get("depth"))
 
         with open("Team7/src/database/crawler/crawler_table_data.json", "w", encoding="utf-8") as f:
@@ -283,8 +284,13 @@ class crawler_manager:
 
         for result in self.results:
             await self.send_update(target_ip, result["url"], False , 200, 5)
+
+        async with aiohttp.ClientSession() as session:
+            async with session.post("http://localhost:8000/api/tree/save-static") as response:
+                print("Saved static tree:", response.status)
         
         return self.results
+    
 
 # Sample test run
 if __name__ == '__main__':
