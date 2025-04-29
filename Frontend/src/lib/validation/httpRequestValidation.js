@@ -47,28 +47,44 @@ export function validateHeaders(rawHeaderString) {
     return { method, url, headers, body };
   }
   
-  function normalizeUrlFromRequestTarget(requestTarget, headers) {
-    let url = requestTarget.trim();
-  
-    if (/^[a-z][a-z0-9+.-]*:\/\//i.test(url)) {
-      // Already absolute
-    } else if (url.startsWith('/')) {
-      const host = headers['Host'] || headers['host'];
-      if (!host) throw new Error('Missing Host header for origin-form request');
-      url = `https://${host}${url}`;
-    } else {
-      url = `https://${url.replace(/^[a-z]+:\/\//i, '')}`;
-    }
-  
-    try {
-      new URL(url);
-    } catch {
-      throw new Error(`Invalid URL: ${url}`);
-    }
-  
+
+export function normalizeUrlFromRequestTarget(requestTarget, headers = {}) {
+  let url = requestTarget.trim();
+
+
+  if (/^[a-z][a-z0-9+.-]*:\/\//i.test(url)) {
+    new URL(url);            // validate
     return url;
   }
-  
+
+  // Helper for case-insensitive header lookup
+  const getHeader = (name) =>
+    headers[name] ?? headers[name.toLowerCase()] ?? headers[name.toUpperCase()];
+
+
+  if (url.startsWith('/')) {
+    const host = getHeader('Host');
+    if (!host) throw new Error('Missing Host header for origin-form request');
+
+    // Prefer explicit proto from common proxy headers
+    const forwarded = getHeader('X-Forwarded-Proto');
+    const scheme =
+      forwarded?.split(',')[0].trim() ||               // take first value
+      /:443$/.test(host) ? 'https' :                   // port hints
+      /:80$/.test(host)  ? 'http'  :
+      'http';                                          // default fallback
+
+    url = `${scheme}://${host}${url}`;
+    new URL(url);
+    return url;
+  }
+
+  const schemeGuess = /:443$/.test(url) ? 'https' : 'http';
+  url = `${schemeGuess}://${url.replace(/^[a-z]+:\/\//i, '')}`;
+  new URL(url);
+  return url;
+}
+
 
   // httpRequestValidation.js
 

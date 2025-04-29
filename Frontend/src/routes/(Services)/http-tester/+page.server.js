@@ -25,43 +25,43 @@ export const actions = {
     if (mode === 'raw') {
       const raw    = formData.get('rawRequest')?.toString() || '';
       const parsed = parseRawRequest(raw);
-      method        = parsed.method.toUpperCase();
-      targetUrl     = parsed.url;
-      headers       = parsed.headers;
-      body          = parsed.body;
+      method  = parsed.method.toUpperCase();
+      headers = parsed.headers;
+      body    = parsed.body;
+
+      // parsed.url may include full path+origin
+      try {
+        const u = new URL(parsed.url);
+        targetUrl   = u.origin;              // ← strip to origin only
+        relativeUrl = u.pathname + u.search; // ← keep path + query
+      } catch {
+        return fail(400, { error: 'Invalid raw URL format' });
+      }
 
       const bodyError = validateBodySize(body);
       if (bodyError) {
-        // 413 Payload Too Large
         return fail(413, { error: bodyError.error ?? 'Body too large' });
-      }
-
-      try {
-        const u = new URL(targetUrl);
-        relativeUrl = u.pathname + u.search;
-      } catch {
-        // malformed URL in raw text
-        return fail(400, { error: 'Invalid raw URL format' });
       }
     } else {
       targetUrl = formData.get('targetUrl')?.toString() || '';
       method    = formData.get('method')?.toString().toUpperCase() || 'GET';
-      const headersRaw   = formData.get('headers')?.toString() || '';
-      body                = formData.get('requestBody')?.toString() || '';
+      const headersRaw = formData.get('headers')?.toString() || '';
+      body              = formData.get('requestBody')?.toString() || '';
 
       const bodyError = validateBodySize(body);
       if (bodyError) {
         return fail(413, { error: bodyError.error ?? 'Body too large' });
       }
 
-      // ensure protocol
-      if (!/^[a-z][a-z0-9+.-]*:\/\//i.test(targetUrl)) {
-        targetUrl = `https://${targetUrl}`;
+      // require explicit protocol
+      if (!/^https?:\/\//i.test(targetUrl)) {
+        return fail(400, { error: 'Target URL must include http:// or https://' });
       }
 
       try {
-        const parsed = new URL(targetUrl);
-        relativeUrl = parsed.pathname + parsed.search;
+        const u = new URL(targetUrl);
+        targetUrl   = u.origin;              // ← strip to origin only
+        relativeUrl = u.pathname + u.search; // ← keep path + query
       } catch {
         return fail(400, { error: 'Invalid URL format' });
       }
@@ -74,6 +74,10 @@ export const actions = {
       }
     }
 
+    if (method !== 'GET' && !headers['Content-Type']) {
+      headers['Content-Type'] = 'application/json';
+    }
+
     // 3) Build and send the proxy payload
     const proxyPayload = {
       target: targetUrl,
@@ -84,6 +88,8 @@ export const actions = {
         body:   method === 'GET' ? null : body
       }
     };
+
+    console.log('▶️ proxyPayload →', JSON.stringify(proxyPayload, null, 2));
 
     let proxyRes;
     try {
@@ -113,20 +119,23 @@ export const actions = {
       return fail(502, { error: data.error });
     }
 
-    // 6) Success — build cookie map and return plain object
-    const setCookieHeader = data.headers?.['set-cookie'] || data.headers?.['Set-Cookie'];
+    // 6) Success — build cookie map and return
+    const setCookieHeader =
+      data.headers?.['set-cookie'] ||
+      data.headers?.['Set-Cookie'];
     const parsedCookies = parseSetCookie(setCookieHeader);
-    
+
     return {
-      success:     true,
-      status_code: data.status_code   || proxyRes.status,
-      statusText:  data.statusText    || proxyRes.statusText,
-      headers:     data.headers       || {},
-      cookies:     parsedCookies,
-      body:        data.body          || '',
-      time:        data.time   ?? null,
-      size:        data.size   ?? null,
-      version:     data.version        || '2'
+      success:      true,
+      status_code:  data.status_code || proxyRes.status,
+      status:       data.status_code || proxyRes.status,
+      statusText:   data.statusText || proxyRes.statusText,
+      headers:      data.headers   || {},
+      cookies:      parsedCookies,
+      body:         data.body      || '',
+      time:         data.time      ?? null,
+      size:         data.size      ?? null,
+      version:      data.version   || '2'
     };
   }
 };

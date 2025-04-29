@@ -1,8 +1,3 @@
-<script context="module">
-	// Prevent Prism from running on the server
-	export const ssr = false;
-</script>
-
 <script>
 	import { enhance } from '$app/forms';
 	import RequestBuilder from '$lib/components/ui/request-builder/RequestBuilder.svelte';
@@ -29,7 +24,7 @@
 
 		const data = res.data;
 		response = {
-			status: data.status_code ?? 0,
+			status: data.status ?? data.status_code ?? 0,
 			statusText: data.statusText ?? 'OK',
 			headers: data.headers ?? {},
 			cookies: data.cookies ?? {},
@@ -37,8 +32,6 @@
 			time: data.time ?? null,
 			size: data.size ?? null
 		};
-
-		console.log('▶️ response payload:', data);
 
 		if (activeTab === 'request') builderRef?.refreshRawRequest();
 		activeTab = 'raw';
@@ -67,8 +60,11 @@
 	use:enhance={submitEnhance}
 	bind:this={formRef}
 	on:submit={(e) => {
-		isLoading = true; // show spinner immediately
 		builderRef?.onSubmit(e);
+		// if client‐side validation passed, kick off the spinner
+		if (!builderRef?.validationErrors?.length) {
+			isLoading = true;
+		}
 	}}
 	class="flex h-screen w-full items-center justify-center"
 >
