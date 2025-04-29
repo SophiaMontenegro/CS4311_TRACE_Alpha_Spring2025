@@ -204,7 +204,7 @@ class DirectoryBruteForceManager:
                 "path": path,
                 "severity": severity
             }
-            response = requests.post("http://localhost:8000/update", json=payload)
+            response = requests.post("http://localhost:8000/api/tree/update", json=payload)
             print(f"Sent {path}: {response.status_code} - {response.json()}")
         except Exception as e:
             print(f"Error sending update for {full_url}: {e}")
