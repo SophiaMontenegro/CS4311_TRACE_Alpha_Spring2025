@@ -167,9 +167,12 @@ class DirectoryBruteForceManager:
 
         target_ip = self.get_ip_from_target_url(self.config["target_url"])
         filtered_results = self.get_filtered_results()
+        hidden_flag = True
 
         for result in filtered_results:
-            await self.send_update(target_ip, result["url"], result["status"])
+            if result["status"] == 200:
+                hidden_flag = False
+            await self.send_update(target_ip, result["url"], result["status"], hidden_flag, 5)
 
     async def _wait_pause(self, interval=0.5):
         """Helper method to wait during pause state"""
@@ -193,22 +196,25 @@ class DirectoryBruteForceManager:
         if not self.end_time:
             self.end_time = time.perf_counter()
 
-    async def send_update(self, ip: str, full_url: str, severity: int):
+    async def send_update(self, ip: str, full_url: str, response_code: int, hidden: str, severity: int):
         """
         Sets up the call to send the responses to webtree
         """
         try:
             parsed = urlparse(full_url)
-            path = parsed.path if parsed.path else "/"
             payload = {
                 "ip": ip,
-                "path": path,
-                "severity": severity
+                "url": full_url,
+                "path": parsed.path or "/",
+                "status_code": response_code,
+                "hidden": hidden,
+                "severity": severity,
+                "operation": "update"
             }
             async with aiohttp.ClientSession() as session:
                 async with session.post("http://localhost:8000/api/tree/update", json=payload) as response:
                     response_text = await response.text()
-                    print(f"Sent {path}: {response.status} - {response_text}")
+                    print(f"Sent {parsed}: {response.status} - {response_text}")
         except Exception as e:
             print(f"Error sending update for {full_url}: {e}")
     

@@ -1,1002 +1,1002 @@
 [
-    {
-        "id": 1,
-        "url": "https://quotes.toscrape.com/",
-        "parentUrl": null,
-        "title": "Quotes to Scrape",
-        "wordCount": 272,
-        "charCount": 1991,
-        "linksFound": 49,
-        "error": false
-    },
-    {
-        "id": 2,
-        "url": "https://quotes.toscrape.com/author/Albert-Einstein",
-        "parentUrl": "https://quotes.toscrape.com/",
-        "title": "Quotes to Scrape",
-        "wordCount": 630,
-        "charCount": 4063,
-        "linksFound": 4,
-        "error": false
-    },
-    {
-        "id": 3,
-        "url": "https://quotes.toscrape.com/static/bootstrap.min.css",
-        "parentUrl": "https://quotes.toscrape.com/author/Albert-Einstein",
-        "title": "Untitled",
-        "wordCount": 93,
-        "charCount": 10000,
-        "linksFound": 0,
-        "error": false
-    },
-    {
-        "id": 4,
-        "url": "https://quotes.toscrape.com/static/main.css",
-        "parentUrl": "https://quotes.toscrape.com/author/Albert-Einstein",
-        "title": "Untitled",
-        "wordCount": 190,
-        "charCount": 1368,
-        "linksFound": 0,
-        "error": false
-    },
-    {
-        "id": 5,
-        "url": "https://www.goodreads.com/quotes",
-        "parentUrl": "https://quotes.toscrape.com/author/Albert-Einstein",
-        "title": "404 Not Found",
-        "wordCount": 27,
-        "charCount": 147,
-        "linksFound": 0,
-        "error": false
-    },
-    {
-        "id": 6,
-        "url": "https://www.zyte.com",
-        "parentUrl": "https://quotes.toscrape.com/author/Albert-Einstein",
-        "title": "Quotes to Scrape",
-        "wordCount": 272,
-        "charCount": 1991,
-        "linksFound": 49,
-        "error": false
-    },
-    {
-        "id": 7,
-        "url": "https://www.zyte.com/",
-        "parentUrl": "https://www.zyte.com",
-        "title": "Quotes to Scrape",
-        "wordCount": 272,
-        "charCount": 1991,
-        "linksFound": 49,
-        "error": false
-    },
-    {
-        "id": 8,
-        "url": "https://www.zyte.com/author/Albert-Einstein",
-        "parentUrl": "https://www.zyte.com/",
-        "title": "Quotes to Scrape",
-        "wordCount": 630,
-        "charCount": 4063,
-        "linksFound": 4,
-        "error": false
-    },
-    {
-        "id": 9,
-        "url": "https://www.zyte.com/static/bootstrap.min.css",
-        "parentUrl": "https://www.zyte.com/author/Albert-Einstein",
-        "title": "Untitled",
-        "wordCount": 93,
-        "charCount": 10000,
-        "linksFound": 0,
-        "error": false
-    },
-    {
-        "id": 10,
-        "url": "https://www.zyte.com/static/main.css",
-        "parentUrl": "https://www.zyte.com/author/Albert-Einstein",
-        "title": "Untitled",
-        "wordCount": 190,
-        "charCount": 1368,
-        "linksFound": 0,
-        "error": false
-    },
-    {
-        "id": 11,
-        "url": "https://www.zyte.com/author/Andre-Gide",
-        "parentUrl": "https://www.zyte.com/",
-        "title": "Quotes to Scrape",
-        "wordCount": 182,
-        "charCount": 1207,
-        "linksFound": 4,
-        "error": false
-    },
-    {
-        "id": 12,
-        "url": "https://www.zyte.com/author/Eleanor-Roosevelt",
-        "parentUrl": "https://www.zyte.com/",
-        "title": "Quotes to Scrape",
-        "wordCount": 251,
-        "charCount": 1571,
-        "linksFound": 4,
-        "error": false
-    },
-    {
-        "id": 13,
-        "url": "https://www.zyte.com/author/J-K-Rowling",
-        "parentUrl": "https://www.zyte.com/",
-        "title": "Quotes to Scrape",
-        "wordCount": 659,
-        "charCount": 4049,
-        "linksFound": 4,
-        "error": false
-    },
-    {
-        "id": 14,
-        "url": "https://www.zyte.com/author/Jane-Austen",
-        "parentUrl": "https://www.zyte.com/",
-        "title": "Quotes to Scrape",
-        "wordCount": 342,
-        "charCount": 2211,
-        "linksFound": 4,
-        "error": false
-    },
-    {
-        "id": 15,
-        "url": "https://www.zyte.com/author/Marilyn-Monroe",
-        "parentUrl": "https://www.zyte.com/",
-        "title": "Quotes to Scrape",
-        "wordCount": 391,
-        "charCount": 2441,
-        "linksFound": 4,
-        "error": false
-    },
-    {
-        "id": 16,
-        "url": "https://www.zyte.com/author/Steve-Martin",
-        "parentUrl": "https://www.zyte.com/",
-        "title": "Quotes to Scrape",
-        "wordCount": 148,
-        "charCount": 1011,
-        "linksFound": 4,
-        "error": false
-    },
-    {
-        "id": 17,
-        "url": "https://www.zyte.com/author/Thomas-A-Edison",
-        "parentUrl": "https://www.zyte.com/",
-        "title": "Quotes to Scrape",
-        "wordCount": 210,
-        "charCount": 1446,
-        "linksFound": 4,
-        "error": false
-    },
-    {
-        "id": 18,
-        "url": "https://www.zyte.com/page/2/",
-        "parentUrl": "https://www.zyte.com/",
-        "title": "Quotes to Scrape",
-        "wordCount": 563,
-        "charCount": 3430,
-        "linksFound": 41,
-        "error": false
-    },
-    {
-        "id": 19,
-        "url": "https://www.zyte.com/author/Bob-Marley",
-        "parentUrl": "https://www.zyte.com/page/2/",
-        "title": "Quotes to Scrape",
-        "wordCount": 161,
-        "charCount": 1076,
-        "linksFound": 4,
-        "error": false
-    },
-    {
-        "id": 20,
-        "url": "https://www.zyte.com/author/Douglas-Adams",
-        "parentUrl": "https://www.zyte.com/page/2/",
-        "title": "Quotes to Scrape",
-        "wordCount": 289,
-        "charCount": 1829,
-        "linksFound": 4,
-        "error": false
-    },
-    {
-        "id": 21,
-        "url": "https://www.zyte.com/author/Dr-Seuss",
-        "parentUrl": "https://www.zyte.com/page/2/",
-        "title": "Quotes to Scrape",
-        "wordCount": 444,
-        "charCount": 2607,
-        "linksFound": 4,
-        "error": false
-    },
-    {
-        "id": 22,
-        "url": "https://www.zyte.com/author/Elie-Wiesel",
-        "parentUrl": "https://www.zyte.com/page/2/",
-        "title": "Quotes to Scrape",
-        "wordCount": 168,
-        "charCount": 1187,
-        "linksFound": 4,
-        "error": false
-    },
-    {
-        "id": 23,
-        "url": "https://www.zyte.com/author/Friedrich-Nietzsche",
-        "parentUrl": "https://www.zyte.com/page/2/",
-        "title": "Quotes to Scrape",
-        "wordCount": 160,
-        "charCount": 1212,
-        "linksFound": 4,
-        "error": false
-    },
-    {
-        "id": 24,
-        "url": "https://www.zyte.com/author/Mark-Twain",
-        "parentUrl": "https://www.zyte.com/page/2/",
-        "title": "Quotes to Scrape",
-        "wordCount": 316,
-        "charCount": 2058,
-        "linksFound": 4,
-        "error": false
-    },
-    {
-        "id": 25,
-        "url": "https://www.zyte.com/tag/activism/page/1/",
-        "parentUrl": "https://www.zyte.com/page/2/",
-        "title": "Quotes to Scrape",
-        "wordCount": 81,
-        "charCount": 644,
-        "linksFound": 24,
-        "error": false
-    },
-    {
-        "id": 26,
-        "url": "https://www.zyte.com/tag/apathy/page/1/",
-        "parentUrl": "https://www.zyte.com/page/2/",
-        "title": "Quotes to Scrape",
-        "wordCount": 81,
-        "charCount": 642,
-        "linksFound": 24,
-        "error": false
-    },
-    {
-        "id": 27,
-        "url": "https://www.zyte.com/tag/books/page/1/",
-        "parentUrl": "https://www.zyte.com/page/2/",
-        "title": "Quotes to Scrape",
-        "wordCount": 324,
-        "charCount": 2190,
-        "linksFound": 52,
-        "error": false
-    },
-    {
-        "id": 28,
-        "url": "https://www.zyte.com/tag/contentment/page/1/",
-        "parentUrl": "https://www.zyte.com/page/2/",
-        "title": "Quotes to Scrape",
-        "wordCount": 54,
-        "charCount": 467,
-        "linksFound": 21,
-        "error": false
-    },
-    {
-        "id": 29,
-        "url": "https://www.zyte.com/tag/courage/page/1/",
-        "parentUrl": "https://www.zyte.com/page/2/",
-        "title": "Quotes to Scrape",
-        "wordCount": 79,
-        "charCount": 600,
-        "linksFound": 20,
-        "error": false
-    },
-    {
-        "id": 30,
-        "url": "https://www.zyte.com/tag/fantasy/page/1/",
-        "parentUrl": "https://www.zyte.com/page/2/",
-        "title": "Quotes to Scrape",
-        "wordCount": 53,
-        "charCount": 444,
-        "linksFound": 17,
-        "error": false
-    },
-    {
-        "id": 31,
-        "url": "https://www.zyte.com/tag/friends/page/1/",
-        "parentUrl": "https://www.zyte.com/page/2/",
-        "title": "Quotes to Scrape",
-        "wordCount": 313,
-        "charCount": 1980,
-        "linksFound": 35,
-        "error": false
-    },
-    {
-        "id": 32,
-        "url": "https://www.zyte.com/tag/friendship/page/1/",
-        "parentUrl": "https://www.zyte.com/page/2/",
-        "title": "Quotes to Scrape",
-        "wordCount": 166,
-        "charCount": 1242,
-        "linksFound": 36,
-        "error": false
-    },
-    {
-        "id": 33,
-        "url": "https://www.zyte.com/tag/hate/page/1/",
-        "parentUrl": "https://www.zyte.com/page/2/",
-        "title": "Quotes to Scrape",
-        "wordCount": 81,
-        "charCount": 640,
-        "linksFound": 24,
-        "error": false
-    },
-    {
-        "id": 34,
-        "url": "https://www.zyte.com/tag/heartbreak/page/1/",
-        "parentUrl": "https://www.zyte.com/page/2/",
-        "title": "Quotes to Scrape",
-        "wordCount": 243,
-        "charCount": 1487,
-        "linksFound": 22,
-        "error": false
-    },
-    {
-        "id": 35,
-        "url": "https://www.zyte.com/tag/indifference/page/1/",
-        "parentUrl": "https://www.zyte.com/page/2/",
-        "title": "Quotes to Scrape",
-        "wordCount": 81,
-        "charCount": 648,
-        "linksFound": 24,
-        "error": false
-    },
-    {
-        "id": 36,
-        "url": "https://www.zyte.com/tag/inspirational/page/1/",
-        "parentUrl": "https://www.zyte.com/page/2/",
-        "title": "Quotes to Scrape",
-        "wordCount": 454,
-        "charCount": 2936,
-        "linksFound": 46,
-        "error": false
-    },
-    {
-        "id": 37,
-        "url": "https://www.zyte.com/tag/lack-of-friendship/page/1/",
-        "parentUrl": "https://www.zyte.com/page/2/",
-        "title": "Quotes to Scrape",
-        "wordCount": 58,
-        "charCount": 521,
-        "linksFound": 22,
-        "error": false
-    },
-    {
-        "id": 38,
-        "url": "https://www.zyte.com/tag/lack-of-love/page/1/",
-        "parentUrl": "https://www.zyte.com/page/2/",
-        "title": "Quotes to Scrape",
-        "wordCount": 58,
-        "charCount": 515,
-        "linksFound": 22,
-        "error": false
-    },
-    {
-        "id": 39,
-        "url": "https://www.zyte.com/tag/life/page/1/",
-        "parentUrl": "https://www.zyte.com/page/2/",
-        "title": "Quotes to Scrape",
-        "wordCount": 484,
-        "charCount": 2993,
-        "linksFound": 46,
-        "error": false
-    },
-    {
-        "id": 40,
-        "url": "https://www.zyte.com/tag/love/page/1/",
-        "parentUrl": "https://www.zyte.com/page/2/",
-        "title": "Quotes to Scrape",
-        "wordCount": 626,
-        "charCount": 3686,
-        "linksFound": 40,
-        "error": false
-    },
-    {
-        "id": 41,
-        "url": "https://www.zyte.com/tag/marriage/page/1/",
-        "parentUrl": "https://www.zyte.com/page/2/",
-        "title": "Quotes to Scrape",
-        "wordCount": 58,
-        "charCount": 511,
-        "linksFound": 22,
-        "error": false
-    },
-    {
-        "id": 42,
-        "url": "https://www.zyte.com/tag/navigation/page/1/",
-        "parentUrl": "https://www.zyte.com/page/2/",
-        "title": "Quotes to Scrape",
-        "wordCount": 60,
-        "charCount": 462,
-        "linksFound": 18,
-        "error": false
-    },
-    {
-        "id": 43,
-        "url": "https://www.zyte.com/tag/opposite/page/1/",
-        "parentUrl": "https://www.zyte.com/page/2/",
-        "title": "Quotes to Scrape",
-        "wordCount": 81,
-        "charCount": 644,
-        "linksFound": 24,
-        "error": false
-    },
-    {
-        "id": 44,
-        "url": "https://www.zyte.com/tag/philosophy/page/1/",
-        "parentUrl": "https://www.zyte.com/page/2/",
-        "title": "Quotes to Scrape",
-        "wordCount": 110,
-        "charCount": 828,
-        "linksFound": 27,
-        "error": false
-    },
-    {
-        "id": 45,
-        "url": "https://www.zyte.com/tag/simplicity/page/1/",
-        "parentUrl": "https://www.zyte.com/page/2/",
-        "title": "Quotes to Scrape",
-        "wordCount": 53,
-        "charCount": 453,
-        "linksFound": 18,
-        "error": false
-    },
-    {
-        "id": 46,
-        "url": "https://www.zyte.com/tag/sisters/page/1/",
-        "parentUrl": "https://www.zyte.com/page/2/",
-        "title": "Quotes to Scrape",
-        "wordCount": 243,
-        "charCount": 1484,
-        "linksFound": 22,
-        "error": false
-    },
-    {
-        "id": 47,
-        "url": "https://www.zyte.com/tag/understand/page/1/",
-        "parentUrl": "https://www.zyte.com/page/2/",
-        "title": "Quotes to Scrape",
-        "wordCount": 53,
-        "charCount": 453,
-        "linksFound": 18,
-        "error": false
-    },
-    {
-        "id": 48,
-        "url": "https://www.zyte.com/tag/unhappy-marriage/page/1/",
-        "parentUrl": "https://www.zyte.com/page/2/",
-        "title": "Quotes to Scrape",
-        "wordCount": 58,
-        "charCount": 519,
-        "linksFound": 22,
-        "error": false
-    },
-    {
-        "id": 49,
-        "url": "https://www.zyte.com/tag/abilities/page/1/",
-        "parentUrl": "https://www.zyte.com/",
-        "title": "Quotes to Scrape",
-        "wordCount": 54,
-        "charCount": 452,
-        "linksFound": 18,
-        "error": false
-    },
-    {
-        "id": 50,
-        "url": "https://www.zyte.com/tag/books/",
-        "parentUrl": "https://www.zyte.com/tag/abilities/page/1/",
-        "title": "Quotes to Scrape",
-        "wordCount": 324,
-        "charCount": 2190,
-        "linksFound": 52,
-        "error": false
-    },
-    {
-        "id": 51,
-        "url": "https://www.zyte.com/tag/choices/page/1/",
-        "parentUrl": "https://www.zyte.com/tag/abilities/page/1/",
-        "title": "Quotes to Scrape",
-        "wordCount": 54,
-        "charCount": 450,
-        "linksFound": 18,
-        "error": false
-    },
-    {
-        "id": 52,
-        "url": "https://www.zyte.com/tag/friends/",
-        "parentUrl": "https://www.zyte.com/tag/abilities/page/1/",
-        "title": "Quotes to Scrape",
-        "wordCount": 313,
-        "charCount": 1980,
-        "linksFound": 35,
-        "error": false
-    },
-    {
-        "id": 53,
-        "url": "https://www.zyte.com/tag/friendship/",
-        "parentUrl": "https://www.zyte.com/tag/abilities/page/1/",
-        "title": "Quotes to Scrape",
-        "wordCount": 166,
-        "charCount": 1242,
-        "linksFound": 36,
-        "error": false
-    },
-    {
-        "id": 54,
-        "url": "https://www.zyte.com/tag/humor/",
-        "parentUrl": "https://www.zyte.com/tag/abilities/page/1/",
-        "title": "Quotes to Scrape",
-        "wordCount": 285,
-        "charCount": 1964,
-        "linksFound": 49,
-        "error": false
-    },
-    {
-        "id": 55,
-        "url": "https://www.zyte.com/tag/inspirational/",
-        "parentUrl": "https://www.zyte.com/tag/abilities/page/1/",
-        "title": "Quotes to Scrape",
-        "wordCount": 454,
-        "charCount": 2936,
-        "linksFound": 46,
-        "error": false
-    },
-    {
-        "id": 56,
-        "url": "https://www.zyte.com/tag/life/",
-        "parentUrl": "https://www.zyte.com/tag/abilities/page/1/",
-        "title": "Quotes to Scrape",
-        "wordCount": 484,
-        "charCount": 2993,
-        "linksFound": 46,
-        "error": false
-    },
-    {
-        "id": 57,
-        "url": "https://www.zyte.com/tag/love/",
-        "parentUrl": "https://www.zyte.com/tag/abilities/page/1/",
-        "title": "Quotes to Scrape",
-        "wordCount": 626,
-        "charCount": 3686,
-        "linksFound": 40,
-        "error": false
-    },
-    {
-        "id": 58,
-        "url": "https://www.zyte.com/tag/reading/",
-        "parentUrl": "https://www.zyte.com/tag/abilities/page/1/",
-        "title": "Quotes to Scrape",
-        "wordCount": 255,
-        "charCount": 1749,
-        "linksFound": 46,
-        "error": false
-    },
-    {
-        "id": 59,
-        "url": "https://www.zyte.com/tag/simile/",
-        "parentUrl": "https://www.zyte.com/tag/abilities/page/1/",
-        "title": "Quotes to Scrape",
-        "wordCount": 84,
-        "charCount": 687,
-        "linksFound": 26,
-        "error": false
-    },
-    {
-        "id": 60,
-        "url": "https://www.zyte.com/tag/truth/",
-        "parentUrl": "https://www.zyte.com/tag/abilities/page/1/",
-        "title": "Quotes to Scrape",
-        "wordCount": 125,
-        "charCount": 963,
-        "linksFound": 29,
-        "error": false
-    },
-    {
-        "id": 61,
-        "url": "https://www.zyte.com/tag/adulthood/page/1/",
-        "parentUrl": "https://www.zyte.com/",
-        "title": "Quotes to Scrape",
-        "wordCount": 53,
-        "charCount": 443,
-        "linksFound": 19,
-        "error": false
-    },
-    {
-        "id": 62,
-        "url": "https://www.zyte.com/tag/success/page/1/",
-        "parentUrl": "https://www.zyte.com/tag/adulthood/page/1/",
-        "title": "Quotes to Scrape",
-        "wordCount": 53,
-        "charCount": 441,
-        "linksFound": 19,
-        "error": false
-    },
-    {
-        "id": 63,
-        "url": "https://www.zyte.com/tag/value/page/1/",
-        "parentUrl": "https://www.zyte.com/tag/adulthood/page/1/",
-        "title": "Quotes to Scrape",
-        "wordCount": 53,
-        "charCount": 439,
-        "linksFound": 19,
-        "error": false
-    },
-    {
-        "id": 64,
-        "url": "https://www.zyte.com/tag/aliteracy/page/1/",
-        "parentUrl": "https://www.zyte.com/",
-        "title": "Quotes to Scrape",
-        "wordCount": 59,
-        "charCount": 482,
-        "linksFound": 20,
-        "error": false
-    },
-    {
-        "id": 65,
-        "url": "https://www.zyte.com/tag/classic/page/1/",
-        "parentUrl": "https://www.zyte.com/tag/aliteracy/page/1/",
-        "title": "Quotes to Scrape",
-        "wordCount": 77,
-        "charCount": 617,
-        "linksFound": 24,
-        "error": false
-    },
-    {
-        "id": 66,
-        "url": "https://www.zyte.com/tag/humor/page/1/",
-        "parentUrl": "https://www.zyte.com/tag/aliteracy/page/1/",
-        "title": "Quotes to Scrape",
-        "wordCount": 285,
-        "charCount": 1964,
-        "linksFound": 49,
-        "error": false
-    },
-    {
-        "id": 67,
-        "url": "https://www.zyte.com/tag/be-yourself/page/1/",
-        "parentUrl": "https://www.zyte.com/",
-        "title": "Quotes to Scrape",
-        "wordCount": 54,
-        "charCount": 490,
-        "linksFound": 18,
-        "error": false
-    },
-    {
-        "id": 68,
-        "url": "https://www.zyte.com/tag/change/page/1/",
-        "parentUrl": "https://www.zyte.com/",
-        "title": "Quotes to Scrape",
-        "wordCount": 61,
-        "charCount": 500,
-        "linksFound": 20,
-        "error": false
-    },
-    {
-        "id": 69,
-        "url": "https://www.zyte.com/tag/deep-thoughts/page/1/",
-        "parentUrl": "https://www.zyte.com/tag/change/page/1/",
-        "title": "Quotes to Scrape",
-        "wordCount": 61,
-        "charCount": 507,
-        "linksFound": 20,
-        "error": false
-    },
-    {
-        "id": 70,
-        "url": "https://www.zyte.com/tag/thinking/page/1/",
-        "parentUrl": "https://www.zyte.com/tag/change/page/1/",
-        "title": "Quotes to Scrape",
-        "wordCount": 93,
-        "charCount": 716,
-        "linksFound": 24,
-        "error": false
-    },
-    {
-        "id": 71,
-        "url": "https://www.zyte.com/tag/world/page/1/",
-        "parentUrl": "https://www.zyte.com/tag/change/page/1/",
-        "title": "Quotes to Scrape",
-        "wordCount": 61,
-        "charCount": 499,
-        "linksFound": 20,
-        "error": false
-    },
-    {
-        "id": 72,
-        "url": "https://www.zyte.com/tag/edison/page/1/",
-        "parentUrl": "https://www.zyte.com/",
-        "title": "Quotes to Scrape",
-        "wordCount": 53,
-        "charCount": 456,
-        "linksFound": 20,
-        "error": false
-    },
-    {
-        "id": 73,
-        "url": "https://www.zyte.com/tag/failure/page/1/",
-        "parentUrl": "https://www.zyte.com/tag/edison/page/1/",
-        "title": "Quotes to Scrape",
-        "wordCount": 53,
-        "charCount": 457,
-        "linksFound": 20,
-        "error": false
-    },
-    {
-        "id": 74,
-        "url": "https://www.zyte.com/tag/paraphrased/page/1/",
-        "parentUrl": "https://www.zyte.com/tag/edison/page/1/",
-        "title": "Quotes to Scrape",
-        "wordCount": 77,
-        "charCount": 646,
-        "linksFound": 23,
-        "error": false
-    },
-    {
-        "id": 75,
-        "url": "https://www.zyte.com/tag/live/page/1/",
-        "parentUrl": "https://www.zyte.com/",
-        "title": "Quotes to Scrape",
-        "wordCount": 67,
-        "charCount": 519,
-        "linksFound": 21,
-        "error": false
-    },
-    {
-        "id": 76,
-        "url": "https://www.zyte.com/tag/miracle/page/1/",
-        "parentUrl": "https://www.zyte.com/tag/live/page/1/",
-        "title": "Quotes to Scrape",
-        "wordCount": 67,
-        "charCount": 522,
-        "linksFound": 21,
-        "error": false
-    },
-    {
-        "id": 77,
-        "url": "https://www.zyte.com/tag/miracles/page/1/",
-        "parentUrl": "https://www.zyte.com/tag/live/page/1/",
-        "title": "Quotes to Scrape",
-        "wordCount": 67,
-        "charCount": 523,
-        "linksFound": 21,
-        "error": false
-    },
-    {
-        "id": 78,
-        "url": "https://www.zyte.com/tag/misattributed-eleanor-roosevelt/page/1/",
-        "parentUrl": "https://www.zyte.com/",
-        "title": "Quotes to Scrape",
-        "wordCount": 56,
-        "charCount": 493,
-        "linksFound": 17,
-        "error": false
-    },
-    {
-        "id": 79,
-        "url": "https://www.zyte.com/tag/obvious/page/1/",
-        "parentUrl": "https://www.zyte.com/",
-        "title": "Quotes to Scrape",
-        "wordCount": 48,
-        "charCount": 418,
-        "linksFound": 19,
-        "error": false
-    },
-    {
-        "id": 80,
-        "url": "https://www.zyte.com/tag/simile/page/1/",
-        "parentUrl": "https://www.zyte.com/tag/obvious/page/1/",
-        "title": "Quotes to Scrape",
-        "wordCount": 84,
-        "charCount": 687,
-        "linksFound": 26,
-        "error": false
-    },
-    {
-        "id": 81,
-        "url": "https://quotes.toscrape.com/author/Andre-Gide",
-        "parentUrl": "https://quotes.toscrape.com/",
-        "title": "Quotes to Scrape",
-        "wordCount": 182,
-        "charCount": 1207,
-        "linksFound": 4,
-        "error": false
-    },
-    {
-        "id": 82,
-        "url": "https://quotes.toscrape.com/author/Eleanor-Roosevelt",
-        "parentUrl": "https://quotes.toscrape.com/",
-        "title": "Quotes to Scrape",
-        "wordCount": 251,
-        "charCount": 1571,
-        "linksFound": 4,
-        "error": false
-    },
-    {
-        "id": 83,
-        "url": "https://quotes.toscrape.com/author/J-K-Rowling",
-        "parentUrl": "https://quotes.toscrape.com/",
-        "title": "Quotes to Scrape",
-        "wordCount": 659,
-        "charCount": 4049,
-        "linksFound": 4,
-        "error": false
-    },
-    {
-        "id": 84,
-        "url": "https://quotes.toscrape.com/author/Jane-Austen",
-        "parentUrl": "https://quotes.toscrape.com/",
-        "title": "Quotes to Scrape",
-        "wordCount": 342,
-        "charCount": 2211,
-        "linksFound": 4,
-        "error": false
-    },
-    {
-        "id": 85,
-        "url": "https://quotes.toscrape.com/author/Marilyn-Monroe",
-        "parentUrl": "https://quotes.toscrape.com/",
-        "title": "Quotes to Scrape",
-        "wordCount": 391,
-        "charCount": 2441,
-        "linksFound": 4,
-        "error": false
-    },
-    {
-        "id": 86,
-        "url": "https://quotes.toscrape.com/author/Steve-Martin",
-        "parentUrl": "https://quotes.toscrape.com/",
-        "title": "Quotes to Scrape",
-        "wordCount": 148,
-        "charCount": 1011,
-        "linksFound": 4,
-        "error": false
-    },
-    {
-        "id": 87,
-        "url": "https://quotes.toscrape.com/author/Thomas-A-Edison",
-        "parentUrl": "https://quotes.toscrape.com/",
-        "title": "Quotes to Scrape",
-        "wordCount": 210,
-        "charCount": 1446,
-        "linksFound": 4,
-        "error": false
-    },
-    {
-        "id": 88,
-        "url": "https://quotes.toscrape.com/page/2/",
-        "parentUrl": "https://quotes.toscrape.com/",
-        "title": "Quotes to Scrape",
-        "wordCount": 563,
-        "charCount": 3430,
-        "linksFound": 41,
-        "error": false
-    },
-    {
-        "id": 89,
-        "url": "https://quotes.toscrape.com/author/Bob-Marley",
-        "parentUrl": "https://quotes.toscrape.com/page/2/",
-        "title": "Quotes to Scrape",
-        "wordCount": 161,
-        "charCount": 1076,
-        "linksFound": 4,
-        "error": false
-    },
-    {
-        "id": 90,
-        "url": "https://quotes.toscrape.com/author/Douglas-Adams",
-        "parentUrl": "https://quotes.toscrape.com/page/2/",
-        "title": "Quotes to Scrape",
-        "wordCount": 289,
-        "charCount": 1829,
-        "linksFound": 4,
-        "error": false
-    },
-    {
-        "id": 91,
-        "url": "https://quotes.toscrape.com/author/Dr-Seuss",
-        "parentUrl": "https://quotes.toscrape.com/page/2/",
-        "title": "Quotes to Scrape",
-        "wordCount": 444,
-        "charCount": 2607,
-        "linksFound": 4,
-        "error": false
-    },
-    {
-        "id": 92,
-        "url": "https://quotes.toscrape.com/author/Elie-Wiesel",
-        "parentUrl": "https://quotes.toscrape.com/page/2/",
-        "title": "Quotes to Scrape",
-        "wordCount": 168,
-        "charCount": 1187,
-        "linksFound": 4,
-        "error": false
-    },
-    {
-        "id": 93,
-        "url": "https://quotes.toscrape.com/author/Friedrich-Nietzsche",
-        "parentUrl": "https://quotes.toscrape.com/page/2/",
-        "title": "Quotes to Scrape",
-        "wordCount": 160,
-        "charCount": 1212,
-        "linksFound": 4,
-        "error": false
-    },
-    {
-        "id": 94,
-        "url": "https://quotes.toscrape.com/author/Mark-Twain",
-        "parentUrl": "https://quotes.toscrape.com/page/2/",
-        "title": "Quotes to Scrape",
-        "wordCount": 316,
-        "charCount": 2058,
-        "linksFound": 4,
-        "error": false
-    },
-    {
-        "id": 95,
-        "url": "https://quotes.toscrape.com/tag/activism/page/1/",
-        "parentUrl": "https://quotes.toscrape.com/page/2/",
-        "title": "Quotes to Scrape",
-        "wordCount": 81,
-        "charCount": 644,
-        "linksFound": 24,
-        "error": false
-    },
-    {
-        "id": 96,
-        "url": "https://quotes.toscrape.com/tag/apathy/page/1/",
-        "parentUrl": "https://quotes.toscrape.com/tag/activism/page/1/",
-        "title": "Quotes to Scrape",
-        "wordCount": 81,
-        "charCount": 642,
-        "linksFound": 24,
-        "error": false
-    },
-    {
-        "id": 97,
-        "url": "https://quotes.toscrape.com/tag/books/",
-        "parentUrl": "https://quotes.toscrape.com/tag/apathy/page/1/",
-        "title": "Quotes to Scrape",
-        "wordCount": 324,
-        "charCount": 2190,
-        "linksFound": 52,
-        "error": false
-    },
-    {
-        "id": 98,
-        "url": "https://quotes.toscrape.com/author/C-S-Lewis",
-        "parentUrl": "https://quotes.toscrape.com/tag/books/",
-        "title": "Quotes to Scrape",
-        "wordCount": 159,
-        "charCount": 1085,
-        "linksFound": 4,
-        "error": false
-    },
-    {
-        "id": 99,
-        "url": "https://quotes.toscrape.com/author/Ernest-Hemingway",
-        "parentUrl": "https://quotes.toscrape.com/tag/books/",
-        "title": "Quotes to Scrape",
-        "wordCount": 374,
-        "charCount": 2344,
-        "linksFound": 4,
-        "error": false
-    },
-    {
-        "id": 100,
-        "url": "https://quotes.toscrape.com/author/Haruki-Murakami",
-        "parentUrl": "https://quotes.toscrape.com/tag/books/",
-        "title": "Quotes to Scrape",
-        "wordCount": 276,
-        "charCount": 1793,
-        "linksFound": 4,
-        "error": false
-    }
+ {
+  "id": 1,
+  "url": "https://quotes.toscrape.com/",
+  "parentUrl": null,
+  "title": "Quotes to Scrape",
+  "wordCount": 272,
+  "charCount": 1991,
+  "linksFound": 49,
+  "error": false
+ },
+ {
+  "id": 2,
+  "url": "https://quotes.toscrape.com/author/Albert-Einstein",
+  "parentUrl": "https://quotes.toscrape.com/",
+  "title": "Quotes to Scrape",
+  "wordCount": 630,
+  "charCount": 4063,
+  "linksFound": 4,
+  "error": false
+ },
+ {
+  "id": 3,
+  "url": "https://quotes.toscrape.com/static/bootstrap.min.css",
+  "parentUrl": "https://quotes.toscrape.com/author/Albert-Einstein",
+  "title": "Untitled",
+  "wordCount": 93,
+  "charCount": 10000,
+  "linksFound": 0,
+  "error": false
+ },
+ {
+  "id": 4,
+  "url": "https://quotes.toscrape.com/static/main.css",
+  "parentUrl": "https://quotes.toscrape.com/author/Albert-Einstein",
+  "title": "Untitled",
+  "wordCount": 190,
+  "charCount": 1368,
+  "linksFound": 0,
+  "error": false
+ },
+ {
+  "id": 5,
+  "url": "https://www.goodreads.com/quotes",
+  "parentUrl": "https://quotes.toscrape.com/author/Albert-Einstein",
+  "title": "404 Not Found",
+  "wordCount": 27,
+  "charCount": 147,
+  "linksFound": 0,
+  "error": false
+ },
+ {
+  "id": 6,
+  "url": "https://www.zyte.com",
+  "parentUrl": "https://quotes.toscrape.com/author/Albert-Einstein",
+  "title": "Quotes to Scrape",
+  "wordCount": 272,
+  "charCount": 1991,
+  "linksFound": 49,
+  "error": false
+ },
+ {
+  "id": 7,
+  "url": "https://www.zyte.com/",
+  "parentUrl": "https://www.zyte.com",
+  "title": "Quotes to Scrape",
+  "wordCount": 272,
+  "charCount": 1991,
+  "linksFound": 49,
+  "error": false
+ },
+ {
+  "id": 8,
+  "url": "https://www.zyte.com/author/Albert-Einstein",
+  "parentUrl": "https://www.zyte.com/",
+  "title": "Quotes to Scrape",
+  "wordCount": 630,
+  "charCount": 4063,
+  "linksFound": 4,
+  "error": false
+ },
+ {
+  "id": 9,
+  "url": "https://www.zyte.com/static/bootstrap.min.css",
+  "parentUrl": "https://www.zyte.com/author/Albert-Einstein",
+  "title": "Untitled",
+  "wordCount": 93,
+  "charCount": 10000,
+  "linksFound": 0,
+  "error": false
+ },
+ {
+  "id": 10,
+  "url": "https://www.zyte.com/static/main.css",
+  "parentUrl": "https://www.zyte.com/author/Albert-Einstein",
+  "title": "Untitled",
+  "wordCount": 190,
+  "charCount": 1368,
+  "linksFound": 0,
+  "error": false
+ },
+ {
+  "id": 11,
+  "url": "https://www.zyte.com/author/Andre-Gide",
+  "parentUrl": "https://www.zyte.com/",
+  "title": "Quotes to Scrape",
+  "wordCount": 182,
+  "charCount": 1207,
+  "linksFound": 4,
+  "error": false
+ },
+ {
+  "id": 12,
+  "url": "https://www.zyte.com/author/Eleanor-Roosevelt",
+  "parentUrl": "https://www.zyte.com/",
+  "title": "Quotes to Scrape",
+  "wordCount": 251,
+  "charCount": 1571,
+  "linksFound": 4,
+  "error": false
+ },
+ {
+  "id": 13,
+  "url": "https://www.zyte.com/author/J-K-Rowling",
+  "parentUrl": "https://www.zyte.com/",
+  "title": "Quotes to Scrape",
+  "wordCount": 659,
+  "charCount": 4049,
+  "linksFound": 4,
+  "error": false
+ },
+ {
+  "id": 14,
+  "url": "https://www.zyte.com/author/Jane-Austen",
+  "parentUrl": "https://www.zyte.com/",
+  "title": "Quotes to Scrape",
+  "wordCount": 342,
+  "charCount": 2211,
+  "linksFound": 4,
+  "error": false
+ },
+ {
+  "id": 15,
+  "url": "https://www.zyte.com/author/Marilyn-Monroe",
+  "parentUrl": "https://www.zyte.com/",
+  "title": "Quotes to Scrape",
+  "wordCount": 391,
+  "charCount": 2441,
+  "linksFound": 4,
+  "error": false
+ },
+ {
+  "id": 16,
+  "url": "https://www.zyte.com/author/Steve-Martin",
+  "parentUrl": "https://www.zyte.com/",
+  "title": "Quotes to Scrape",
+  "wordCount": 148,
+  "charCount": 1011,
+  "linksFound": 4,
+  "error": false
+ },
+ {
+  "id": 17,
+  "url": "https://www.zyte.com/author/Thomas-A-Edison",
+  "parentUrl": "https://www.zyte.com/",
+  "title": "Quotes to Scrape",
+  "wordCount": 210,
+  "charCount": 1446,
+  "linksFound": 4,
+  "error": false
+ },
+ {
+  "id": 18,
+  "url": "https://www.zyte.com/page/2/",
+  "parentUrl": "https://www.zyte.com/",
+  "title": "Quotes to Scrape",
+  "wordCount": 563,
+  "charCount": 3430,
+  "linksFound": 41,
+  "error": false
+ },
+ {
+  "id": 19,
+  "url": "https://www.zyte.com/author/Bob-Marley",
+  "parentUrl": "https://www.zyte.com/page/2/",
+  "title": "Quotes to Scrape",
+  "wordCount": 161,
+  "charCount": 1076,
+  "linksFound": 4,
+  "error": false
+ },
+ {
+  "id": 20,
+  "url": "https://www.zyte.com/author/Douglas-Adams",
+  "parentUrl": "https://www.zyte.com/page/2/",
+  "title": "Quotes to Scrape",
+  "wordCount": 289,
+  "charCount": 1829,
+  "linksFound": 4,
+  "error": false
+ },
+ {
+  "id": 21,
+  "url": "https://www.zyte.com/author/Dr-Seuss",
+  "parentUrl": "https://www.zyte.com/page/2/",
+  "title": "Quotes to Scrape",
+  "wordCount": 444,
+  "charCount": 2607,
+  "linksFound": 4,
+  "error": false
+ },
+ {
+  "id": 22,
+  "url": "https://www.zyte.com/author/Elie-Wiesel",
+  "parentUrl": "https://www.zyte.com/page/2/",
+  "title": "Quotes to Scrape",
+  "wordCount": 168,
+  "charCount": 1187,
+  "linksFound": 4,
+  "error": false
+ },
+ {
+  "id": 23,
+  "url": "https://www.zyte.com/author/Friedrich-Nietzsche",
+  "parentUrl": "https://www.zyte.com/page/2/",
+  "title": "Quotes to Scrape",
+  "wordCount": 160,
+  "charCount": 1212,
+  "linksFound": 4,
+  "error": false
+ },
+ {
+  "id": 24,
+  "url": "https://www.zyte.com/author/Mark-Twain",
+  "parentUrl": "https://www.zyte.com/page/2/",
+  "title": "Quotes to Scrape",
+  "wordCount": 316,
+  "charCount": 2058,
+  "linksFound": 4,
+  "error": false
+ },
+ {
+  "id": 25,
+  "url": "https://www.zyte.com/tag/activism/page/1/",
+  "parentUrl": "https://www.zyte.com/page/2/",
+  "title": "Quotes to Scrape",
+  "wordCount": 81,
+  "charCount": 644,
+  "linksFound": 24,
+  "error": false
+ },
+ {
+  "id": 26,
+  "url": "https://www.zyte.com/tag/apathy/page/1/",
+  "parentUrl": "https://www.zyte.com/page/2/",
+  "title": "Quotes to Scrape",
+  "wordCount": 81,
+  "charCount": 642,
+  "linksFound": 24,
+  "error": false
+ },
+ {
+  "id": 27,
+  "url": "https://www.zyte.com/tag/books/page/1/",
+  "parentUrl": "https://www.zyte.com/page/2/",
+  "title": "Quotes to Scrape",
+  "wordCount": 324,
+  "charCount": 2190,
+  "linksFound": 52,
+  "error": false
+ },
+ {
+  "id": 28,
+  "url": "https://www.zyte.com/tag/contentment/page/1/",
+  "parentUrl": "https://www.zyte.com/page/2/",
+  "title": "Quotes to Scrape",
+  "wordCount": 54,
+  "charCount": 467,
+  "linksFound": 21,
+  "error": false
+ },
+ {
+  "id": 29,
+  "url": "https://www.zyte.com/tag/courage/page/1/",
+  "parentUrl": "https://www.zyte.com/page/2/",
+  "title": "Quotes to Scrape",
+  "wordCount": 79,
+  "charCount": 600,
+  "linksFound": 20,
+  "error": false
+ },
+ {
+  "id": 30,
+  "url": "https://www.zyte.com/tag/fantasy/page/1/",
+  "parentUrl": "https://www.zyte.com/page/2/",
+  "title": "Quotes to Scrape",
+  "wordCount": 53,
+  "charCount": 444,
+  "linksFound": 17,
+  "error": false
+ },
+ {
+  "id": 31,
+  "url": "https://www.zyte.com/tag/friends/page/1/",
+  "parentUrl": "https://www.zyte.com/page/2/",
+  "title": "Quotes to Scrape",
+  "wordCount": 313,
+  "charCount": 1980,
+  "linksFound": 35,
+  "error": false
+ },
+ {
+  "id": 32,
+  "url": "https://www.zyte.com/tag/friendship/page/1/",
+  "parentUrl": "https://www.zyte.com/page/2/",
+  "title": "Quotes to Scrape",
+  "wordCount": 166,
+  "charCount": 1242,
+  "linksFound": 36,
+  "error": false
+ },
+ {
+  "id": 33,
+  "url": "https://www.zyte.com/tag/hate/page/1/",
+  "parentUrl": "https://www.zyte.com/page/2/",
+  "title": "Quotes to Scrape",
+  "wordCount": 81,
+  "charCount": 640,
+  "linksFound": 24,
+  "error": false
+ },
+ {
+  "id": 34,
+  "url": "https://www.zyte.com/tag/heartbreak/page/1/",
+  "parentUrl": "https://www.zyte.com/page/2/",
+  "title": "Quotes to Scrape",
+  "wordCount": 243,
+  "charCount": 1487,
+  "linksFound": 22,
+  "error": false
+ },
+ {
+  "id": 35,
+  "url": "https://www.zyte.com/tag/indifference/page/1/",
+  "parentUrl": "https://www.zyte.com/page/2/",
+  "title": "Quotes to Scrape",
+  "wordCount": 81,
+  "charCount": 648,
+  "linksFound": 24,
+  "error": false
+ },
+ {
+  "id": 36,
+  "url": "https://www.zyte.com/tag/inspirational/page/1/",
+  "parentUrl": "https://www.zyte.com/page/2/",
+  "title": "Quotes to Scrape",
+  "wordCount": 454,
+  "charCount": 2936,
+  "linksFound": 46,
+  "error": false
+ },
+ {
+  "id": 37,
+  "url": "https://www.zyte.com/tag/lack-of-friendship/page/1/",
+  "parentUrl": "https://www.zyte.com/page/2/",
+  "title": "Quotes to Scrape",
+  "wordCount": 58,
+  "charCount": 521,
+  "linksFound": 22,
+  "error": false
+ },
+ {
+  "id": 38,
+  "url": "https://www.zyte.com/tag/lack-of-love/page/1/",
+  "parentUrl": "https://www.zyte.com/page/2/",
+  "title": "Quotes to Scrape",
+  "wordCount": 58,
+  "charCount": 515,
+  "linksFound": 22,
+  "error": false
+ },
+ {
+  "id": 39,
+  "url": "https://www.zyte.com/tag/life/page/1/",
+  "parentUrl": "https://www.zyte.com/page/2/",
+  "title": "Quotes to Scrape",
+  "wordCount": 484,
+  "charCount": 2993,
+  "linksFound": 46,
+  "error": false
+ },
+ {
+  "id": 40,
+  "url": "https://www.zyte.com/tag/love/page/1/",
+  "parentUrl": "https://www.zyte.com/page/2/",
+  "title": "Quotes to Scrape",
+  "wordCount": 626,
+  "charCount": 3686,
+  "linksFound": 40,
+  "error": false
+ },
+ {
+  "id": 41,
+  "url": "https://www.zyte.com/tag/marriage/page/1/",
+  "parentUrl": "https://www.zyte.com/page/2/",
+  "title": "Quotes to Scrape",
+  "wordCount": 58,
+  "charCount": 511,
+  "linksFound": 22,
+  "error": false
+ },
+ {
+  "id": 42,
+  "url": "https://www.zyte.com/tag/navigation/page/1/",
+  "parentUrl": "https://www.zyte.com/page/2/",
+  "title": "Quotes to Scrape",
+  "wordCount": 60,
+  "charCount": 462,
+  "linksFound": 18,
+  "error": false
+ },
+ {
+  "id": 43,
+  "url": "https://www.zyte.com/tag/opposite/page/1/",
+  "parentUrl": "https://www.zyte.com/page/2/",
+  "title": "Quotes to Scrape",
+  "wordCount": 81,
+  "charCount": 644,
+  "linksFound": 24,
+  "error": false
+ },
+ {
+  "id": 44,
+  "url": "https://www.zyte.com/tag/philosophy/page/1/",
+  "parentUrl": "https://www.zyte.com/page/2/",
+  "title": "Quotes to Scrape",
+  "wordCount": 110,
+  "charCount": 828,
+  "linksFound": 27,
+  "error": false
+ },
+ {
+  "id": 45,
+  "url": "https://www.zyte.com/tag/simplicity/page/1/",
+  "parentUrl": "https://www.zyte.com/page/2/",
+  "title": "Quotes to Scrape",
+  "wordCount": 53,
+  "charCount": 453,
+  "linksFound": 18,
+  "error": false
+ },
+ {
+  "id": 46,
+  "url": "https://www.zyte.com/tag/sisters/page/1/",
+  "parentUrl": "https://www.zyte.com/page/2/",
+  "title": "Quotes to Scrape",
+  "wordCount": 243,
+  "charCount": 1484,
+  "linksFound": 22,
+  "error": false
+ },
+ {
+  "id": 47,
+  "url": "https://www.zyte.com/tag/understand/page/1/",
+  "parentUrl": "https://www.zyte.com/page/2/",
+  "title": "Quotes to Scrape",
+  "wordCount": 53,
+  "charCount": 453,
+  "linksFound": 18,
+  "error": false
+ },
+ {
+  "id": 48,
+  "url": "https://www.zyte.com/tag/unhappy-marriage/page/1/",
+  "parentUrl": "https://www.zyte.com/page/2/",
+  "title": "Quotes to Scrape",
+  "wordCount": 58,
+  "charCount": 519,
+  "linksFound": 22,
+  "error": false
+ },
+ {
+  "id": 49,
+  "url": "https://www.zyte.com/tag/abilities/page/1/",
+  "parentUrl": "https://www.zyte.com/",
+  "title": "Quotes to Scrape",
+  "wordCount": 54,
+  "charCount": 452,
+  "linksFound": 18,
+  "error": false
+ },
+ {
+  "id": 50,
+  "url": "https://www.zyte.com/tag/books/",
+  "parentUrl": "https://www.zyte.com/tag/abilities/page/1/",
+  "title": "Quotes to Scrape",
+  "wordCount": 324,
+  "charCount": 2190,
+  "linksFound": 52,
+  "error": false
+ },
+ {
+  "id": 51,
+  "url": "https://www.zyte.com/tag/choices/page/1/",
+  "parentUrl": "https://www.zyte.com/tag/abilities/page/1/",
+  "title": "Quotes to Scrape",
+  "wordCount": 54,
+  "charCount": 450,
+  "linksFound": 18,
+  "error": false
+ },
+ {
+  "id": 52,
+  "url": "https://www.zyte.com/tag/friends/",
+  "parentUrl": "https://www.zyte.com/tag/abilities/page/1/",
+  "title": "Quotes to Scrape",
+  "wordCount": 313,
+  "charCount": 1980,
+  "linksFound": 35,
+  "error": false
+ },
+ {
+  "id": 53,
+  "url": "https://www.zyte.com/tag/friendship/",
+  "parentUrl": "https://www.zyte.com/tag/abilities/page/1/",
+  "title": "Quotes to Scrape",
+  "wordCount": 166,
+  "charCount": 1242,
+  "linksFound": 36,
+  "error": false
+ },
+ {
+  "id": 54,
+  "url": "https://www.zyte.com/tag/humor/",
+  "parentUrl": "https://www.zyte.com/tag/abilities/page/1/",
+  "title": "Quotes to Scrape",
+  "wordCount": 285,
+  "charCount": 1964,
+  "linksFound": 49,
+  "error": false
+ },
+ {
+  "id": 55,
+  "url": "https://www.zyte.com/tag/inspirational/",
+  "parentUrl": "https://www.zyte.com/tag/abilities/page/1/",
+  "title": "Quotes to Scrape",
+  "wordCount": 454,
+  "charCount": 2936,
+  "linksFound": 46,
+  "error": false
+ },
+ {
+  "id": 56,
+  "url": "https://www.zyte.com/tag/life/",
+  "parentUrl": "https://www.zyte.com/tag/abilities/page/1/",
+  "title": "Quotes to Scrape",
+  "wordCount": 484,
+  "charCount": 2993,
+  "linksFound": 46,
+  "error": false
+ },
+ {
+  "id": 57,
+  "url": "https://www.zyte.com/tag/love/",
+  "parentUrl": "https://www.zyte.com/tag/abilities/page/1/",
+  "title": "Quotes to Scrape",
+  "wordCount": 626,
+  "charCount": 3686,
+  "linksFound": 40,
+  "error": false
+ },
+ {
+  "id": 58,
+  "url": "https://www.zyte.com/tag/reading/",
+  "parentUrl": "https://www.zyte.com/tag/abilities/page/1/",
+  "title": "Quotes to Scrape",
+  "wordCount": 255,
+  "charCount": 1749,
+  "linksFound": 46,
+  "error": false
+ },
+ {
+  "id": 59,
+  "url": "https://www.zyte.com/tag/simile/",
+  "parentUrl": "https://www.zyte.com/tag/abilities/page/1/",
+  "title": "Quotes to Scrape",
+  "wordCount": 84,
+  "charCount": 687,
+  "linksFound": 26,
+  "error": false
+ },
+ {
+  "id": 60,
+  "url": "https://www.zyte.com/tag/truth/",
+  "parentUrl": "https://www.zyte.com/tag/abilities/page/1/",
+  "title": "Quotes to Scrape",
+  "wordCount": 125,
+  "charCount": 963,
+  "linksFound": 29,
+  "error": false
+ },
+ {
+  "id": 61,
+  "url": "https://www.zyte.com/tag/adulthood/page/1/",
+  "parentUrl": "https://www.zyte.com/",
+  "title": "Quotes to Scrape",
+  "wordCount": 53,
+  "charCount": 443,
+  "linksFound": 19,
+  "error": false
+ },
+ {
+  "id": 62,
+  "url": "https://www.zyte.com/tag/success/page/1/",
+  "parentUrl": "https://www.zyte.com/tag/adulthood/page/1/",
+  "title": "Quotes to Scrape",
+  "wordCount": 53,
+  "charCount": 441,
+  "linksFound": 19,
+  "error": false
+ },
+ {
+  "id": 63,
+  "url": "https://www.zyte.com/tag/value/page/1/",
+  "parentUrl": "https://www.zyte.com/tag/adulthood/page/1/",
+  "title": "Quotes to Scrape",
+  "wordCount": 53,
+  "charCount": 439,
+  "linksFound": 19,
+  "error": false
+ },
+ {
+  "id": 64,
+  "url": "https://www.zyte.com/tag/aliteracy/page/1/",
+  "parentUrl": "https://www.zyte.com/",
+  "title": "Quotes to Scrape",
+  "wordCount": 59,
+  "charCount": 482,
+  "linksFound": 20,
+  "error": false
+ },
+ {
+  "id": 65,
+  "url": "https://www.zyte.com/tag/classic/page/1/",
+  "parentUrl": "https://www.zyte.com/tag/aliteracy/page/1/",
+  "title": "Quotes to Scrape",
+  "wordCount": 77,
+  "charCount": 617,
+  "linksFound": 24,
+  "error": false
+ },
+ {
+  "id": 66,
+  "url": "https://www.zyte.com/tag/humor/page/1/",
+  "parentUrl": "https://www.zyte.com/tag/aliteracy/page/1/",
+  "title": "Quotes to Scrape",
+  "wordCount": 285,
+  "charCount": 1964,
+  "linksFound": 49,
+  "error": false
+ },
+ {
+  "id": 67,
+  "url": "https://www.zyte.com/tag/be-yourself/page/1/",
+  "parentUrl": "https://www.zyte.com/",
+  "title": "Quotes to Scrape",
+  "wordCount": 54,
+  "charCount": 490,
+  "linksFound": 18,
+  "error": false
+ },
+ {
+  "id": 68,
+  "url": "https://www.zyte.com/tag/change/page/1/",
+  "parentUrl": "https://www.zyte.com/",
+  "title": "Quotes to Scrape",
+  "wordCount": 61,
+  "charCount": 500,
+  "linksFound": 20,
+  "error": false
+ },
+ {
+  "id": 69,
+  "url": "https://www.zyte.com/tag/deep-thoughts/page/1/",
+  "parentUrl": "https://www.zyte.com/tag/change/page/1/",
+  "title": "Quotes to Scrape",
+  "wordCount": 61,
+  "charCount": 507,
+  "linksFound": 20,
+  "error": false
+ },
+ {
+  "id": 70,
+  "url": "https://www.zyte.com/tag/thinking/page/1/",
+  "parentUrl": "https://www.zyte.com/tag/change/page/1/",
+  "title": "Quotes to Scrape",
+  "wordCount": 93,
+  "charCount": 716,
+  "linksFound": 24,
+  "error": false
+ },
+ {
+  "id": 71,
+  "url": "https://www.zyte.com/tag/world/page/1/",
+  "parentUrl": "https://www.zyte.com/tag/change/page/1/",
+  "title": "Quotes to Scrape",
+  "wordCount": 61,
+  "charCount": 499,
+  "linksFound": 20,
+  "error": false
+ },
+ {
+  "id": 72,
+  "url": "https://www.zyte.com/tag/edison/page/1/",
+  "parentUrl": "https://www.zyte.com/",
+  "title": "Quotes to Scrape",
+  "wordCount": 53,
+  "charCount": 456,
+  "linksFound": 20,
+  "error": false
+ },
+ {
+  "id": 73,
+  "url": "https://www.zyte.com/tag/failure/page/1/",
+  "parentUrl": "https://www.zyte.com/tag/edison/page/1/",
+  "title": "Quotes to Scrape",
+  "wordCount": 53,
+  "charCount": 457,
+  "linksFound": 20,
+  "error": false
+ },
+ {
+  "id": 74,
+  "url": "https://www.zyte.com/tag/paraphrased/page/1/",
+  "parentUrl": "https://www.zyte.com/tag/edison/page/1/",
+  "title": "Quotes to Scrape",
+  "wordCount": 77,
+  "charCount": 646,
+  "linksFound": 23,
+  "error": false
+ },
+ {
+  "id": 75,
+  "url": "https://www.zyte.com/tag/live/page/1/",
+  "parentUrl": "https://www.zyte.com/",
+  "title": "Quotes to Scrape",
+  "wordCount": 67,
+  "charCount": 519,
+  "linksFound": 21,
+  "error": false
+ },
+ {
+  "id": 76,
+  "url": "https://www.zyte.com/tag/miracle/page/1/",
+  "parentUrl": "https://www.zyte.com/tag/live/page/1/",
+  "title": "Quotes to Scrape",
+  "wordCount": 67,
+  "charCount": 522,
+  "linksFound": 21,
+  "error": false
+ },
+ {
+  "id": 77,
+  "url": "https://www.zyte.com/tag/miracles/page/1/",
+  "parentUrl": "https://www.zyte.com/tag/live/page/1/",
+  "title": "Quotes to Scrape",
+  "wordCount": 67,
+  "charCount": 523,
+  "linksFound": 21,
+  "error": false
+ },
+ {
+  "id": 78,
+  "url": "https://www.zyte.com/tag/misattributed-eleanor-roosevelt/page/1/",
+  "parentUrl": "https://www.zyte.com/",
+  "title": "Quotes to Scrape",
+  "wordCount": 56,
+  "charCount": 493,
+  "linksFound": 17,
+  "error": false
+ },
+ {
+  "id": 79,
+  "url": "https://www.zyte.com/tag/obvious/page/1/",
+  "parentUrl": "https://www.zyte.com/",
+  "title": "Quotes to Scrape",
+  "wordCount": 48,
+  "charCount": 418,
+  "linksFound": 19,
+  "error": false
+ },
+ {
+  "id": 80,
+  "url": "https://www.zyte.com/tag/simile/page/1/",
+  "parentUrl": "https://www.zyte.com/tag/obvious/page/1/",
+  "title": "Quotes to Scrape",
+  "wordCount": 84,
+  "charCount": 687,
+  "linksFound": 26,
+  "error": false
+ },
+ {
+  "id": 81,
+  "url": "https://quotes.toscrape.com/author/Andre-Gide",
+  "parentUrl": "https://quotes.toscrape.com/",
+  "title": "Quotes to Scrape",
+  "wordCount": 182,
+  "charCount": 1207,
+  "linksFound": 4,
+  "error": false
+ },
+ {
+  "id": 82,
+  "url": "https://quotes.toscrape.com/author/Eleanor-Roosevelt",
+  "parentUrl": "https://quotes.toscrape.com/",
+  "title": "Quotes to Scrape",
+  "wordCount": 251,
+  "charCount": 1571,
+  "linksFound": 4,
+  "error": false
+ },
+ {
+  "id": 83,
+  "url": "https://quotes.toscrape.com/author/J-K-Rowling",
+  "parentUrl": "https://quotes.toscrape.com/",
+  "title": "Quotes to Scrape",
+  "wordCount": 659,
+  "charCount": 4049,
+  "linksFound": 4,
+  "error": false
+ },
+ {
+  "id": 84,
+  "url": "https://quotes.toscrape.com/author/Jane-Austen",
+  "parentUrl": "https://quotes.toscrape.com/",
+  "title": "Quotes to Scrape",
+  "wordCount": 342,
+  "charCount": 2211,
+  "linksFound": 4,
+  "error": false
+ },
+ {
+  "id": 85,
+  "url": "https://quotes.toscrape.com/author/Marilyn-Monroe",
+  "parentUrl": "https://quotes.toscrape.com/",
+  "title": "Quotes to Scrape",
+  "wordCount": 391,
+  "charCount": 2441,
+  "linksFound": 4,
+  "error": false
+ },
+ {
+  "id": 86,
+  "url": "https://quotes.toscrape.com/author/Steve-Martin",
+  "parentUrl": "https://quotes.toscrape.com/",
+  "title": "Quotes to Scrape",
+  "wordCount": 148,
+  "charCount": 1011,
+  "linksFound": 4,
+  "error": false
+ },
+ {
+  "id": 87,
+  "url": "https://quotes.toscrape.com/author/Thomas-A-Edison",
+  "parentUrl": "https://quotes.toscrape.com/",
+  "title": "Quotes to Scrape",
+  "wordCount": 210,
+  "charCount": 1446,
+  "linksFound": 4,
+  "error": false
+ },
+ {
+  "id": 88,
+  "url": "https://quotes.toscrape.com/page/2/",
+  "parentUrl": "https://quotes.toscrape.com/",
+  "title": "Quotes to Scrape",
+  "wordCount": 563,
+  "charCount": 3430,
+  "linksFound": 41,
+  "error": false
+ },
+ {
+  "id": 89,
+  "url": "https://quotes.toscrape.com/author/Bob-Marley",
+  "parentUrl": "https://quotes.toscrape.com/page/2/",
+  "title": "Quotes to Scrape",
+  "wordCount": 161,
+  "charCount": 1076,
+  "linksFound": 4,
+  "error": false
+ },
+ {
+  "id": 90,
+  "url": "https://quotes.toscrape.com/author/Douglas-Adams",
+  "parentUrl": "https://quotes.toscrape.com/page/2/",
+  "title": "Quotes to Scrape",
+  "wordCount": 289,
+  "charCount": 1829,
+  "linksFound": 4,
+  "error": false
+ },
+ {
+  "id": 91,
+  "url": "https://quotes.toscrape.com/author/Dr-Seuss",
+  "parentUrl": "https://quotes.toscrape.com/page/2/",
+  "title": "Quotes to Scrape",
+  "wordCount": 444,
+  "charCount": 2607,
+  "linksFound": 4,
+  "error": false
+ },
+ {
+  "id": 92,
+  "url": "https://quotes.toscrape.com/author/Elie-Wiesel",
+  "parentUrl": "https://quotes.toscrape.com/page/2/",
+  "title": "Quotes to Scrape",
+  "wordCount": 168,
+  "charCount": 1187,
+  "linksFound": 4,
+  "error": false
+ },
+ {
+  "id": 93,
+  "url": "https://quotes.toscrape.com/author/Friedrich-Nietzsche",
+  "parentUrl": "https://quotes.toscrape.com/page/2/",
+  "title": "Quotes to Scrape",
+  "wordCount": 160,
+  "charCount": 1212,
+  "linksFound": 4,
+  "error": false
+ },
+ {
+  "id": 94,
+  "url": "https://quotes.toscrape.com/author/Mark-Twain",
+  "parentUrl": "https://quotes.toscrape.com/page/2/",
+  "title": "Quotes to Scrape",
+  "wordCount": 316,
+  "charCount": 2058,
+  "linksFound": 4,
+  "error": false
+ },
+ {
+  "id": 95,
+  "url": "https://quotes.toscrape.com/tag/activism/page/1/",
+  "parentUrl": "https://quotes.toscrape.com/page/2/",
+  "title": "Quotes to Scrape",
+  "wordCount": 81,
+  "charCount": 644,
+  "linksFound": 24,
+  "error": false
+ },
+ {
+  "id": 96,
+  "url": "https://quotes.toscrape.com/tag/apathy/page/1/",
+  "parentUrl": "https://quotes.toscrape.com/tag/activism/page/1/",
+  "title": "Quotes to Scrape",
+  "wordCount": 81,
+  "charCount": 642,
+  "linksFound": 24,
+  "error": false
+ },
+ {
+  "id": 97,
+  "url": "https://quotes.toscrape.com/tag/books/",
+  "parentUrl": "https://quotes.toscrape.com/tag/apathy/page/1/",
+  "title": "Quotes to Scrape",
+  "wordCount": 324,
+  "charCount": 2190,
+  "linksFound": 52,
+  "error": false
+ },
+ {
+  "id": 98,
+  "url": "https://quotes.toscrape.com/author/C-S-Lewis",
+  "parentUrl": "https://quotes.toscrape.com/tag/books/",
+  "title": "Quotes to Scrape",
+  "wordCount": 159,
+  "charCount": 1085,
+  "linksFound": 4,
+  "error": false
+ },
+ {
+  "id": 99,
+  "url": "https://quotes.toscrape.com/author/Ernest-Hemingway",
+  "parentUrl": "https://quotes.toscrape.com/tag/books/",
+  "title": "Quotes to Scrape",
+  "wordCount": 374,
+  "charCount": 2344,
+  "linksFound": 4,
+  "error": false
+ },
+ {
+  "id": 100,
+  "url": "https://quotes.toscrape.com/author/Haruki-Murakami",
+  "parentUrl": "https://quotes.toscrape.com/tag/books/",
+  "title": "Quotes to Scrape",
+  "wordCount": 276,
+  "charCount": 1793,
+  "linksFound": 4,
+  "error": false
+ }
 ]
