@@ -256,6 +256,8 @@ class FileManager:
         return result[0]["file_path"] if result and result[0].get("file_path") else None
 
     def create_tools_for_project(self, project_name: str, base_file_path: str):
+
+        base_file_path = os.path.normpath(base_file_path) # normalize to make it adapative to windows and linux
         """
         Creates Tool nodes for a project, appending the tool name to the file_path,
         and initializing an empty job_ids list.
