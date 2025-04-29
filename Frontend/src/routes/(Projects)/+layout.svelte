@@ -10,11 +10,8 @@
 
 <ModeWatcher />
 
-<div class="flex max-h-screen bg-background">
-	<div class="w-64 shrink-0">
-		<Sidebar_projects />
-	</div>
-	<main class="flex-1 overflow-y-auto p-4">
+<div class="bg-background flex h-screen overflow-hidden">
+	<main class="flex-1 overflow-hidden p-4">
 		<slot />
 	</main>
 </div>
