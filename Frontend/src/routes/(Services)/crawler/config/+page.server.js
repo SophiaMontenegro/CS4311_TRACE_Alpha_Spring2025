@@ -6,10 +6,8 @@ export const actions = {
 	default: async ({ request }) => {
 		const rawFormData = await request.formData();
 		const formData = Object.fromEntries(rawFormData.entries());
-
-		console.log("Received form data:", formData);
-
 		const errors = [];
+
 		for (const [id, value] of Object.entries(formData)) {
 			const { error, message } = validateField(id, value);
 			if (error) {
@@ -82,15 +80,5 @@ export const actions = {
 				values: formData
 			});
 		}
-
-		// FOR TESTING ONLY
-		// console.log('Skipping actual backend request for testing...');
-		// console.log('Payload that would have been sent:', transformedData);
-		
-		// return {
-		// 	success: true,
-		// 	message: 'Simulated fuzzer launch successful (no backend call made).',
-		// 	values: formData
-		// };
 	}
 };

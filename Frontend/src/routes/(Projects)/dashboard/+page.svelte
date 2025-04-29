@@ -3,21 +3,9 @@
     import CreateProjectModal from '$lib/components/ui/project_management/CreateProjectModal.svelte';
     import ImportProjectModal from '$lib/components/ui/project_management/ImportProjectModal.svelte';
     import EditProjectDialog from '$lib/components/ui/project_management/EditProjectDialog.svelte';
-    import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '$lib/components/ui/dropdown-menu';
-    import {CalendarIcon, Lock, Settings2, MoreHorizontal, Trash2} from 'lucide-svelte';
+    import {Lock, Settings2, MoreHorizontal, Trash2, Import, Search } from 'lucide-svelte';
     import { goto } from '$app/navigation';
-    import {
-        AlertDialog,
-        AlertDialogTrigger,
-        AlertDialogContent,
-        AlertDialogHeader,
-        AlertDialogFooter,
-        AlertDialogTitle,
-        AlertDialogDescription,
-        AlertDialogCancel,
-        AlertDialogAction
-    } from '$lib/components/ui/alert-dialog';
-
+    import { Button } from '$lib/components/ui/button';
     import Alert from '$lib/components/ui/alert/Alert.svelte';
 
     let projects = [];
@@ -32,7 +20,13 @@
     let currentProject = null;
 
     let projectToDelete = null;
-    let showDeleteDialog = false; //come back
+    let showDeleteDialog = false;
+
+    let searchQuery = '';
+
+    $: filteredProjects = projects.filter(p =>
+        p.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
     onMount(async () => {
         analystInitials = localStorage.getItem('analyst_initials') || '';
@@ -55,6 +49,8 @@
             if (!response.ok) throw new Error('Failed to load projects');
             const data = await response.json();
             projects = data.projects || [];
+            console.log("Response data:", response.data);
+
         } catch (err) {
             console.error('Error loading projects:', err);
             error = err.message;
@@ -82,12 +78,14 @@
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    analyst_id: analystId,
+                    analyst_id: analystInitials,
                     project_name: projectData.projectName,
                     start_date: projectData.startDate,
                     end_date: projectData.endDate,
                     description: projectData.description || '',
-                    userList: projectData.userList || []
+                    userList: projectData.userList || [],
+                    port: projectData.port,
+                    directory_path: projectData.directoryPath
                 })
             });
 
@@ -106,7 +104,7 @@
                 throw new Error(errorMessage);
             }
 
-
+            await createDirectories(projectData.projectName, projectData.directoryPath);
             await loadProjects();
             closeCreateModal();
         } catch (err) {
@@ -120,6 +118,44 @@
         }
     }
 
+    async function createDirectories(project_name, directory_path) {
+        console.log("project name: ", project_name);
+        try {
+            const url = `http://127.0.0.1:8000/team3/directories/${encodeURIComponent(project_name)}/create?directory_path=${encodeURIComponent(directory_path)}`;
+
+            const response = await fetch(url, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            const responseData = await response.json();
+
+            console.log("create dir:", responseData);
+
+            if (!response.ok) {
+                let errorMessage = 'Failed to create Directories';
+                if (responseData.detail) {
+                    errorMessage = typeof responseData.detail === 'string'
+                        ? responseData.detail
+                        : JSON.stringify(responseData.detail);
+                } else if (typeof responseData === 'object') {
+                    errorMessage = JSON.stringify(responseData);
+                }
+
+                throw new Error(errorMessage);
+            }
+
+            return true;
+        } catch (err) {
+            console.error("create directories error:", err);
+            return false;
+        }
+    }
+
+
+
     function handleImportProject(event) {
         const { files } = event.detail;
         console.log('Importing project files:', files);
@@ -129,7 +165,7 @@
     function handleLogout() {
         localStorage.removeItem('analyst_id');
         localStorage.removeItem('analyst_initials');
-        window.location.href = '/login';
+        window.location.href = '/';
     }
 
     async function toggleProjectLock(projectName) {
@@ -152,13 +188,14 @@
         }
     }
 
+
     window.toggleProjectLock = toggleProjectLock;
 
     async function deleteProject(name) {
         console.log("Deleting project:", name); // Not working
         try {
             showDeleteDialog = false;
-            const response = await fetch(`http://127.0.0.1:8000/team3/projects/${encodeURIComponent(name)}/delete?analyst_id=${analystId}`, {
+            const response = await fetch(`http://127.0.0.1:8000/team3/projects/${encodeURIComponent(name)}/delete?analyst_id=${analystInitials}`, {
                 method: 'DELETE'
             });
 
@@ -208,12 +245,10 @@
         console.log('Save event received in parent:', updatedProject);
         editDialogOpen = false; // Close the dialog after saving
     }
-    function handleCancel() {
+    async function handleCancel() {
         editDialogOpen = false; // Close the dialog when canceled
+        await loadProjects();
     }
-
-
-
 
     let openDropdownId = null;
 
@@ -234,12 +269,9 @@
     onMount(() => {
         window.addEventListener('click', handleClickOutside);
     });
-
-
-
 </script>
 
-<div class="p-6">
+<div class="p-8">
     <header class="flex justify-between items-center mb-8">
         <h1 class="text-3xl font-bold">Project Selection</h1>
         <div class="flex items-center gap-4">
@@ -255,13 +287,46 @@
 
     <div class="flex justify-between items-center mb-6">
         <h2 class="text-2xl font-semibold">Your Projects</h2>
-        <button
-                class="bg-primary text-white text-sm font-medium px-4 py-2 rounded-md shadow hover:bg-primary/90"
-                on:click={openCreateModal}
-        >
-            Create New Project
-        </button>
+
+        <!-- Right side container (buttons) -->
+        <div class="flex flex-col items-end gap-4">
+            <!-- Buttons -->
+            <div class="flex items-center gap-2">
+                <button
+                        class="bg-[var(--accent)] text-[var(--accent-foreground)] text-sm font-medium px-4 py-2 rounded-md shadow hover:bg-[var(--accent3)]"
+                        on:click={openCreateModal}
+                >
+                    Create New Project
+                </button>
+
+                <Button
+                        on:click={() => showImportModal()}
+                        type="button"
+                        size="icon"
+                        title="Import Project"
+                        aria-label="Import Project"
+                        class="w-10 h-10 rounded-md bg-[var(--secondary)] text-[var(--muted)] hover:bg-[color:var(--secondary)/90] flex items-center justify-center"
+                >
+                    <Import class="w-5 h-5 text--muted" />
+                </Button>
+            </div>
+
+            <!-- Search bar under the buttons -->
+            <div
+                    class="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-gray-300 text-sm"
+                    style="background-color: var(--background1); max-width: 300px;"
+            >
+                <Search class="w-4 h-4 text-muted-foreground" />
+                <input
+                        type="text"
+                        placeholder="Search projects"
+                        bind:value={searchQuery}
+                        class="w-full bg-transparent outline-none text-sm placeholder:text-muted-foreground"
+                />
+            </div>
+        </div>
     </div>
+
 
     {#if isLoading }
         <div class="text-gray-500">Loading projects...</div>
@@ -288,9 +353,9 @@
             </div>
 
 
-            {#each projects as project (project.id)}
-                <div class="grid grid-cols-4 items-center bg-card rounded-2xl px-6 py-4 shadow-sm border border-border">
-                    <!-- Project Info -->
+            {#each filteredProjects as project (project.id)}
+                <div class="grid grid-cols-4 items-center rounded-2xl px-6 py-4 shadow-sm" style="background-color: var(--background1);">
+                <!-- Project Info -->
                     <div class="flex items-center gap-4">
                         <!-- Colored status bar -->
                         <div
@@ -304,7 +369,7 @@
                     </div>
 
                     <!-- Last Edit -->
-                    <div class="text-sm text-muted-foreground">{project.timestamp || 'N/A'}</div>
+                    <div class="text-sm text-muted-foreground">{project.last_edited || 'N/A'}</div>
 
                     <!-- Lead Analyst -->
                     <div class="text-sm text-muted-foreground">{analystInitials}</div>
@@ -316,17 +381,17 @@
                         {/if}
 
                         {#if project}
-                        <button
-                          class="text-sm font-medium bg-[var(--secondary)] text-[var(--secondary-foreground)] px-4 py-2 rounded-md hover:bg-[color:var(--secondary)/90]"
-                          on:click={() => {
-                            if (!project.locked) {
-                                localStorage.setItem('currentProjectName', project.name);
-                                goto('/tool-dashboard');
-                            }
-                          }}
-                        >
-                          {project.locked ? 'View' : 'Run Scan'}
-                        </button>
+                            <button
+                                    class="flex items-center bg-[var(--accent)] text-[var(--accent-foreground)] text-sm font-medium px-4 py-2 rounded-md shadow hover:bg-[var(--accent3)] disabled:opacity-60 disabled:cursor-not-allowed"
+                                    on:click={() => {
+									if (!project.locked) {
+                                        localStorage.setItem('currentProjectName', project.name);
+										goto(`/tool-dashboard?projectName=${encodeURIComponent(project.name)}`);
+									}
+								}}
+                            >
+                                {project.locked ? 'View' : 'Run Scan'}
+                            </button>
                       {/if}
                       
                         <!-- Drop Down: Lock, Delete, and Edit -->
@@ -385,6 +450,7 @@
     {#if showCreateModal}
         <CreateProjectModal
                 analystId={analystId}
+                analystInitials={analystInitials}
                 on:close={closeCreateModal}
                 on:create={handleProjectCreated}
         />
@@ -400,16 +466,17 @@
     {#if editDialogOpen}
         <EditProjectDialog
             project={currentProject}
+            analystInitials={analystInitials}
             on:save={handleSave}
             on:cancel={handleCancel}
         />
     {/if}
 
-    <Alert
-            isOpen={showDeleteDialog}
-            title="Are you absolutely sure?"
-            message="This action cannot be undone."
-            onCancel={handleCancelDelete}
-            onContinue={handleConfirmedDelete}
-    />
+	<Alert
+		isOpen={showDeleteDialog}
+		title="Are you absolutely sure?"
+		message="This action cannot be undone."
+		onCancel={handleCancelDelete}
+		onContinue={handleConfirmedDelete}
+	/>
 </div>
