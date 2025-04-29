@@ -44,9 +44,9 @@ class FileManager:
 
 
 
-    def create_file_node(self, project_name, job_id, file_name, file_path, size=None, is_log=False, file_format="csv"):
+    def create_file_node(self, project_name, tool_name, job_id, file_name, file_path, size=None, is_log=False, file_format="csv"):
         query = """
-        MATCH (p:Project {name: $project_name})
+        MATCH (p:Project {name: $project_name})-[:ToolResults]->(t:Tool {name: $tool_name})
         CREATE (f:File {
             file_name: $file_name,
             path: $file_path,
@@ -57,12 +57,13 @@ class FileManager:
             is_log: $is_log,
             format: $file_format
         })
-        CREATE (p)-[:HAS_FILE]->(f)
+        CREATE (t)-[:HAS_FILE]->(f)
         """
 
         try:
             self.db.run_query(query, {
                 "project_name": project_name,
+                "tool_name": tool_name,
                 "job_id": job_id,
                 "file_name": file_name,
                 "file_path": file_path,
@@ -72,8 +73,9 @@ class FileManager:
             })
             return True
         except Exception as e:
-            logging.error(f"Error creating file node for project '{project_name}': {e}", exc_info=True)
+            logging.error(f"Error creating file node for project '{project_name}' and tool '{tool_name}': {e}", exc_info=True)
             return None
+
 
 
 

@@ -78,11 +78,15 @@ async def get_sqlmap_results(project_name: str, job_id: str):
         if not append_success:
             raise HTTPException(status_code=500, detail="Failed to append job_id to tool")
 
-        """
-        file_success = file_manager.append_job_id_to_tool(project_name, job_id, result_filename, tool_directory, islog)
+
+        file_success = file_manager.create_file_node(project_name, tool_name, job_id, result_filename, tool_directory)
         if not file_success:
-            raise HTTPException(status_code=500, detail="Failed to append job_id to tool")
-        """
+            raise HTTPException(status_code=500, detail="Failed to create file_node")
+
+        file_success = file_manager.create_file_node(project_name, tool_name, job_id, log_filename, tool_directory, is_log=True)
+        if not file_success:
+            raise HTTPException(status_code=500, detail="Failed to create file_node")
+
         # Check if results file exists
         if not os.path.exists(result_path):
             logger.warning(f"Results file not found for job {job_id}")

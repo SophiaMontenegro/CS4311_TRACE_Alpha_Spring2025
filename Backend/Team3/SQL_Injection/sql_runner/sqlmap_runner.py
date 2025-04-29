@@ -10,6 +10,7 @@ import platform
 import signal
 import csv
 from datetime import datetime
+import uuid
 
 # Windows-specific imports
 if platform.system() == "Windows":
@@ -133,7 +134,8 @@ def run_sqlmap(base_url, port, params="", custom_flags=""):
     os.makedirs(RESULTS_DIR, exist_ok=True)
 
     existing = [int(name.replace("sql_results_", "").replace(".csv", "")) for name in os.listdir(RESULTS_DIR) if name.startswith("sql_results_")]
-    next_job_id = max(existing, default=6999) + 1
+    #next_job_id = max(existing, default=6999) + 1
+    next_job_id = str(uuid.uuid4())
 
     result_filename = f"sql_results_{next_job_id}.csv"
     log_filename = f"sql_log_{next_job_id}.csv"

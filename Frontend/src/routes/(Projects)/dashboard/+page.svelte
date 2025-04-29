@@ -320,7 +320,8 @@
                           class="text-sm font-medium bg-[var(--secondary)] text-[var(--secondary-foreground)] px-4 py-2 rounded-md hover:bg-[color:var(--secondary)/90]"
                           on:click={() => {
                             if (!project.locked) {
-                              goto('/tool-dashboard');
+                                localStorage.setItem('currentProjectName', project.name);
+                                goto('/tool-dashboard');
                             }
                           }}
                         >
