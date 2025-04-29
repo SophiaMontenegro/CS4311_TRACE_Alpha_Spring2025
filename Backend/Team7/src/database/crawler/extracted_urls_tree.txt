@@ -1,0 +1,5 @@
+https://juice-shop.herokuapp.com/#/
+  //cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.0/cookieconsent.min.css
+  //cdnjs.cloudflare.com/ajax/libs/jquery/2.2.4/jquery.min.js
+  assets/public/favicon_js.ico
+  //cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.0/cookieconsent.min.js
