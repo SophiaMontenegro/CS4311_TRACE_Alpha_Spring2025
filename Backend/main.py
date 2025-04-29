@@ -356,5 +356,6 @@ async def debug_endpoint(request: Request):
         logger.error(f"Error parsing JSON: {e}")
         return {"error": str(e), "raw_body": body.decode()}
 
+# Changed to 0.0.0.0 to listen on all incoming connections.
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

@@ -11,6 +11,7 @@
     let analystId = '';
 
     let searchQuery = '';
+    let apiBaseURL = '';
 
     $: filteredProjects = projects.filter(p =>
         p.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -20,6 +21,8 @@
     onMount(async () => {
         analystInitials = localStorage.getItem('analyst_initials') || '';
         analystId = localStorage.getItem('analyst_id') || '';
+
+        apiBaseURL = localStorage.getItem('apiBaseURL') || '';
 
         if (!analystInitials || !analystId) {
             window.location.href = '/login';
@@ -54,10 +57,13 @@
     }
 
     function handleProjectClick(project) {
-        if (!project.locked) {
-            goto('/tool-dashboard');
-        }
-    }
+		if (!project.locked) {
+			apiBaseURL = `http://${project.lead_ip}:8000`;
+			localStorage.setItem('apiBaseURL', apiBaseURL);
+			console.log('API BASE URL set to:', apiBaseURL);
+			goto(`/tool-dashboard?projectName=${encodeURIComponent(project.name)}`);
+		}
+	}
 
 
 </script>
@@ -149,7 +155,8 @@
                                     class="w-[100px] h-[48px]"
                                     variant="default"
                                     size="lg"
-                                    on:click={() => handleProjectClick(project)}
+                                    onclick={() => handleProjectClick(project)}
+
                             >
                                 {#if project.locked}
                                     View

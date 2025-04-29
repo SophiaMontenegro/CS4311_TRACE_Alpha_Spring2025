@@ -44,7 +44,7 @@ class Database_Manager:
     def get_projects(self, owner_initials=None):
         query = """
             MATCH (u:Analyst)-[:OWNS]->(p:Project)
-            RETURN u.name AS owner, p.name AS project
+            RETURN u.name AS owner, p.name AS project, p.lead_ip AS lead_ip
         """
         if owner_initials:
             query = query.replace("RETURN", "WHERE u.name STARTS WITH $owner_initials RETURN")

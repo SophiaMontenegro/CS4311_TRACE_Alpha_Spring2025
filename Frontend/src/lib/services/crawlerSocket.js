@@ -7,6 +7,7 @@ import {
 } from '$lib/stores/scanProgressStore';
 import { serviceResults } from '$lib/stores/serviceResultsStore.js';
 import { get } from 'svelte/store';
+import { getApiBaseURL } from '$lib/utils/apiBaseURL';
 
 let socket = null;
 
@@ -23,8 +24,12 @@ export function connectToCrawlerWebSocket(jobId, retry = 0) {
 		return;
 	}
 
+	// apiBaseURL is fetched from a utility function
+	const apiBaseURL = getApiBaseURL();
+	const wsBaseURL = apiBaseURL.replace('http', 'ws');
+
 	// Open a WebSocket connection to the backend endpoint
-	socket = new WebSocket(`ws://localhost:8000/ws/crawler/${jobId}`);
+	socket = new WebSocket(`${wsBaseURL}/ws/crawler/${jobId}`);
 
 	// Triggered when the connection is successfully established
 	socket.onopen = () => {
@@ -104,7 +109,7 @@ export function connectToCrawlerWebSocket(jobId, retry = 0) {
 				break;
 
 			// Marks the scan as completed and finalizes UI
-			case 'completed':
+			case 'completed': 
 				scanProgress.set(100);
 				stopScanProgress(true);
 				serviceStatus.set({

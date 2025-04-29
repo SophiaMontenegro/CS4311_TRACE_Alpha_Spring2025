@@ -29,9 +29,10 @@
     let projectName_error = '';
     let endDate_error = '';
 
-    let og_port = '';
-    let new_port = ''; // default to existing port
-    let port_error = '';
+    let og_lead_ip = '';
+    let new_lead_ip = ''; // default to existing lead IP
+    let lead_ip_error = '';
+
 
 
 
@@ -42,8 +43,8 @@
         og_endDate = project.end_date || '';
         new_endDate = formatDateToInput(og_endDate); // <- formatted for input
         og_description = project.description || '';
-        og_port = project.port;
-        new_port = project.port || '';
+        og_lead_ip = project.lead_ip;
+        new_lead_ip = project.lead_ip || '';
         await show_analysts()
         userList = [...currentAnalysts]; // ← Sync with fetched data!
     });
@@ -202,11 +203,12 @@
             valid = false;
         }
 
-        if (!new_port) {
-            port_error = 'Port number is required';
+        const ipRegex = /^(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}$/;
+        if (!new_lead_ip) {
+            lead_ip_error = 'Lead IP address is required';
             valid = false;
-        } else if (isNaN(Number(new_port)) || Number(new_port) < 1 || Number(new_port) > 65535) {
-            port_error = 'Invalid port number';
+        } else if (!ipRegex.test(new_lead_ip.trim())) {
+            lead_ip_error = 'Invalid Lead IP address';
             valid = false;
         }
 
@@ -288,12 +290,12 @@
                 if (!resDate.ok) throw new Error('Failed to update end date');
             }
 
-            // Update Port Number
-            if (new_port !== project.port) {
-                const resPort = await fetch(`${baseURL}/projects/${encodeURIComponent(name)}/port?port=${new_port}&analyst_name=${analystInitials}`, {
+            // Update Lead IP address
+            if (new_lead_ip !== project.lead_ip) {
+                const resIP = await fetch(`${baseURL}/projects/${encodeURIComponent(name)}/lead_ip?lead_ip=${new_lead_ip}&analyst_name=${analystInitials}`, {
                     method: 'PUT'
                 });
-                if (!resPort.ok) throw new Error('Failed to update port number');
+                if (!resIP.ok) throw new Error('Failed to update Lead IP address');
             }
 
             const update_last_edited = await fetch(`${baseURL}/projects/${encodeURIComponent(name)}/last_edited`, {
@@ -371,14 +373,14 @@
                     {/if}
                 </div>
 
-                <!-- Port Number -->
-                <div class="space-y-2">
-                    <label class="text-sm font-medium">Port Number *</label>
-                    <Input type="number" bind:value={new_port} min="1" max="65535" />
-                    {#if port_error}
-                        <p class="text-red-500 text-sm">{port_error}</p>
-                    {/if}
-                </div>
+                <!-- Lead IP Address -->
+            <div class="space-y-2">
+                <label class="text-sm font-medium">Lead IP *</label>
+                <Input type="text" bind:value={new_lead_ip} placeholder="Enter lead IP address" />
+                {#if lead_ip_error}
+                    <p class="text-red-500 text-sm">{lead_ip_error}</p>
+                {/if}
+            </div>
             </div>
 
 

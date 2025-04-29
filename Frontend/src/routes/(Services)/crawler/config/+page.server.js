@@ -41,7 +41,11 @@ export const actions = {
 		};
 
 		try {
-			const response = await fetch("http://127.0.0.1:8000/api/crawler", {
+			const apiBaseURL = formData["api-base-url"];
+			if (!apiBaseURL) throw new Error('API Base URL is not set!');
+			console.log("Sending crawler config to:", apiBaseURL);
+			
+			const response = await fetch(`${apiBaseURL}/api/crawler`,{
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",

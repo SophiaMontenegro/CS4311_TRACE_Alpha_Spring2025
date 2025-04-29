@@ -11,13 +11,20 @@
 	import { Info } from 'lucide-svelte';
 	import { serviceStatus } from '$lib/stores/projectServiceStore';
 	import { connectToCredGenAIWebSocket } from '$lib/services/credGenAISocket.js';
+	import { getApiBaseURL } from '$lib/utils/apiBaseURL';
+	import { browser } from '$app/environment';
 
 	let formData = {};
 	let fieldErrors = {};
 	let selectedFile = null;
-
 	let usernameLength = '';
 	let passwordLength = '';
+	let apiBaseURL = '';
+
+	if (browser) {
+		apiBaseURL = getApiBaseURL();
+	}
+
 
 	let inputFields = [
 		{
@@ -285,6 +292,8 @@
 		</div>
 
 		<div>
+			<input type="hidden" name="api-base-url" value={apiBaseURL} />
+
 			<Button
 				type="submit"
 				variant="default"
