@@ -57,8 +57,8 @@ async def get_sqlmap_results(project_name: str, job_id: str):
         if not tool_directory:
             raise HTTPException(status_code=404, detail=f"Tool directory not found for project '{project_name}' and tool '{tool_name}'")
         print("✅ Tool Directory:", tool_directory)
-        # Move result_file and log_file to my tool_directory
 
+        tool_directory = os.path.normpath(tool_directory) # normalize to make it adapative to windows and linux
         # Filenames
         result_filename = f"sql_results_{job_id}.csv"
         log_filename = f"sql_log_{job_id}.csv"
@@ -119,7 +119,7 @@ async def get_sqlmap_csv(project_name: str, job_id: str):
         if not results_dir:
             raise HTTPException(status_code=404, detail=f"Tool directory not found for project '{project_name}' and tool '{tool_name}'")
 
-        #results_dir = "sqlmap_results"
+        results_dir = os.path.normpath(results_dir) # normalize to make it adapative to windows and linux
         result_filename = f"sql_results_{job_id}.csv"
         csv_path = os.path.join(results_dir, result_filename)
         
