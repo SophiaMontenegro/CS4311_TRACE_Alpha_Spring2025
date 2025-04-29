@@ -250,6 +250,7 @@ class FileManager:
             "project_name": project_name,
             "tool_name": tool_name
         }, fetch=True)
+        print("✅ Result:", result)
         return result[0]["file_path"] if result and result[0].get("file_path") else None
 
     def create_tools_for_project(self, project_name: str, base_file_path: str):
