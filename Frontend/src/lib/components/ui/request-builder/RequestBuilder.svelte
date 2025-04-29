@@ -36,25 +36,40 @@
 
 	function buildRawRequest() {
 		try {
+			// 1. Require a full URL (including scheme)
 			let safeUrl = targetUrl.trim();
 			if (!safeUrl.startsWith('http://') && !safeUrl.startsWith('https://')) {
 				safeUrl = 'http://' + safeUrl;
 			}
 
-			const u = new URL(safeUrl);
+			// 2. Let URL throw if malformed, but catch and return early
+			let u;
+			try {
+				u = new URL(safeUrl);
+			} catch (urlErr) {
+				console.warn('Invalid URL provided to buildRawRequest:', safeUrl, urlErr);
+				return '';
+			}
 
-			let raw = `${method} ${u.pathname || '/'} HTTP/1.1\n`;
+			// 3. Build the raw request
+			let raw = `${method} ${u.pathname || '/'}${u.search || ''} HTTP/1.1\n`;
 			raw += 'Accept: */*\n';
 			raw += `Host: ${u.host}\n`;
 			if (method !== 'GET') raw += 'Content-Type: application/json\n';
 			raw += 'User-Agent: TRACE-system\n';
 
+			// 4. Custom headers
 			headers.split('\n').forEach((h) => {
-				const trimmed = h.trim();
-				if (trimmed) raw += trimmed + '\n';
+				const t = h.trim();
+				if (t) raw += t + '\n';
 			});
 
-			if (cookies.trim()) raw += `Cookie: ${cookies}\n`;
+			// 5. Cookies
+			if (cookies.trim()) {
+				raw += `Cookie: ${cookies.trim()}\n`;
+			}
+
+			// 6. Body
 			raw += `\n${requestBody}`;
 
 			return raw;

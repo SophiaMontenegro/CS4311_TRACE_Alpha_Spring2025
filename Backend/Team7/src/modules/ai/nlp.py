@@ -1,6 +1,7 @@
 import csv
 import os
 import re
+from collections import Counter
 from typing import Set, List, Dict, Any
 
 
@@ -183,7 +184,10 @@ class NLP:
         return cleaned_rows
 
     def _write_csv(
-        self, csv_path: str, rows: List[Dict[str, Any]], fieldnames=None
+        self,
+        csv_path: str,
+        rows: List[Dict[str, Any]],
+        fieldnames: List[str] | None = None,
     ) -> None:
         """
         Write processed rows back to a CSV file.
@@ -200,13 +204,28 @@ class NLP:
         Note:
             This method will overwrite the existing file at csv_path.
         """
+
         if not fieldnames:
-            fieldnames = list(rows[0].keys()) if rows else ["id", "content", "url"]
+            fieldnames = (
+                list(rows[0].keys())
+                if rows
+                else ["id", "content", "url", "word", "count"]
+            )
+        frequencies = self.get_word_freqs(rows)
+
+        output_rows = []
+        for word, count in frequencies.items():
+            for row in rows:
+                new_row = row.copy()
+                new_row["word"] = word
+                new_row["count"] = count
+                output_rows.append(new_row)
+                break
 
         with open(csv_path, "w", newline="", encoding="utf-8") as outfile:
             writer = csv.DictWriter(outfile, fieldnames=fieldnames)
             writer.writeheader()
-            writer.writerows(rows)
+            writer.writerows(output_rows)
 
     def _break_compuound_words(self, text: List[str]) -> None:
         """
@@ -245,3 +264,20 @@ class NLP:
                 uncompounded_text.append(word.replace("'", ""))
 
         text[:] = uncompounded_text
+
+    def get_word_freqs(self, cleaned_rows: List[Dict[str, Any]]) -> Dict[str, int]:
+        """
+        Gets the word frequencies from cleaned csv output.
+
+        Args:
+            cleaned_rows (List[Dict[str, Any]]): A list of dictionaries representing cleaned rows.
+
+        Returns:
+            Dict[str, int]: A dictionary mapping words to their frequency counts.
+        """
+        all_words = []
+        for row in cleaned_rows:
+            content = row.get("content", "")
+            words = re.findall(r"\b[\w']+\b", content.lower())
+            all_words.extend(words)
+        return dict(Counter(all_words))

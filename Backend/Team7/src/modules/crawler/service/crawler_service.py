@@ -214,6 +214,7 @@ async def run_crawler_task(job_id: str, config: CrawlerConfig):
         # Configure the crawler
         crawler.configure_crawler(
             target_url=config.target_url,
+            jobid=job_id,
             depth=config.depth or 3,
             limit=config.limit or 100,
             user_agent=config.user_agent or 'Mozilla/5.0',

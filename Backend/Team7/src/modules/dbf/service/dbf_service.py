@@ -237,6 +237,7 @@ async def run_dbf_task(job_id: str, config: DBFConfig):
         tracker.add_log('Configuring Directory Brute Force Scan')
         dbf_manager.configure_scan(
             target_url=config.target_url,
+            jobid=job_id,
             wordlist=config.wordlist,
             top_dir=config.top_dir or '',
             hide_status=config.hide_status or [],
