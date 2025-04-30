@@ -9,7 +9,7 @@ from Team3.Database.Database_Manager import Database_Manager
 from Team3.Database.Analyst_Manager import AnalystManager
 from Team3.Database.File_Manager import FileManager
 
-# Initialize DB connection and project manager
+# ✅ Initialize DB connection and project manager
 try:
     db = Database_Manager()  # No arguments needed anymore
     analyst_manager = AnalystManager(db)
