@@ -1,5 +1,0 @@
-http://localhost/
-  dvwa/css/login.css
-  http://www.dvwa.co.uk/
-  login.php
-  dvwa/images/login_logo.png
