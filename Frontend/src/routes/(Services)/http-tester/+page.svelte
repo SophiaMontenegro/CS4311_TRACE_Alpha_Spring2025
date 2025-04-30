@@ -2,6 +2,7 @@
 	import { enhance } from '$app/forms';
 	import RequestBuilder from '$lib/components/ui/request-builder/RequestBuilder.svelte';
 	import ResponsePanel from '$lib/components/ui/response-panel/ResponsePanel.svelte';
+	import { onMount } from 'svelte';
 
 	let response = null;
 	let hideCodes = [];
@@ -11,6 +12,14 @@
 	let formRef;
 	let builderRef;
 	let activeTab = 'request';
+
+	let currentProjectName = 'Unnamed Project';
+	let apiBaseURL = 'http://127.0.0.1:8000';
+
+	onMount(() => {
+		currentProjectName = localStorage.getItem('current_project_name') || 'Unnamed Project';
+		apiBaseURL = localStorage.getItem('apiBaseURL') || apiBaseURL;
+	});
 
 	async function handleResult({ result }) {
 		const res = await result;
@@ -69,6 +78,9 @@
 	class="flex h-screen w-full items-center justify-center"
 >
 	<input type="hidden" name="mode" bind:value={activeTab} />
+
+	<input type="hidden" name="currentProjectName" value={currentProjectName} />
+	<input type="hidden" name="apiBaseURL" value={apiBaseURL} />
 
 	<div class="flex h-[65vh] w-full max-w-6xl gap-4">
 		<div class="h-full w-1/2">

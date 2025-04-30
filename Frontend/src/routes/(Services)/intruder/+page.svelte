@@ -2,6 +2,8 @@
 	import { goto } from "$app/navigation";
 	import { targetUrlStore, modeStore } from '$lib/stores/intruder';
 	import {Button} from '$lib/components/ui/button';
+	import { getApiBaseURL } from '$lib/utils/apiBaseURL';
+	
 	let targetUrl = '';
 	let forms = [];
 	let error = '';
@@ -12,7 +14,7 @@
 
 	async function scanTarget() {
 	try {
-		const response = await fetch('http://localhost:8000/api/intruder/reconnaissance', {
+		const response = await fetch(`${getApiBaseURL()}/api/intruder/reconnaissance`, {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify({ url: targetUrl })
@@ -53,7 +55,7 @@
 
 	async function fetchRequestPreview() {
 		try {
-			const res = await fetch("http://localhost:8000/api/intruder/preview_request");
+			const res = await fetch(`${getApiBaseURL()}/api/intruder/preview_request`);
 			if (!res.ok) {
 				const data = await res.json();
 				console.error("Error:", data);
@@ -69,7 +71,7 @@
 	async function sendSelectedForm() {
 		if (selectedFormIndex === null) return;
 
-		const res = await fetch("http://localhost:8000/api/intruder/select_form", {
+		const res = await fetch(`${getApiBaseURL()}/api/intruder/select_form`, {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({ index: selectedFormIndex })

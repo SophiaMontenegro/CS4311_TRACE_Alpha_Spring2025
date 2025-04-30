@@ -1,31 +1,59 @@
-# testing/test_client.py
-
 import requests
 
-# === Non-hidden nodes (parents exist) ===
-json_samples = [
-    {"ip": "198.51.100.1", "path": "https://example.com/", "severity": "root"},
-    {"ip": "198.51.100.3", "path": "https://example.com/help", "severity": "high"},
-    {"ip": "198.51.100.1", "path": "https://example.com/home", "severity": "low"},
-    {"ip": "198.51.100.1", "path": "https://example.com/home/dashboard", "severity": "medium"},
-    {"ip": "198.51.100.1", "path": "https://example.com/home/dashboard/metrics", "severity": "high"},
-    {"ip": "198.51.100.1", "path": "https://example.com/home/dashboard/settings", "severity": "low"},
-    {"ip": "198.51.100.1", "path": "https://example.com/about", "severity": "medium"},
-    {"ip": "198.51.100.1", "path": "https://example.com/about/team", "severity": "high"},
-    {"ip": "198.51.100.1", "path": "https://example.com/about/team/members", "severity": "low"},
+# json_samples = [
+#     {"ip": "198.51.100.1", "url": "https://example.com/", "response_code": 200},
+#     {"ip": "198.51.100.1", "url": "https://example.com/home", "response_code": 200},
+#     {"ip": "198.51.100.1", "url": "https://example.com/home/dashboard", "response_code": 403},
+#     {"ip": "198.51.100.1", "url": "https://example.com/about/team", "response_code": 401},
 
-    # === Hidden nodes (parents missing or not sent yet) ===
-    {"ip": "198.51.100.1", "path": "https://example.com/about/company/history", "severity": "low"},
-    {"ip": "198.51.100.1", "path": "https://example.com/login/reset", "severity": "medium"},
-    {"ip": "198.51.100.1", "path": "https://example.com/register/validate", "severity": "low"},
-    {"ip": "198.51.100.1", "path": "https://example.com/services/cloud/compute", "severity": "high"},
-    {"ip": "198.51.100.1", "path": "https://example.com/services/ai/nlp", "severity": "medium"},
-    {"ip": "198.51.100.1", "path": "https://example.com/contact/sales", "severity": "high"},
-    {"ip": "198.51.100.1", "path": "https://example.com/blog/posts/trending", "severity": "high"},
-    {"ip": "198.51.100.1", "path": "https://example.com/faq/security/test", "severity": "high"}
+#     # Hidden subtree
+#     {"ip": "198.51.100.1", "url": "https://example.com/login/reset", "response_code": 200, "hidden": True},
+#     {"ip": "198.51.100.1", "url": "https://example.com/login/reset/2fa", "response_code": 403, "hidden": True},
+#     {"ip": "198.51.100.1", "url": "https://example.com/login/reset/2fa/help", "response_code": 200, "hidden": True},
+#     {"ip": "198.51.100.1", "url": "https://example.com/register/validate", "response_code": 200, "hidden": True}
+# ]
+
+json_samples = [
+    # Root and main sections
+    {"ip": "198.51.100.1", "url": "https://example.com/", "response_code": 200},
+    {"ip": "198.51.100.1", "url": "https://example.com/home", "response_code": 200},
+    {"ip": "198.51.100.1", "url": "https://example.com/home/dashboard", "response_code": 200},
+    {"ip": "198.51.100.1", "url": "https://example.com/home/settings", "response_code": 403},
+    {"ip": "198.51.100.1", "url": "https://example.com/about", "response_code": 200},
+    {"ip": "198.51.100.1", "url": "https://example.com/about/team", "response_code": 200},
+    {"ip": "198.51.100.1", "url": "https://example.com/about/careers", "response_code": 404},
+    {"ip": "198.51.100.1", "url": "https://example.com/contact", "response_code": 200},
+    {"ip": "198.51.100.1", "url": "https://example.com/contact/support", "response_code": 200},
+    {"ip": "198.51.100.1", "url": "https://example.com/contact/feedback", "response_code": 200},
+
+    # Services Section
+    {"ip": "198.51.100.1", "url": "https://example.com/services", "response_code": 200},
+    {"ip": "198.51.100.1", "url": "https://example.com/services/consulting", "response_code": 200},
+    {"ip": "198.51.100.1", "url": "https://example.com/services/development", "response_code": 200},
+    {"ip": "198.51.100.1", "url": "https://example.com/services/development/web", "response_code": 200},
+    {"ip": "198.51.100.1", "url": "https://example.com/services/development/mobile", "response_code": 200},
+
+    # Blog section
+    {"ip": "198.51.100.1", "url": "https://example.com/blog", "response_code": 200},
+    {"ip": "198.51.100.1", "url": "https://example.com/blog/news", "response_code": 200},
+    {"ip": "198.51.100.1", "url": "https://example.com/blog/events", "response_code": 200},
+    {"ip": "198.51.100.1", "url": "https://example.com/blog/releases", "response_code": 200},
+    {"ip": "198.51.100.1", "url": "https://example.com/blog/releases/v1.0", "response_code": 200},
+
+    # Hidden login/reset subtree
+    {"ip": "198.51.100.1", "url": "https://example.com/login", "response_code": 200, "hidden": True},
+    {"ip": "198.51.100.1", "url": "https://example.com/login/reset", "response_code": 403, "hidden": True},
+    {"ip": "198.51.100.1", "url": "https://example.com/login/reset/password", "response_code": 403, "hidden": True},
+    {"ip": "198.51.100.1", "url": "https://example.com/login/reset/2fa", "response_code": 403, "hidden": True},
+    {"ip": "198.51.100.1", "url": "https://example.com/login/reset/2fa/help", "response_code": 200, "hidden": True},
+    {"ip": "198.51.100.1", "url": "https://example.com/register", "response_code": 200, "hidden": True},
+    {"ip": "198.51.100.1", "url": "https://example.com/register/validate", "response_code": 200, "hidden": True},
+    {"ip": "198.51.100.1", "url": "https://example.com/register/verify-email", "response_code": 200, "hidden": True},
+    {"ip": "198.51.100.1", "url": "https://example.com/profile/settings", "response_code": 401},
+    {"ip": "198.51.100.1", "url": "https://example.com/profile/security", "response_code": 401}
 ]
 
-# Send each JSON via POST to FastAPI
+
 for entry in json_samples:
-    response = requests.post("http://localhost:8000/update", json=entry)
-    print(f"Sent: {entry['path']} → {response.status_code} | {response.json()}")
+    response = requests.post("http://localhost:8000/api/tree/update", json=entry)
+    print(f"Sent: {entry['url']} → {response.status_code} | {response.json()}")

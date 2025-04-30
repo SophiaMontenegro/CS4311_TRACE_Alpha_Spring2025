@@ -2,10 +2,14 @@ import os
 import time
 import logging
 import asyncio
+import socket
+import requests
+from urllib.parse import urlparse
 from typing import List, Dict, Callable, Optional
 from Team1.httpclient.proxy_server import ProxyServer
 from Team1.httpclient.http_client import HTTPClient
 from Team7.src.modules.dbf.dbf_response_processor import ResponseProcessor
+import aiohttp
 
 log_path = os.path.join(os.path.dirname(__file__), "directory_bruteforce.log")
 logging.basicConfig(
@@ -212,6 +216,37 @@ class DirectoryBruteForceManager:
         # Set end time when stopping
         if not self.end_time:
             self.end_time = time.perf_counter()
+
+    async def send_update(self, ip: str, full_url: str, response_code: int, hidden: str, severity: int):
+        """
+        Sets up the call to send the responses to webtree
+        """
+        try:
+            parsed = urlparse(full_url)
+            payload = {
+                "ip": ip,
+                "url": full_url,
+                "path": parsed.path or "/",
+                "status_code": response_code,
+                "hidden": hidden,
+                "severity": severity,
+                "operation": "update"
+            }
+            async with aiohttp.ClientSession() as session:
+                async with session.post("http://localhost:8000/api/tree/update", json=payload) as response:
+                    response_text = await response.text()
+                    print(f"Sent {parsed}: {response.status} - {response_text}")
+        except Exception as e:
+            print(f"Error sending update for {full_url}: {e}")
+    
+    def get_ip_from_target_url(self, url: str) -> str:
+        try:
+            parsed = urlparse(url)
+            if parsed.hostname:
+                return socket.gethostbyname(parsed.hostname)
+        except Exception as e:
+            print(f"Failed to resolve IP for {url}: {e}")
+        return "0.0.0.0"  
 
     def get_metrics(self) -> Dict[str, float]:
         """Get metrics about the scan progress and results"""

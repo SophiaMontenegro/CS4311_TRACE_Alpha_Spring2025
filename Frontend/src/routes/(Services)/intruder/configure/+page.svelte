@@ -5,7 +5,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import { mode, toggleMode  } from 'mode-watcher';
 	import { get } from 'svelte/store';
-
+	import { getApiBaseURL } from '$lib/utils/apiBaseURL';
 	export let formIndex = 0;
 	export let noForm = false;
 	let detectedMode = '';
@@ -43,7 +43,7 @@
 			}
 		} else {
 			// There was a form detected → HTML attack
-			const res = await fetch('http://localhost:8000/api/intruder/preview_request');
+			const res = await fetch(`${getApiBaseURL()}/api/intruder/preview_request`);
 			if (!res.ok) {
 				const data = await res.json();
 				error = data.detail || 'Failed to load preview.';
@@ -106,7 +106,7 @@
 				body.param_name = paramName;
 			}
 
-			const res = await fetch('http://localhost:8000/api/intruder/run_attack', {
+			const res = await fetch(`${getApiBaseURL()}/api/intruder/run_attack`, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify(body)
