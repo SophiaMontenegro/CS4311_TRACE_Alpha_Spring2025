@@ -1,7 +1,7 @@
 <script>
 	import { attackResults } from '$lib/stores/intruder';
 	import { onMount } from 'svelte';
-
+	import { getApiBaseURL } from '$lib/utils/apiBaseURL';
 	let results = [];
 	let projectName = "";
 	let exportMessage = "";
@@ -15,7 +15,7 @@
 
 	async function exportResults() {
         try {
-            const res = await fetch('http://localhost:8000/api/intruder/export_results', {
+            const res = await fetch(`${getApiBaseURL()}/api/intruder/export_results`, {
                 method: 'POST'
             });
             if (!res.ok) {
