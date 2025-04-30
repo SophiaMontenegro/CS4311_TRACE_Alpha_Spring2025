@@ -148,7 +148,7 @@
         return () => {
             stopSimulation();
             clearAllIntervals();
-            closeSQLInjectionWebSocket();
+            //closeSQLInjectionWebSocket();
         };
     });
 
@@ -285,7 +285,7 @@
 	    return result;
 	}
 
-	// WebSocket connection
+
 	$effect(() => {
 		if ($currentStep === 'results' && $sqlInjectionResults.length === 0) {
 			const jobId = localStorage.getItem('currentSQLInjectionJobId');
@@ -331,7 +331,7 @@
 	async function handleStopConfirm() {
 		showStopDialog = false;
 		stopScanProgress();
-		closeSQLInjectionWebSocket();
+		//closeSQLInjectionWebSocket();
 
 		// Get the job id
 		const jobId = localStorage.getItem('currentSQLInjectionJobId');
@@ -435,7 +435,7 @@
         fJobId.set(jobId);
         localStorage.setItem('currentSQLInjectionJobId', jobId);
 
-        connectToSQLInjectionWebSocket(jobId);
+        //connectToSQLInjectionWebSocket(jobId);
         const stopSimulation = simulateProgress();
         
         // Store the interval ID so we can clear it later
@@ -452,13 +452,13 @@
         return () => {
             stopSimulation();
             clearInterval(resultInterval);
-            closeSQLInjectionWebSocket();
+            //closeSQLInjectionWebSocket();
         };
     });
 
 	onDestroy(() => {
         clearAllIntervals();
-        closeSQLInjectionWebSocket();
+        //closeSQLInjectionWebSocket();
     });
 
 </script>
