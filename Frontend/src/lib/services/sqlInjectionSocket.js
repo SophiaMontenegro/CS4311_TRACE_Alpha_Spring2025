@@ -2,6 +2,7 @@ import { serviceStatus } from '$lib/stores/projectServiceStore';
 import { scanProgress, stopScanProgress, startScanProgress, scanPaused} from '$lib/stores/scanProgressStore';
 import { serviceResults } from '$lib/stores/serviceResultsStore.js';
 import { get } from 'svelte/store';
+import { getApiBaseURL } from '$lib/utils/apiBaseURL';
 
 let socket = null;
 
@@ -18,8 +19,12 @@ export function connectToSQLInjectionWebSocket(jobId, retry = 0) {
     return;
   }
 
+  // apiBaseURL is fetched from a utility function
+  const apiBaseURL = getApiBaseURL();
+  const wsBaseURL = apiBaseURL.replace('http', 'ws');
+
   // Open a WebSocket connection to the backend endpoint
-  socket = new WebSocket(`ws://localhost:8000/ws/sqlinjection/${jobId}`);
+  socket = new WebSocket(`${wsBaseURL}/ws/sqlinjection/${jobId}`);
 
   // Triggered when the connection is successfully established
   socket.onopen = () => {

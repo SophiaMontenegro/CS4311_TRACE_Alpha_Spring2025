@@ -20,11 +20,18 @@
 		pauseScan,
 		resumeScan
 	} from '$lib/stores/scanProgressStore.js';
+	import { getApiBaseURL } from '$lib/utils/apiBaseURL';
+	import { browser } from '$app/environment';
 
 	const { data } = $props();
 	let showStopDialog = $state(false);
 	let intervalId;
-    let projectName;
+  let projectName;
+	let apiBaseURL = '';
+
+	if (browser) {
+		apiBaseURL = getApiBaseURL();
+	}
 
 
 	// Derived stores
@@ -339,7 +346,8 @@
 
 		// Tell the backend to stop
 		try {
-			const res = await fetch(`http://localhost:8000/api/sqlinjection/${jobId}/stop`, {
+			if (!apiBaseURL) throw new Error('API Base URL is not set!');
+			const res = await fetch(`${apiBaseURL}/api/sqlinjection/${jobId}/stop`, {
 				method: 'POST'
 			});
 			if (res.ok) {
@@ -436,7 +444,7 @@
             if ($serviceStatus.status !== 'completed') {
                 fetchResults(jobId);
             }
-        }, 5000);
+        }, 30000);
         
         // Save the interval ID to clear it on component destroy
         intervalId = resultInterval;
