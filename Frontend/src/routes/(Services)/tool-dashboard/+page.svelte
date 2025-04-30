@@ -66,7 +66,7 @@
 
 	async function handleExitConfirm() {
 		showExitDialog = false;
-		localStorage.removeItem('current_project_name');
+		localStorage.removeItem('currentProjectName');
 
 		const toolType = get(serviceStatus).serviceType;
 
@@ -109,9 +109,9 @@
 
 		if (queryProjectName) {
 			projectName = queryProjectName;
-			localStorage.setItem('current_project_name', queryProjectName);
+			localStorage.setItem('currentProjectName', queryProjectName);
 		} else {
-			projectName = localStorage.getItem('current_project_name') || 'Unnamed Project';
+			projectName = localStorage.getItem('currentProjectName') || 'Unnamed Project';
 		}
 	});
 
