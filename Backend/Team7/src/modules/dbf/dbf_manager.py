@@ -22,6 +22,7 @@ logging.basicConfig(
 class MockResponse:
     def __init__(self, url: str, status: int, text: str):
         self.url = url
+        self.jobid = ''
         self.status_code = status
         self.text = text
         self.payload = None
@@ -48,6 +49,7 @@ class DirectoryBruteForceManager:
     def configure_scan(
         self,
         target_url: str,
+        jobid: str,
         wordlist: List[str],
         top_dir: str = '',
         hide_status: List[int] = None,
@@ -61,6 +63,7 @@ class DirectoryBruteForceManager:
 
         self.config = {
             "target_url": target_url.rstrip('/'),
+            "jobid": jobid,
             "wordlist": wordlist,
             "top_dir": top_dir.strip('/'),
             "hide_status": hide_status or [],
@@ -72,6 +75,9 @@ class DirectoryBruteForceManager:
         self.attempt_limit = attempt_limit
         self.response_processor.set_filters(show_only_status or [200], hide_status or [], length_filter)
         self.http_client.specify_target_system(target_url)
+        self.hide_status = hide_status
+        self.show_only_status = show_only_status
+        self.length_filter = length_filter
         
         # Reset control flags and counters
         self._paused = False
@@ -86,6 +92,8 @@ class DirectoryBruteForceManager:
         wordlist = self.config["wordlist"]
         headers = self.config["headers"]
         total_requests = len(wordlist)
+
+        await asyncio.sleep(1)
 
         for i, word in enumerate(wordlist):
             # Store current position
@@ -106,7 +114,7 @@ class DirectoryBruteForceManager:
                     "url": f"/{path.lstrip('/')}",
                     "headers": headers
                 }
-                response = self.http_client.send_request(request)
+                response = self.http_client.send_request(request, self.config.get('jobid', ''))
                 mock = MockResponse(full_url, response["status_code"], response["body"])
                 mock.payload = word
                 mock.error = response["status_code"] not in [200, 403]
@@ -122,9 +130,13 @@ class DirectoryBruteForceManager:
                     "error": mock.error
                 }
                 
-                self.last_row = result_item
-                if callable(self.on_new_row):
-                    self.on_new_row(result_item)
+                # Determine if this result should be shown based on the chosen filters
+                should_show = self._should_show_result(result_item)
+
+                if should_show:
+                    self.last_row = result_item
+                    if callable(self.on_new_row):
+                        self.on_new_row(result_item)
                     
                 logging.info("Scanned %s [%d]", full_url, response["status_code"])
                 self.request_count += 1
@@ -165,14 +177,23 @@ class DirectoryBruteForceManager:
         else:
             self.end_time = time.perf_counter()
 
-        target_ip = self.get_ip_from_target_url(self.config["target_url"])
-        filtered_results = self.get_filtered_results()
-        hidden_flag = True
+    def _should_show_result(self, result: Dict) -> bool:
+        """
+        Determine if a result should be shwon based on configured filters.
+        """
+        status = result.get("status", 0)
+        length = result.get("length", 0)
 
-        for result in filtered_results:
-            if result["status"] == 200:
-                hidden_flag = False
-            await self.send_update(target_ip, result["url"], result["status"], hidden_flag, 5)
+        if self.show_only_status and status not in self.show_only_status:
+            return False
+        
+        if status in self.hide_status:
+            return False
+        
+        if self.length_filter is not None and length < self.length_filter:
+            return False
+
+        return True
 
     async def _wait_pause(self, interval=0.5):
         """Helper method to wait during pause state"""

@@ -30,7 +30,7 @@ class ProjectCreate(BaseModel):
     end_date: date
     description: str
     userList: list
-    port: int
+    lead_ip: str
     directory_path: str
 
 # ✅ Create a project
@@ -50,7 +50,7 @@ async def create_project(project: ProjectCreate):
             project_data['end_date'],
             project_data['description'],
             project_data['userList'],
-            project_data['port'],
+            project_data['lead_ip'],
             project_data['directory_path']
         )
         
@@ -252,8 +252,8 @@ async def get_analyst_projects(analyst_id: str):
                 "end_date": format_date(project.get("end_date")),
                 "locked": project.get("locked", False),
                 "created_at": format_date(project.get("created_at")),
+                "lead_ip": project.get("lead_ip"),
                 "last_edited": format_date(project.get("last_edited")),
-                "port": project.get("port", 0),
                 "directory_path": project.get("directory_path", "")
             })
             
@@ -296,7 +296,7 @@ async def get_analyst_shared_projects(analyst_id: str):
                 "locked": project.get("locked", False),
                 "created_at": format_date(project.get("created_at")),
                 "last_edited": format_date(project.get("last_edited")),
-                "port": project.get("port", 0),
+                "lead_ip": project.get("lead_ip"),
                 "directory_path": project.get("directory_path", "")
             })
 
@@ -337,7 +337,7 @@ async def get_deleted_projects(analyst_id: str):
                 "locked": project.get("locked", False),
                 "created_at": format_date(project.get("created_at")),
                 "last_edited": format_date(project.get("last_edited")),
-                "port": project.get("port", 0),
+                "lead_ip": project.get("lead_ip"),
                 "directory_path": project.get("directory_path", "")
             })
 
@@ -414,12 +414,12 @@ async def edit_last_edited(project_name: str):
     return {"message": f"Project updated last_edited sucessfully"}
 
 # Edit port
-@team3_router.put("/projects/{project_name}/port")
-async def edit_port(project_name: str, port: int, analyst_name: str):
-    success = project_manager.edit_port(project_name, analyst_name, port)
+@team3_router.put("/projects/{project_name}/lead_ip")
+async def edit_lead_ip(project_name: str, lead_ip: str, analyst_name: str):
+    success = project_manager.edit_lead_ip(project_name, analyst_name, lead_ip)
     if success is None:
         raise HTTPException(status_code=404, detail="Analyst doesn't exist")
-    return {"message": f"Project port updated successfully to {port}"}
+    return {"message": f"Project lead_ip updated successfully to {lead_ip}"}
 
 class PathVerifyRequest(BaseModel):
     directory_path: str

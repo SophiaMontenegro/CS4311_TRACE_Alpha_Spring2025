@@ -7,6 +7,6 @@ uvicorn[standard]
 aiohttp
 asyncio
 aiofiles
-google-genai
+ollama
 neo4j
 

@@ -1,111 +1,141 @@
-import { json } from '@sveltejs/kit';
-
-/**
- * Parses the `Set-Cookie` header into an object of key-value pairs.
- */
-function parseSetCookie(header) {
-	const cookies = {};
-	if (!header) return cookies;
-
-	const cookieParts = Array.isArray(header) ? header : [header];
-	for (const part of cookieParts) {
-		const [kv] = part.split(';');
-		const [key, value] = kv.split('=');
-		if (key && value) {
-			cookies[key.trim()] = value.trim();
-		}
-	}
-	return cookies;
-}
+// src/routes/(Services)/http-tester/+page.server.js
+import { fail } from '@sveltejs/kit';
+import {
+  parseRawRequest,
+  parseSetCookie,
+  validateBodySize,
+  parseHeaderString
+} from '$lib/validation/httpRequestValidation.js';
 
 export const actions = {
-	default: async ({ request }) => {
-		console.log('[Server] Action triggered');
+  default: async ({ request }) => {
+    console.log('[Server] Action triggered');
 
-		try {
-			const formData = await request.formData();
+    // 1) Pull out the form data
+    const formData = await request.formData();
+    const mode     = formData.get('mode')?.toString() || 'request';
 
-			let targetUrl = formData.get('targetUrl')?.toString() || '';
-			const method = formData.get('method')?.toUpperCase() || 'GET';
-			const headersRaw = formData.get('headers')?.toString() || '';
-			const requestBody = formData.get('requestBody')?.toString() || '';
+    let method;
+    let relativeUrl;
+    let body;
+    let headers   = {};
+    let targetUrl;
 
-			console.log('[Server] Received form data:', {
-				targetUrl,
-				method,
-				headersRaw,
-				requestBody
-			});
+    // 2) Parse raw vs structured form
+    if (mode === 'raw') {
+      const raw    = formData.get('rawRequest')?.toString() || '';
+      const parsed = parseRawRequest(raw);
+      method  = parsed.method.toUpperCase();
+      headers = parsed.headers;
+      body    = parsed.body;
 
-			if (!targetUrl) {
-				return json({ error: 'Target URL is required' }, { status: 400 });
-			}
+      // parsed.url may include full path+origin
+      try {
+        const u = new URL(parsed.url);
+        targetUrl   = u.origin;              // ← strip to origin only
+        relativeUrl = u.pathname + u.search; // ← keep path + query
+      } catch {
+        return fail(400, { error: 'Invalid raw URL format' });
+      }
 
-			if (!/^https?:\/\//.test(targetUrl)) {
-				targetUrl = `http://${targetUrl}`;
-			}
+      const bodyError = validateBodySize(body);
+      if (bodyError) {
+        return fail(413, { error: bodyError.error ?? 'Body too large' });
+      }
+    } else {
+      targetUrl = formData.get('targetUrl')?.toString() || '';
+      method    = formData.get('method')?.toString().toUpperCase() || 'GET';
+      const headersRaw = formData.get('headers')?.toString() || '';
+      body              = formData.get('requestBody')?.toString() || '';
 
-			let parsedUrl;
-			try {
-				parsedUrl = new URL(targetUrl);
-			} catch {
-				console.warn('Invalid URL:', targetUrl);
-				return json({ error: 'Invalid URL format' }, { status: 400 });
-			}
+      const bodyError = validateBodySize(body);
+      if (bodyError) {
+        return fail(413, { error: bodyError.error ?? 'Body too large' });
+      }
 
-			const headers = {};
-			try {
-				Object.assign(headers, JSON.parse(headersRaw));
-			} catch {
-				headersRaw.split(/\r?\n/).forEach((line) => {
-					const [key, ...rest] = line.split(':');
-					if (key && rest.length > 0) {
-						headers[key.trim()] = rest.join(':').trim();
-					}
-				});
-			}
+      // require explicit protocol
+      if (!/^https?:\/\//i.test(targetUrl)) {
+        return fail(400, { error: 'Target URL must include http:// or https://' });
+      }
 
-			const proxyPayload = {
-				target: targetUrl,
-				request: {
-					method,
-					url: parsedUrl.pathname + parsedUrl.search,
-					headers,
-					body: method === 'GET' ? null : requestBody
-				}
-			};
+      try {
+        const u = new URL(targetUrl);
+        targetUrl   = u.origin;              // ← strip to origin only
+        relativeUrl = u.pathname + u.search; // ← keep path + query
+      } catch {
+        return fail(400, { error: 'Invalid URL format' });
+      }
 
-			console.log('Sending request to backend proxy:', proxyPayload);
+      // parse headers JSON or fallback to header‐string parser
+      try {
+        headers = JSON.parse(headersRaw);
+      } catch {
+        headers = parseHeaderString(headersRaw);
+      }
+    }
 
-			const res = await fetch('http://127.0.0.1:8000/api/http/send', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify(proxyPayload)
-			});
+    if (method !== 'GET' && !headers['Content-Type']) {
+      headers['Content-Type'] = 'application/json';
+    }
 
-			const data = await res.json();
+    // 3) Build and send the proxy payload
+    const proxyPayload = {
+      target: targetUrl,
+      request: {
+        method,
+        url:    relativeUrl,
+        headers,
+        body:   method === 'GET' ? null : body
+      }
+    };
 
-			const parsedCookies = parseSetCookie(data.headers?.['Set-Cookie']);
-			const responsePayload = {
-				status_code: data.status_code || res.status || 200,
-				statusText: data.statusText || res.statusText || 'OK',
-				headers: data.headers || {},
-				cookies: parsedCookies,
-				body: data.body || '',
-				time: data.time || null,
-				size: data.size || null
-			};
+    console.log('▶️ proxyPayload →', JSON.stringify(proxyPayload, null, 2));
 
-			console.log('Returning to frontend:', responsePayload);
-			return {
-				success: true,
-				...responsePayload
-			};
-		} catch (error) {
-			console.error('Server action error:', error);
-			return json({ error: error.message || 'Internal Server Error' }, { status: 500 });
-		}
-	}
+    let proxyRes;
+    try {
+      proxyRes = await fetch('http://127.0.0.1:8000/api/http/send', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify(proxyPayload)
+      });
+    } catch (err) {
+      // network failure talking to proxy
+      return fail(502, { error: 'Cannot reach proxy server' });
+    }
+
+    // 4) Parse proxy JSON (or fail)
+    let data;
+    try {
+      data = await proxyRes.json();
+    } catch {
+      const text = await proxyRes.text();
+      return fail(502, {
+        error: `Non-JSON response from proxy: ${text.slice(0, 100)}…`
+      });
+    }
+
+    // 5) If the proxy itself returned an error field, bubble it up as 502
+    if (data.error) {
+      return fail(502, { error: data.error });
+    }
+
+    // 6) Success — build cookie map and return
+    const setCookieHeader =
+      data.headers?.['set-cookie'] ||
+      data.headers?.['Set-Cookie'];
+    const parsedCookies = parseSetCookie(setCookieHeader);
+
+    return {
+      success:      true,
+      status_code:  data.status_code || proxyRes.status,
+      status:       data.status_code || proxyRes.status,
+      statusText:   data.statusText || proxyRes.statusText,
+      headers:      data.headers   || {},
+      cookies:      parsedCookies,
+      body:         data.body      || '',
+      time:         data.time      ?? null,
+      size:         data.size      ?? null,
+      version:      data.version   || '2'
+    };
+  }
 };
