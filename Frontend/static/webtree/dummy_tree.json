@@ -1,172 +1,245 @@
 [
   {
-    "node_id": "0.0.0.0",
+    "node_id": "35.211.122.109",
     "name": "/",
-    "severity": "unknown",
+    "severity": 5,
     "children": [
       {
         "node_id": "0.0.0.0",
-        "name": "/login",
+        "name": "/author",
         "severity": "unknown",
         "children": [
           {
-            "node_id": "198.51.100.1",
-            "name": "/login/reset",
-            "severity": "medium",
-            "children": []
-          }
-        ]
-      },
-      {
-        "node_id": "0.0.0.0",
-        "name": "/register",
-        "severity": "unknown",
-        "children": [
-          {
-            "node_id": "198.51.100.1",
-            "name": "/register/validate",
-            "severity": "low",
-            "children": []
-          }
-        ]
-      },
-      {
-        "node_id": "0.0.0.0",
-        "name": "/contact",
-        "severity": "unknown",
-        "children": [
-          {
-            "node_id": "198.51.100.1",
-            "name": "/contact/sales",
-            "severity": "high",
-            "children": []
-          }
-        ]
-      },
-      {
-        "node_id": "198.51.100.3",
-        "name": "/help",
-        "severity": "high",
-        "children": []
-      },
-      {
-        "node_id": "198.51.100.1",
-        "name": "/home",
-        "severity": "low",
-        "children": [
-          {
-            "node_id": "198.51.100.1",
-            "name": "/home/dashboard",
-            "severity": "medium",
-            "children": [
-              {
-                "node_id": "198.51.100.1",
-                "name": "/home/dashboard/metrics",
-                "severity": "high",
-                "children": []
-              },
-              {
-                "node_id": "198.51.100.1",
-                "name": "/home/dashboard/settings",
-                "severity": "low",
-                "children": []
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "node_id": "198.51.100.1",
-        "name": "/about",
-        "severity": "medium",
-        "children": [
-          {
-            "node_id": "198.51.100.1",
-            "name": "/about/team",
-            "severity": "high",
-            "children": [
-              {
-                "node_id": "198.51.100.1",
-                "name": "/about/team/members",
-                "severity": "low",
-                "children": []
-              }
-            ]
+            "node_id": "35.211.122.109",
+            "name": "/author/Albert-Einstein",
+            "severity": 5,
+            "children": [],
+            "hidden": false,
+            "url": "https://quotes.toscrape.com/author/Albert-Einstein"
           },
           {
-            "node_id": "0.0.0.0",
-            "name": "/about/company",
-            "severity": "unknown",
-            "children": [
-              {
-                "node_id": "198.51.100.1",
-                "name": "/about/company/history",
-                "severity": "low",
-                "children": []
-              }
-            ]
+            "node_id": "35.211.122.109",
+            "name": "/author/Andre-Gide",
+            "severity": 5,
+            "children": [],
+            "hidden": false,
+            "url": "https://quotes.toscrape.com/author/Andre-Gide"
+          },
+          {
+            "node_id": "35.211.122.109",
+            "name": "/author/Eleanor-Roosevelt",
+            "severity": 5,
+            "children": [],
+            "hidden": false,
+            "url": "https://quotes.toscrape.com/author/Eleanor-Roosevelt"
+          },
+          {
+            "node_id": "35.211.122.109",
+            "name": "/author/J-K-Rowling",
+            "severity": "high",
+            "children": [],
+            "hidden": false,
+            "url": "https://quotes.toscrape.com/author/J-K-Rowling"
+          },
+          {
+            "node_id": "35.211.122.109",
+            "name": "/author/Jane-Austen",
+            "severity": "high",
+            "children": [],
+            "hidden": false,
+            "url": "https://quotes.toscrape.com/author/Jane-Austen"
+          },
+          {
+            "node_id": "35.211.122.109",
+            "name": "/author/Marilyn-Monroe",
+            "severity": "high",
+            "children": [],
+            "hidden": false,
+            "url": "https://quotes.toscrape.com/author/Marilyn-Monroe"
+          },
+          {
+            "node_id": "35.211.122.109",
+            "name": "/author/Steve-Martin",
+            "severity": "low",
+            "children": [],
+            "hidden": false,
+            "url": "https://quotes.toscrape.com/author/Steve-Martin"
+          },
+          {
+            "node_id": "35.211.122.109",
+            "name": "/author/Thomas-A-Edison",
+            "severity": 5,
+            "children": [],
+            "hidden": false,
+            "url": "https://quotes.toscrape.com/author/Thomas-A-Edison"
           }
-        ]
+        ],
+        "hidden": false,
+        "url": "https://quotes.toscrape.com/author"
+      },
+      {
+        "node_id": "35.211.122.109",
+        "name": "/login",
+        "severity": "low",
+        "children": [],
+        "hidden": false,
+        "url": "https://quotes.toscrape.com/login"
+      },
+      {
+        "node_id": "0.0.0.0",
+        "name": "/static",
+        "severity": "unknown",
+        "children": [
+          {
+            "node_id": "35.211.122.109",
+            "name": "/static/bootstrap.min.css",
+            "severity": 5,
+            "children": [],
+            "hidden": false,
+            "url": "https://quotes.toscrape.com/static/bootstrap.min.css"
+          },
+          {
+            "node_id": "35.211.122.109",
+            "name": "/static/main.css",
+            "severity": 5,
+            "children": [],
+            "hidden": false,
+            "url": "https://quotes.toscrape.com/static/main.css"
+          }
+        ],
+        "hidden": false,
+        "url": "https://quotes.toscrape.com/static"
       }
-    ]
+    ],
+    "hidden": false,
+    "url": "https://quotes.toscrape.com/"
   },
   {
-    "node_id": "hidden",
-    "name": "Hidden Nodes",
-    "severity": "low",
-    "children": [
-      {
-        "node_id": "0.0.0.0",
-        "name": "/services/cloud",
-        "severity": "unknown",
-        "children": [
-          {
-            "node_id": "198.51.100.1",
-            "name": "/services/cloud/compute",
-            "severity": "high",
-            "children": []
-          }
-        ]
-      },
-      {
-        "node_id": "0.0.0.0",
-        "name": "/services/ai",
-        "severity": "unknown",
-        "children": [
-          {
-            "node_id": "198.51.100.1",
-            "name": "/services/ai/nlp",
-            "severity": "medium",
-            "children": []
-          }
-        ]
-      },
-      {
-        "node_id": "0.0.0.0",
-        "name": "/blog/posts",
-        "severity": "unknown",
-        "children": [
-          {
-            "node_id": "198.51.100.1",
-            "name": "/blog/posts/trending",
-            "severity": "high",
-            "children": []
-          }
-        ]
-      },
-      {
-        "node_id": "0.0.0.0",
-        "name": "/faq/security",
-        "severity": "unknown",
-        "children": [
-          {
-            "node_id": "198.51.100.1",
-            "name": "/faq/security/test",
-            "severity": "high",
-            "children": []
-          }
-        ]
-      }
-    ]
+    "node_id": "35.211.122.109",
+    "name": "/page/2/",
+    "severity": 5,
+    "children": [],
+    "hidden": false,
+    "url": "https://quotes.toscrape.com/page/2/"
+  },
+  {
+    "node_id": "0.0.0.0",
+    "name": "/page/2",
+    "severity": "unknown",
+    "children": [],
+    "hidden": false,
+    "url": ""
+  },
+  {
+    "node_id": "35.211.122.109",
+    "name": "/tag/abilities/page/1/",
+    "severity": 5,
+    "children": [],
+    "hidden": false,
+    "url": "https://quotes.toscrape.com/tag/abilities/page/1/"
+  },
+  {
+    "node_id": "0.0.0.0",
+    "name": "/tag/abilities/page/1",
+    "severity": "unknown",
+    "children": [],
+    "hidden": false,
+    "url": ""
+  },
+  {
+    "node_id": "35.211.122.109",
+    "name": "/tag/adulthood/page/1/",
+    "severity": 5,
+    "children": [],
+    "hidden": false,
+    "url": "https://quotes.toscrape.com/tag/adulthood/page/1/"
+  },
+  {
+    "node_id": "0.0.0.0",
+    "name": "/tag/adulthood/page/1",
+    "severity": "unknown",
+    "children": [],
+    "hidden": false,
+    "url": ""
+  },
+  {
+    "node_id": "35.211.122.109",
+    "name": "/tag/aliteracy/page/1/",
+    "severity": 5,
+    "children": [],
+    "hidden": false,
+    "url": "https://quotes.toscrape.com/tag/aliteracy/page/1/"
+  },
+  {
+    "node_id": "0.0.0.0",
+    "name": "/tag/aliteracy/page/1",
+    "severity": "unknown",
+    "children": [],
+    "hidden": false,
+    "url": ""
+  },
+  {
+    "node_id": "35.211.122.109",
+    "name": "/tag/be-yourself/page/1/",
+    "severity": 5,
+    "children": [],
+    "hidden": false,
+    "url": "https://quotes.toscrape.com/tag/be-yourself/page/1/"
+  },
+  {
+    "node_id": "0.0.0.0",
+    "name": "/tag/be-yourself/page/1",
+    "severity": "unknown",
+    "children": [],
+    "hidden": false,
+    "url": ""
+  },
+  {
+    "node_id": "35.211.122.109",
+    "name": "/tag/books/",
+    "severity": 5,
+    "children": [],
+    "hidden": false,
+    "url": "https://quotes.toscrape.com/tag/books/"
+  },
+  {
+    "node_id": "0.0.0.0",
+    "name": "/tag/books",
+    "severity": "unknown",
+    "children": [],
+    "hidden": false,
+    "url": ""
+  },
+  {
+    "node_id": "35.211.122.109",
+    "name": "/tag/books/page/1/",
+    "severity": 5,
+    "children": [],
+    "hidden": false,
+    "url": "https://quotes.toscrape.com/tag/books/page/1/"
+  },
+  {
+    "node_id": "0.0.0.0",
+    "name": "/tag/books/page/1",
+    "severity": "unknown",
+    "children": [],
+    "hidden": false,
+    "url": ""
+  },
+  {
+    "node_id": "35.211.122.109",
+    "name": "/tag/change/page/1/",
+    "severity": 5,
+    "children": [],
+    "hidden": false,
+    "url": "https://quotes.toscrape.com/tag/change/page/1/"
+  },
+  {
+    "node_id": "0.0.0.0",
+    "name": "/tag/change/page/1",
+    "severity": "unknown",
+    "children": [],
+    "hidden": false,
+    "url": ""
   }
 ]

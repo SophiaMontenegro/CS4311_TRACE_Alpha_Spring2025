@@ -3,12 +3,14 @@
 import json
 import asyncio
 import datetime
+import socket
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
 from urllib.parse import urlparse
 from Team1.httpclient.http_client import HTTPClient
 from Team1.httpclient.proxy_server import ProxyServer
 from Team7.src.modules.crawler.crawler_response import CrawlerResponseProcessor
+import aiohttp
 
 class crawler_manager:
     """
@@ -67,6 +69,37 @@ class crawler_manager:
         The callback should accept two parameters: url and error (which can be None).
         """
         self.progress_callback = callback
+    
+    async def send_update(self, ip: str, full_url: str, hidden: str, status_code: int, severity: int):
+        """
+        Sets up the call to send the responses to webtree
+        """
+        try:
+            parsed = urlparse(full_url)
+            payload = {
+                "ip": ip,
+                "url": full_url,
+                "path": parsed.path or "/",
+                "status_code": status_code,
+                "hidden": hidden,
+                "severity": severity,
+                "operation": "update"
+            }
+            async with aiohttp.ClientSession() as session:
+                async with session.post("http://localhost:8000/api/tree/update", json=payload) as response:
+                    response_text = await response.text()
+                    print(f"Sent {parsed}: {response.status} - {response_text}")
+        except Exception as e:
+            print(f"Error sending update for {full_url}: {e}")
+    
+    def get_ip_from_target_url(self, url: str) -> str:
+        try:
+            parsed = urlparse(url)
+            if parsed.hostname:
+                return socket.gethostbyname(parsed.hostname)
+        except Exception as e:
+            print(f"Failed to resolve IP for {url}: {e}")
+        return "0.0.0.0"  
 
     def configure_crawler(self, target_url: str, jobid: str, depth: int, limit: int, user_agent: str, delay: int, proxy: str, crawl_date: str = None, crawl_time: str = None, excluded_urls: str = None) -> None:
         """
@@ -241,13 +274,25 @@ class crawler_manager:
 
         @ensures result is a list of processed crawl results;
         """
+
         await self.crawl_recursive(self.config.get("target_url"), self.config.get("depth"))
 
         with open("Team7/src/database/crawler/crawler_table_data.json", "w", encoding="utf-8") as f:
             json.dump(self.table_data, f, indent=1)
 
         print("Crawling completed. Results written to crawler_table_data.json")
+
+        target_ip = self.get_ip_from_target_url(self.config["target_url"])
+
+        for result in self.results:
+            await self.send_update(target_ip, result["url"], False , 200, 5)
+
+        async with aiohttp.ClientSession() as session:
+            async with session.post("http://localhost:8000/api/tree/save-static") as response:
+                print("Saved static tree:", response.status)
+        
         return self.results
+    
 
 # Sample test run
 if __name__ == '__main__':
