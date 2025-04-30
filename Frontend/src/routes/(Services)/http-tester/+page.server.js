@@ -9,11 +9,14 @@ import {
 
 export const actions = {
   default: async ({ request }) => {
-    console.log('[Server] Action triggered');
 
-    // 1) Pull out the form data
+//  1) Pull out the form data
     const formData = await request.formData();
-    const mode     = formData.get('mode')?.toString() || 'request';
+
+    const mode = formData.get('mode')?.toString() || 'request';
+    const projectName = formData.get('currentProjectName')?.toString() || 'Unnamed Project';
+    const apiBaseURL = formData.get('apiBaseURL')?.toString() || 'http://127.0.0.1:8000';
+
 
     let method;
     let relativeUrl;
@@ -80,6 +83,7 @@ export const actions = {
 
     // 3) Build and send the proxy payload
     const proxyPayload = {
+      projectName,
       target: targetUrl,
       request: {
         method,
@@ -89,11 +93,11 @@ export const actions = {
       }
     };
 
-    console.log('▶️ proxyPayload →', JSON.stringify(proxyPayload, null, 2));
+
 
     let proxyRes;
     try {
-      proxyRes = await fetch('http://127.0.0.1:8000/api/http/send', {
+      proxyRes = await fetch(`${apiBaseURL}/api/http/send`, {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
         body:    JSON.stringify(proxyPayload)
