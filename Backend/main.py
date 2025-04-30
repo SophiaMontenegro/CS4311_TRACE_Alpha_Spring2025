@@ -36,6 +36,7 @@ from Team3.SQL_Injection.sql_injection_router import get_websocket_handlers as g
 from Team3.Database.team3_router import team3_router
 
 from Team3.Database.team3_router import team3_router
+from team1_router import team1_router
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -286,7 +287,7 @@ app.add_middleware(
 # Include GraphQL router
 app.include_router(graphql_app, prefix='/graphql')
 
-#app.include_router(team1_router)
+app.include_router(team1_router)
 app.include_router(team3_router)
 
 # Register service routers
