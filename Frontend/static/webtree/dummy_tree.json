@@ -36,7 +36,7 @@
           {
             "node_id": "35.211.122.109",
             "name": "/author/J-K-Rowling",
-            "severity": 5,
+            "severity": "high",
             "children": [],
             "hidden": false,
             "url": "https://quotes.toscrape.com/author/J-K-Rowling"
@@ -44,7 +44,7 @@
           {
             "node_id": "35.211.122.109",
             "name": "/author/Jane-Austen",
-            "severity": 5,
+            "severity": "high",
             "children": [],
             "hidden": false,
             "url": "https://quotes.toscrape.com/author/Jane-Austen"
@@ -52,7 +52,7 @@
           {
             "node_id": "35.211.122.109",
             "name": "/author/Marilyn-Monroe",
-            "severity": 5,
+            "severity": "high",
             "children": [],
             "hidden": false,
             "url": "https://quotes.toscrape.com/author/Marilyn-Monroe"
@@ -60,7 +60,7 @@
           {
             "node_id": "35.211.122.109",
             "name": "/author/Steve-Martin",
-            "severity": "high",
+            "severity": "low",
             "children": [],
             "hidden": false,
             "url": "https://quotes.toscrape.com/author/Steve-Martin"
@@ -80,7 +80,7 @@
       {
         "node_id": "35.211.122.109",
         "name": "/login",
-        "severity": "medium",
+        "severity": "low",
         "children": [],
         "hidden": false,
         "url": "https://quotes.toscrape.com/login"

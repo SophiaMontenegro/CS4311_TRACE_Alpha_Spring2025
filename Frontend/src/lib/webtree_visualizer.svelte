@@ -61,7 +61,22 @@
 	});
 
 	function getSeverityColor(severity) {
-		return severity === 'high' ? '#dc2626' : severity === 'medium' ? '#f59e0b' : '#16a34a';
+		if (typeof severity === 'number') {
+			if (severity >= 5) return '#dc2626'; //
+			if (severity >= 3) return '#f59e0b'; // medium
+			return '#16a34a'; // low
+		}
+
+		switch (severity) {
+			case 'high':
+				return '#dc2626';
+			case 'medium':
+				return '#f59e0b';
+			case 'low':
+				return '#16a34a';
+			default:
+				return '#9ca3af';
+		}
 	}
 
 	function zoomIn() {
@@ -409,6 +424,7 @@
 			<p><strong>ID:</strong> {selectedNode.node_id}</p>
 			<p><strong>Name:</strong> {selectedNode.name}</p>
 			<p><strong>URL:</strong> {selectedNode.url}</p>
+			<p><strong>Severity:</strong> {selectedNode.severity}</p>
 			<select bind:value={newSeverity} on:change={() => console.log(newSeverity)}>
 				<option value="" disabled selected>Change severity</option>
 				<option value="low">Low</option>

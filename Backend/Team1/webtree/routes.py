@@ -2,8 +2,11 @@ from fastapi import APIRouter, HTTPException
 from urllib.parse import urlparse
 from .tree_builder import WebTreeBuilder
 from .tree_controller import WebTreeController
+import os
+import json
 
 router = APIRouter()
+
 
 tree_builder = WebTreeBuilder(
     uri="bolt://localhost:7687",
@@ -36,6 +39,9 @@ async def update_node(payload: dict):
     }
 
     result = controller.process_tree_update(update_data)
+
+    await save_static_tree()
+
     return {"status": "updated", "result": result}
 
 @router.get("/webtree/dummy_tree.json")
