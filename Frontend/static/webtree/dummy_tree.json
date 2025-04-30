@@ -23,7 +23,7 @@
             "severity": 5,
             "children": [],
             "hidden": false,
-            "url": "https://www.zyte.com/author/Andre-Gide"
+            "url": "https://quotes.toscrape.com/author/Andre-Gide"
           },
           {
             "node_id": "35.211.122.109",
@@ -31,7 +31,7 @@
             "severity": 5,
             "children": [],
             "hidden": false,
-            "url": "https://www.zyte.com/author/Eleanor-Roosevelt"
+            "url": "https://quotes.toscrape.com/author/Eleanor-Roosevelt"
           },
           {
             "node_id": "35.211.122.109",
@@ -39,7 +39,7 @@
             "severity": 5,
             "children": [],
             "hidden": false,
-            "url": "https://www.zyte.com/author/J-K-Rowling"
+            "url": "https://quotes.toscrape.com/author/J-K-Rowling"
           },
           {
             "node_id": "35.211.122.109",
@@ -47,7 +47,7 @@
             "severity": 5,
             "children": [],
             "hidden": false,
-            "url": "https://www.zyte.com/author/Jane-Austen"
+            "url": "https://quotes.toscrape.com/author/Jane-Austen"
           },
           {
             "node_id": "35.211.122.109",
@@ -55,15 +55,15 @@
             "severity": 5,
             "children": [],
             "hidden": false,
-            "url": "https://www.zyte.com/author/Marilyn-Monroe"
+            "url": "https://quotes.toscrape.com/author/Marilyn-Monroe"
           },
           {
             "node_id": "35.211.122.109",
             "name": "/author/Steve-Martin",
-            "severity": 5,
+            "severity": "high",
             "children": [],
             "hidden": false,
-            "url": "https://www.zyte.com/author/Steve-Martin"
+            "url": "https://quotes.toscrape.com/author/Steve-Martin"
           },
           {
             "node_id": "35.211.122.109",
@@ -71,83 +71,19 @@
             "severity": 5,
             "children": [],
             "hidden": false,
-            "url": "https://www.zyte.com/author/Thomas-A-Edison"
-          },
-          {
-            "node_id": "35.211.122.109",
-            "name": "/author/Bob-Marley",
-            "severity": 5,
-            "children": [],
-            "hidden": false,
-            "url": "https://www.zyte.com/author/Bob-Marley"
-          },
-          {
-            "node_id": "35.211.122.109",
-            "name": "/author/Douglas-Adams",
-            "severity": 5,
-            "children": [],
-            "hidden": false,
-            "url": "https://www.zyte.com/author/Douglas-Adams"
-          },
-          {
-            "node_id": "35.211.122.109",
-            "name": "/author/Dr-Seuss",
-            "severity": 5,
-            "children": [],
-            "hidden": false,
-            "url": "https://www.zyte.com/author/Dr-Seuss"
-          },
-          {
-            "node_id": "35.211.122.109",
-            "name": "/author/Elie-Wiesel",
-            "severity": 5,
-            "children": [],
-            "hidden": false,
-            "url": "https://www.zyte.com/author/Elie-Wiesel"
-          },
-          {
-            "node_id": "35.211.122.109",
-            "name": "/author/Friedrich-Nietzsche",
-            "severity": 5,
-            "children": [],
-            "hidden": false,
-            "url": "https://www.zyte.com/author/Friedrich-Nietzsche"
-          },
-          {
-            "node_id": "35.211.122.109",
-            "name": "/author/Mark-Twain",
-            "severity": 5,
-            "children": [],
-            "hidden": false,
-            "url": "https://www.zyte.com/author/Mark-Twain"
-          },
-          {
-            "node_id": "35.211.122.109",
-            "name": "/author/C-S-Lewis",
-            "severity": 5,
-            "children": [],
-            "hidden": false,
-            "url": "https://quotes.toscrape.com/author/C-S-Lewis"
-          },
-          {
-            "node_id": "35.211.122.109",
-            "name": "/author/Ernest-Hemingway",
-            "severity": 5,
-            "children": [],
-            "hidden": false,
-            "url": "https://quotes.toscrape.com/author/Ernest-Hemingway"
-          },
-          {
-            "node_id": "35.211.122.109",
-            "name": "/author/Haruki-Murakami",
-            "severity": 5,
-            "children": [],
-            "hidden": false,
-            "url": "https://quotes.toscrape.com/author/Haruki-Murakami"
+            "url": "https://quotes.toscrape.com/author/Thomas-A-Edison"
           }
         ],
         "hidden": false,
         "url": "https://quotes.toscrape.com/author"
+      },
+      {
+        "node_id": "35.211.122.109",
+        "name": "/login",
+        "severity": "medium",
+        "children": [],
+        "hidden": false,
+        "url": "https://quotes.toscrape.com/login"
       },
       {
         "node_id": "0.0.0.0",
@@ -173,14 +109,6 @@
         ],
         "hidden": false,
         "url": "https://quotes.toscrape.com/static"
-      },
-      {
-        "node_id": "35.211.122.109",
-        "name": "/quotes",
-        "severity": 5,
-        "children": [],
-        "hidden": false,
-        "url": "https://www.goodreads.com/quotes"
       }
     ],
     "hidden": false,
@@ -192,7 +120,7 @@
     "severity": 5,
     "children": [],
     "hidden": false,
-    "url": "https://www.zyte.com/page/2/"
+    "url": "https://quotes.toscrape.com/page/2/"
   },
   {
     "node_id": "0.0.0.0",
@@ -204,395 +132,11 @@
   },
   {
     "node_id": "35.211.122.109",
-    "name": "/tag/activism/page/1/",
-    "severity": 5,
-    "children": [],
-    "hidden": false,
-    "url": "https://www.zyte.com/tag/activism/page/1/"
-  },
-  {
-    "node_id": "0.0.0.0",
-    "name": "/tag/activism/page/1",
-    "severity": "unknown",
-    "children": [],
-    "hidden": false,
-    "url": ""
-  },
-  {
-    "node_id": "35.211.122.109",
-    "name": "/tag/apathy/page/1/",
-    "severity": 5,
-    "children": [],
-    "hidden": false,
-    "url": "https://www.zyte.com/tag/apathy/page/1/"
-  },
-  {
-    "node_id": "0.0.0.0",
-    "name": "/tag/apathy/page/1",
-    "severity": "unknown",
-    "children": [],
-    "hidden": false,
-    "url": ""
-  },
-  {
-    "node_id": "35.211.122.109",
-    "name": "/tag/books/page/1/",
-    "severity": 5,
-    "children": [],
-    "hidden": false,
-    "url": "https://www.zyte.com/tag/books/page/1/"
-  },
-  {
-    "node_id": "0.0.0.0",
-    "name": "/tag/books/page/1",
-    "severity": "unknown",
-    "children": [],
-    "hidden": false,
-    "url": ""
-  },
-  {
-    "node_id": "35.211.122.109",
-    "name": "/tag/contentment/page/1/",
-    "severity": 5,
-    "children": [],
-    "hidden": false,
-    "url": "https://www.zyte.com/tag/contentment/page/1/"
-  },
-  {
-    "node_id": "0.0.0.0",
-    "name": "/tag/contentment/page/1",
-    "severity": "unknown",
-    "children": [],
-    "hidden": false,
-    "url": ""
-  },
-  {
-    "node_id": "35.211.122.109",
-    "name": "/tag/courage/page/1/",
-    "severity": 5,
-    "children": [],
-    "hidden": false,
-    "url": "https://www.zyte.com/tag/courage/page/1/"
-  },
-  {
-    "node_id": "0.0.0.0",
-    "name": "/tag/courage/page/1",
-    "severity": "unknown",
-    "children": [],
-    "hidden": false,
-    "url": ""
-  },
-  {
-    "node_id": "35.211.122.109",
-    "name": "/tag/fantasy/page/1/",
-    "severity": 5,
-    "children": [],
-    "hidden": false,
-    "url": "https://www.zyte.com/tag/fantasy/page/1/"
-  },
-  {
-    "node_id": "0.0.0.0",
-    "name": "/tag/fantasy/page/1",
-    "severity": "unknown",
-    "children": [],
-    "hidden": false,
-    "url": ""
-  },
-  {
-    "node_id": "35.211.122.109",
-    "name": "/tag/friends/page/1/",
-    "severity": 5,
-    "children": [],
-    "hidden": false,
-    "url": "https://www.zyte.com/tag/friends/page/1/"
-  },
-  {
-    "node_id": "0.0.0.0",
-    "name": "/tag/friends/page/1",
-    "severity": "unknown",
-    "children": [],
-    "hidden": false,
-    "url": ""
-  },
-  {
-    "node_id": "35.211.122.109",
-    "name": "/tag/friendship/page/1/",
-    "severity": 5,
-    "children": [],
-    "hidden": false,
-    "url": "https://www.zyte.com/tag/friendship/page/1/"
-  },
-  {
-    "node_id": "0.0.0.0",
-    "name": "/tag/friendship/page/1",
-    "severity": "unknown",
-    "children": [],
-    "hidden": false,
-    "url": ""
-  },
-  {
-    "node_id": "35.211.122.109",
-    "name": "/tag/hate/page/1/",
-    "severity": 5,
-    "children": [],
-    "hidden": false,
-    "url": "https://www.zyte.com/tag/hate/page/1/"
-  },
-  {
-    "node_id": "0.0.0.0",
-    "name": "/tag/hate/page/1",
-    "severity": "unknown",
-    "children": [],
-    "hidden": false,
-    "url": ""
-  },
-  {
-    "node_id": "35.211.122.109",
-    "name": "/tag/heartbreak/page/1/",
-    "severity": 5,
-    "children": [],
-    "hidden": false,
-    "url": "https://www.zyte.com/tag/heartbreak/page/1/"
-  },
-  {
-    "node_id": "0.0.0.0",
-    "name": "/tag/heartbreak/page/1",
-    "severity": "unknown",
-    "children": [],
-    "hidden": false,
-    "url": ""
-  },
-  {
-    "node_id": "35.211.122.109",
-    "name": "/tag/indifference/page/1/",
-    "severity": 5,
-    "children": [],
-    "hidden": false,
-    "url": "https://www.zyte.com/tag/indifference/page/1/"
-  },
-  {
-    "node_id": "0.0.0.0",
-    "name": "/tag/indifference/page/1",
-    "severity": "unknown",
-    "children": [],
-    "hidden": false,
-    "url": ""
-  },
-  {
-    "node_id": "35.211.122.109",
-    "name": "/tag/inspirational/page/1/",
-    "severity": 5,
-    "children": [],
-    "hidden": false,
-    "url": "https://www.zyte.com/tag/inspirational/page/1/"
-  },
-  {
-    "node_id": "0.0.0.0",
-    "name": "/tag/inspirational/page/1",
-    "severity": "unknown",
-    "children": [],
-    "hidden": false,
-    "url": ""
-  },
-  {
-    "node_id": "35.211.122.109",
-    "name": "/tag/lack-of-friendship/page/1/",
-    "severity": 5,
-    "children": [],
-    "hidden": false,
-    "url": "https://www.zyte.com/tag/lack-of-friendship/page/1/"
-  },
-  {
-    "node_id": "0.0.0.0",
-    "name": "/tag/lack-of-friendship/page/1",
-    "severity": "unknown",
-    "children": [],
-    "hidden": false,
-    "url": ""
-  },
-  {
-    "node_id": "35.211.122.109",
-    "name": "/tag/lack-of-love/page/1/",
-    "severity": 5,
-    "children": [],
-    "hidden": false,
-    "url": "https://www.zyte.com/tag/lack-of-love/page/1/"
-  },
-  {
-    "node_id": "0.0.0.0",
-    "name": "/tag/lack-of-love/page/1",
-    "severity": "unknown",
-    "children": [],
-    "hidden": false,
-    "url": ""
-  },
-  {
-    "node_id": "35.211.122.109",
-    "name": "/tag/life/page/1/",
-    "severity": 5,
-    "children": [],
-    "hidden": false,
-    "url": "https://www.zyte.com/tag/life/page/1/"
-  },
-  {
-    "node_id": "0.0.0.0",
-    "name": "/tag/life/page/1",
-    "severity": "unknown",
-    "children": [],
-    "hidden": false,
-    "url": ""
-  },
-  {
-    "node_id": "35.211.122.109",
-    "name": "/tag/love/page/1/",
-    "severity": 5,
-    "children": [],
-    "hidden": false,
-    "url": "https://www.zyte.com/tag/love/page/1/"
-  },
-  {
-    "node_id": "0.0.0.0",
-    "name": "/tag/love/page/1",
-    "severity": "unknown",
-    "children": [],
-    "hidden": false,
-    "url": ""
-  },
-  {
-    "node_id": "35.211.122.109",
-    "name": "/tag/marriage/page/1/",
-    "severity": 5,
-    "children": [],
-    "hidden": false,
-    "url": "https://www.zyte.com/tag/marriage/page/1/"
-  },
-  {
-    "node_id": "0.0.0.0",
-    "name": "/tag/marriage/page/1",
-    "severity": "unknown",
-    "children": [],
-    "hidden": false,
-    "url": ""
-  },
-  {
-    "node_id": "35.211.122.109",
-    "name": "/tag/navigation/page/1/",
-    "severity": 5,
-    "children": [],
-    "hidden": false,
-    "url": "https://www.zyte.com/tag/navigation/page/1/"
-  },
-  {
-    "node_id": "0.0.0.0",
-    "name": "/tag/navigation/page/1",
-    "severity": "unknown",
-    "children": [],
-    "hidden": false,
-    "url": ""
-  },
-  {
-    "node_id": "35.211.122.109",
-    "name": "/tag/opposite/page/1/",
-    "severity": 5,
-    "children": [],
-    "hidden": false,
-    "url": "https://www.zyte.com/tag/opposite/page/1/"
-  },
-  {
-    "node_id": "0.0.0.0",
-    "name": "/tag/opposite/page/1",
-    "severity": "unknown",
-    "children": [],
-    "hidden": false,
-    "url": ""
-  },
-  {
-    "node_id": "35.211.122.109",
-    "name": "/tag/philosophy/page/1/",
-    "severity": 5,
-    "children": [],
-    "hidden": false,
-    "url": "https://www.zyte.com/tag/philosophy/page/1/"
-  },
-  {
-    "node_id": "0.0.0.0",
-    "name": "/tag/philosophy/page/1",
-    "severity": "unknown",
-    "children": [],
-    "hidden": false,
-    "url": ""
-  },
-  {
-    "node_id": "35.211.122.109",
-    "name": "/tag/simplicity/page/1/",
-    "severity": 5,
-    "children": [],
-    "hidden": false,
-    "url": "https://www.zyte.com/tag/simplicity/page/1/"
-  },
-  {
-    "node_id": "0.0.0.0",
-    "name": "/tag/simplicity/page/1",
-    "severity": "unknown",
-    "children": [],
-    "hidden": false,
-    "url": ""
-  },
-  {
-    "node_id": "35.211.122.109",
-    "name": "/tag/sisters/page/1/",
-    "severity": 5,
-    "children": [],
-    "hidden": false,
-    "url": "https://www.zyte.com/tag/sisters/page/1/"
-  },
-  {
-    "node_id": "0.0.0.0",
-    "name": "/tag/sisters/page/1",
-    "severity": "unknown",
-    "children": [],
-    "hidden": false,
-    "url": ""
-  },
-  {
-    "node_id": "35.211.122.109",
-    "name": "/tag/understand/page/1/",
-    "severity": 5,
-    "children": [],
-    "hidden": false,
-    "url": "https://www.zyte.com/tag/understand/page/1/"
-  },
-  {
-    "node_id": "0.0.0.0",
-    "name": "/tag/understand/page/1",
-    "severity": "unknown",
-    "children": [],
-    "hidden": false,
-    "url": ""
-  },
-  {
-    "node_id": "35.211.122.109",
-    "name": "/tag/unhappy-marriage/page/1/",
-    "severity": 5,
-    "children": [],
-    "hidden": false,
-    "url": "https://www.zyte.com/tag/unhappy-marriage/page/1/"
-  },
-  {
-    "node_id": "0.0.0.0",
-    "name": "/tag/unhappy-marriage/page/1",
-    "severity": "unknown",
-    "children": [],
-    "hidden": false,
-    "url": ""
-  },
-  {
-    "node_id": "35.211.122.109",
     "name": "/tag/abilities/page/1/",
     "severity": 5,
     "children": [],
     "hidden": false,
-    "url": "https://www.zyte.com/tag/abilities/page/1/"
+    "url": "https://quotes.toscrape.com/tag/abilities/page/1/"
   },
   {
     "node_id": "0.0.0.0",
@@ -604,187 +148,11 @@
   },
   {
     "node_id": "35.211.122.109",
-    "name": "/tag/books/",
-    "severity": 5,
-    "children": [],
-    "hidden": false,
-    "url": "https://www.zyte.com/tag/books/"
-  },
-  {
-    "node_id": "0.0.0.0",
-    "name": "/tag/books",
-    "severity": "unknown",
-    "children": [],
-    "hidden": false,
-    "url": ""
-  },
-  {
-    "node_id": "35.211.122.109",
-    "name": "/tag/choices/page/1/",
-    "severity": 5,
-    "children": [],
-    "hidden": false,
-    "url": "https://www.zyte.com/tag/choices/page/1/"
-  },
-  {
-    "node_id": "0.0.0.0",
-    "name": "/tag/choices/page/1",
-    "severity": "unknown",
-    "children": [],
-    "hidden": false,
-    "url": ""
-  },
-  {
-    "node_id": "35.211.122.109",
-    "name": "/tag/friends/",
-    "severity": 5,
-    "children": [],
-    "hidden": false,
-    "url": "https://www.zyte.com/tag/friends/"
-  },
-  {
-    "node_id": "0.0.0.0",
-    "name": "/tag/friends",
-    "severity": "unknown",
-    "children": [],
-    "hidden": false,
-    "url": ""
-  },
-  {
-    "node_id": "35.211.122.109",
-    "name": "/tag/friendship/",
-    "severity": 5,
-    "children": [],
-    "hidden": false,
-    "url": "https://www.zyte.com/tag/friendship/"
-  },
-  {
-    "node_id": "0.0.0.0",
-    "name": "/tag/friendship",
-    "severity": "unknown",
-    "children": [],
-    "hidden": false,
-    "url": ""
-  },
-  {
-    "node_id": "35.211.122.109",
-    "name": "/tag/humor/",
-    "severity": 5,
-    "children": [],
-    "hidden": false,
-    "url": "https://www.zyte.com/tag/humor/"
-  },
-  {
-    "node_id": "0.0.0.0",
-    "name": "/tag/humor",
-    "severity": "unknown",
-    "children": [],
-    "hidden": false,
-    "url": ""
-  },
-  {
-    "node_id": "35.211.122.109",
-    "name": "/tag/inspirational/",
-    "severity": 5,
-    "children": [],
-    "hidden": false,
-    "url": "https://www.zyte.com/tag/inspirational/"
-  },
-  {
-    "node_id": "0.0.0.0",
-    "name": "/tag/inspirational",
-    "severity": "unknown",
-    "children": [],
-    "hidden": false,
-    "url": ""
-  },
-  {
-    "node_id": "35.211.122.109",
-    "name": "/tag/life/",
-    "severity": 5,
-    "children": [],
-    "hidden": false,
-    "url": "https://www.zyte.com/tag/life/"
-  },
-  {
-    "node_id": "0.0.0.0",
-    "name": "/tag/life",
-    "severity": "unknown",
-    "children": [],
-    "hidden": false,
-    "url": ""
-  },
-  {
-    "node_id": "35.211.122.109",
-    "name": "/tag/love/",
-    "severity": 5,
-    "children": [],
-    "hidden": false,
-    "url": "https://www.zyte.com/tag/love/"
-  },
-  {
-    "node_id": "0.0.0.0",
-    "name": "/tag/love",
-    "severity": "unknown",
-    "children": [],
-    "hidden": false,
-    "url": ""
-  },
-  {
-    "node_id": "35.211.122.109",
-    "name": "/tag/reading/",
-    "severity": 5,
-    "children": [],
-    "hidden": false,
-    "url": "https://www.zyte.com/tag/reading/"
-  },
-  {
-    "node_id": "0.0.0.0",
-    "name": "/tag/reading",
-    "severity": "unknown",
-    "children": [],
-    "hidden": false,
-    "url": ""
-  },
-  {
-    "node_id": "35.211.122.109",
-    "name": "/tag/simile/",
-    "severity": 5,
-    "children": [],
-    "hidden": false,
-    "url": "https://www.zyte.com/tag/simile/"
-  },
-  {
-    "node_id": "0.0.0.0",
-    "name": "/tag/simile",
-    "severity": "unknown",
-    "children": [],
-    "hidden": false,
-    "url": ""
-  },
-  {
-    "node_id": "35.211.122.109",
-    "name": "/tag/truth/",
-    "severity": 5,
-    "children": [],
-    "hidden": false,
-    "url": "https://www.zyte.com/tag/truth/"
-  },
-  {
-    "node_id": "0.0.0.0",
-    "name": "/tag/truth",
-    "severity": "unknown",
-    "children": [],
-    "hidden": false,
-    "url": ""
-  },
-  {
-    "node_id": "35.211.122.109",
     "name": "/tag/adulthood/page/1/",
     "severity": 5,
     "children": [],
     "hidden": false,
-    "url": "https://www.zyte.com/tag/adulthood/page/1/"
+    "url": "https://quotes.toscrape.com/tag/adulthood/page/1/"
   },
   {
     "node_id": "0.0.0.0",
@@ -796,43 +164,11 @@
   },
   {
     "node_id": "35.211.122.109",
-    "name": "/tag/success/page/1/",
-    "severity": 5,
-    "children": [],
-    "hidden": false,
-    "url": "https://www.zyte.com/tag/success/page/1/"
-  },
-  {
-    "node_id": "0.0.0.0",
-    "name": "/tag/success/page/1",
-    "severity": "unknown",
-    "children": [],
-    "hidden": false,
-    "url": ""
-  },
-  {
-    "node_id": "35.211.122.109",
-    "name": "/tag/value/page/1/",
-    "severity": 5,
-    "children": [],
-    "hidden": false,
-    "url": "https://www.zyte.com/tag/value/page/1/"
-  },
-  {
-    "node_id": "0.0.0.0",
-    "name": "/tag/value/page/1",
-    "severity": "unknown",
-    "children": [],
-    "hidden": false,
-    "url": ""
-  },
-  {
-    "node_id": "35.211.122.109",
     "name": "/tag/aliteracy/page/1/",
     "severity": 5,
     "children": [],
     "hidden": false,
-    "url": "https://www.zyte.com/tag/aliteracy/page/1/"
+    "url": "https://quotes.toscrape.com/tag/aliteracy/page/1/"
   },
   {
     "node_id": "0.0.0.0",
@@ -844,43 +180,11 @@
   },
   {
     "node_id": "35.211.122.109",
-    "name": "/tag/classic/page/1/",
-    "severity": 5,
-    "children": [],
-    "hidden": false,
-    "url": "https://www.zyte.com/tag/classic/page/1/"
-  },
-  {
-    "node_id": "0.0.0.0",
-    "name": "/tag/classic/page/1",
-    "severity": "unknown",
-    "children": [],
-    "hidden": false,
-    "url": ""
-  },
-  {
-    "node_id": "35.211.122.109",
-    "name": "/tag/humor/page/1/",
-    "severity": 5,
-    "children": [],
-    "hidden": false,
-    "url": "https://www.zyte.com/tag/humor/page/1/"
-  },
-  {
-    "node_id": "0.0.0.0",
-    "name": "/tag/humor/page/1",
-    "severity": "unknown",
-    "children": [],
-    "hidden": false,
-    "url": ""
-  },
-  {
-    "node_id": "35.211.122.109",
     "name": "/tag/be-yourself/page/1/",
     "severity": 5,
     "children": [],
     "hidden": false,
-    "url": "https://www.zyte.com/tag/be-yourself/page/1/"
+    "url": "https://quotes.toscrape.com/tag/be-yourself/page/1/"
   },
   {
     "node_id": "0.0.0.0",
@@ -892,207 +196,47 @@
   },
   {
     "node_id": "35.211.122.109",
+    "name": "/tag/books/",
+    "severity": 5,
+    "children": [],
+    "hidden": false,
+    "url": "https://quotes.toscrape.com/tag/books/"
+  },
+  {
+    "node_id": "0.0.0.0",
+    "name": "/tag/books",
+    "severity": "unknown",
+    "children": [],
+    "hidden": false,
+    "url": ""
+  },
+  {
+    "node_id": "35.211.122.109",
+    "name": "/tag/books/page/1/",
+    "severity": 5,
+    "children": [],
+    "hidden": false,
+    "url": "https://quotes.toscrape.com/tag/books/page/1/"
+  },
+  {
+    "node_id": "0.0.0.0",
+    "name": "/tag/books/page/1",
+    "severity": "unknown",
+    "children": [],
+    "hidden": false,
+    "url": ""
+  },
+  {
+    "node_id": "35.211.122.109",
     "name": "/tag/change/page/1/",
     "severity": 5,
     "children": [],
     "hidden": false,
-    "url": "https://www.zyte.com/tag/change/page/1/"
+    "url": "https://quotes.toscrape.com/tag/change/page/1/"
   },
   {
     "node_id": "0.0.0.0",
     "name": "/tag/change/page/1",
-    "severity": "unknown",
-    "children": [],
-    "hidden": false,
-    "url": ""
-  },
-  {
-    "node_id": "35.211.122.109",
-    "name": "/tag/deep-thoughts/page/1/",
-    "severity": 5,
-    "children": [],
-    "hidden": false,
-    "url": "https://www.zyte.com/tag/deep-thoughts/page/1/"
-  },
-  {
-    "node_id": "0.0.0.0",
-    "name": "/tag/deep-thoughts/page/1",
-    "severity": "unknown",
-    "children": [],
-    "hidden": false,
-    "url": ""
-  },
-  {
-    "node_id": "35.211.122.109",
-    "name": "/tag/thinking/page/1/",
-    "severity": 5,
-    "children": [],
-    "hidden": false,
-    "url": "https://www.zyte.com/tag/thinking/page/1/"
-  },
-  {
-    "node_id": "0.0.0.0",
-    "name": "/tag/thinking/page/1",
-    "severity": "unknown",
-    "children": [],
-    "hidden": false,
-    "url": ""
-  },
-  {
-    "node_id": "35.211.122.109",
-    "name": "/tag/world/page/1/",
-    "severity": 5,
-    "children": [],
-    "hidden": false,
-    "url": "https://www.zyte.com/tag/world/page/1/"
-  },
-  {
-    "node_id": "0.0.0.0",
-    "name": "/tag/world/page/1",
-    "severity": "unknown",
-    "children": [],
-    "hidden": false,
-    "url": ""
-  },
-  {
-    "node_id": "35.211.122.109",
-    "name": "/tag/edison/page/1/",
-    "severity": 5,
-    "children": [],
-    "hidden": false,
-    "url": "https://www.zyte.com/tag/edison/page/1/"
-  },
-  {
-    "node_id": "0.0.0.0",
-    "name": "/tag/edison/page/1",
-    "severity": "unknown",
-    "children": [],
-    "hidden": false,
-    "url": ""
-  },
-  {
-    "node_id": "35.211.122.109",
-    "name": "/tag/failure/page/1/",
-    "severity": 5,
-    "children": [],
-    "hidden": false,
-    "url": "https://www.zyte.com/tag/failure/page/1/"
-  },
-  {
-    "node_id": "0.0.0.0",
-    "name": "/tag/failure/page/1",
-    "severity": "unknown",
-    "children": [],
-    "hidden": false,
-    "url": ""
-  },
-  {
-    "node_id": "35.211.122.109",
-    "name": "/tag/paraphrased/page/1/",
-    "severity": 5,
-    "children": [],
-    "hidden": false,
-    "url": "https://www.zyte.com/tag/paraphrased/page/1/"
-  },
-  {
-    "node_id": "0.0.0.0",
-    "name": "/tag/paraphrased/page/1",
-    "severity": "unknown",
-    "children": [],
-    "hidden": false,
-    "url": ""
-  },
-  {
-    "node_id": "35.211.122.109",
-    "name": "/tag/live/page/1/",
-    "severity": 5,
-    "children": [],
-    "hidden": false,
-    "url": "https://www.zyte.com/tag/live/page/1/"
-  },
-  {
-    "node_id": "0.0.0.0",
-    "name": "/tag/live/page/1",
-    "severity": "unknown",
-    "children": [],
-    "hidden": false,
-    "url": ""
-  },
-  {
-    "node_id": "35.211.122.109",
-    "name": "/tag/miracle/page/1/",
-    "severity": 5,
-    "children": [],
-    "hidden": false,
-    "url": "https://www.zyte.com/tag/miracle/page/1/"
-  },
-  {
-    "node_id": "0.0.0.0",
-    "name": "/tag/miracle/page/1",
-    "severity": "unknown",
-    "children": [],
-    "hidden": false,
-    "url": ""
-  },
-  {
-    "node_id": "35.211.122.109",
-    "name": "/tag/miracles/page/1/",
-    "severity": 5,
-    "children": [],
-    "hidden": false,
-    "url": "https://www.zyte.com/tag/miracles/page/1/"
-  },
-  {
-    "node_id": "0.0.0.0",
-    "name": "/tag/miracles/page/1",
-    "severity": "unknown",
-    "children": [],
-    "hidden": false,
-    "url": ""
-  },
-  {
-    "node_id": "35.211.122.109",
-    "name": "/tag/misattributed-eleanor-roosevelt/page/1/",
-    "severity": 5,
-    "children": [],
-    "hidden": false,
-    "url": "https://www.zyte.com/tag/misattributed-eleanor-roosevelt/page/1/"
-  },
-  {
-    "node_id": "0.0.0.0",
-    "name": "/tag/misattributed-eleanor-roosevelt/page/1",
-    "severity": "unknown",
-    "children": [],
-    "hidden": false,
-    "url": ""
-  },
-  {
-    "node_id": "35.211.122.109",
-    "name": "/tag/obvious/page/1/",
-    "severity": 5,
-    "children": [],
-    "hidden": false,
-    "url": "https://www.zyte.com/tag/obvious/page/1/"
-  },
-  {
-    "node_id": "0.0.0.0",
-    "name": "/tag/obvious/page/1",
-    "severity": "unknown",
-    "children": [],
-    "hidden": false,
-    "url": ""
-  },
-  {
-    "node_id": "35.211.122.109",
-    "name": "/tag/simile/page/1/",
-    "severity": 5,
-    "children": [],
-    "hidden": false,
-    "url": "https://www.zyte.com/tag/simile/page/1/"
-  },
-  {
-    "node_id": "0.0.0.0",
-    "name": "/tag/simile/page/1",
     "severity": "unknown",
     "children": [],
     "hidden": false,

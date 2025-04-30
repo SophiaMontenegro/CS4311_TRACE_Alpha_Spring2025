@@ -3,6 +3,10 @@
 	import * as d3 from 'd3';
 	import { mode } from 'mode-watcher';
 
+	import { getApiBaseURL } from '$lib/utils/apiBaseURL';
+	import { browser } from '$app/environment';
+
+	let apiBaseURL = '';
 	let treeData = null;
 	let selectedNode = null;
 	let svgElement;
@@ -19,6 +23,12 @@
 	let showExportPopup = false;
 
 	let searchQuery = '';
+
+	if (browser) {
+		apiBaseURL = getApiBaseURL();
+	}
+
+	console.log('API Base URL:', apiBaseURL);
 
 	function showToastMessage(message, type = 'success') {
 		const id = Date.now() + Math.random(); // unique id
@@ -224,7 +234,7 @@
 
 		const pathToCenter = selectedNode.name;
 
-		fetch('http://localhost:8000/api/tree/update', {
+		fetch(`${apiBaseURL}/api/tree/update`, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json'

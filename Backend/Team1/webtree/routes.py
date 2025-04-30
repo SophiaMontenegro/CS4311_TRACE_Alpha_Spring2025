@@ -8,7 +8,7 @@ router = APIRouter()
 tree_builder = WebTreeBuilder(
     uri="bolt://localhost:7687",
     user="neo4j",
-    password=""  # <- your password here
+    password="tree-test"  # <- your password here
 )
 controller = WebTreeController(tree_builder)
 
@@ -52,20 +52,20 @@ async def get_hidden_tree():
     formatted_tree = controller_obj.build_tree_structure(current_tree)
     return formatted_tree["hidden"]
 
-@router.post("/tree/save-static")
-async def save_static_tree():
-    tree = tree_builder.fetch_tree()
-    formatted = controller.build_tree_structure(tree)
+# @router.post("/tree/save-static")
+# async def save_static_tree():
+#     tree = tree_builder.fetch_tree()
+#     formatted = controller.build_tree_structure(tree)
 
-    # Save visible
-    with open(os.path.join(BASE_DIR, "../../../Frontend/static/webtree/dummy_tree.json"), "w") as f:
-        json.dump(formatted["visible"], f, indent=2)
+#     # Save visible
+#     with open(os.path.join(BASE_DIR, "../../../Frontend/static/webtree/dummy_tree.json"), "w") as f:
+#         json.dump(formatted["visible"], f, indent=2)
 
-    # Save hidden
-    with open(os.path.join(BASE_DIR, "../../../Frontend/static/webtree/hidden_tree.json"), "w") as f:
-        json.dump(formatted["hidden"], f, indent=2)
+#     # Save hidden
+#     with open(os.path.join(BASE_DIR, "../../../Frontend/static/webtree/hidden_tree.json"), "w") as f:
+#         json.dump(formatted["hidden"], f, indent=2)
 
-    return {"status": "saved"}
+#     return {"status": "saved"}
 
 @router.post("/tree/save-static")
 async def save_static_tree():

@@ -248,4 +248,36 @@
             <a class="tag" style="font-size: 14px" href="/tag/reading/">reading</a>
             </span>
             
-            <span class="tag-ite
+            <span class="tag-item">
+            <a class="tag" style="font-size: 10px" href="/tag/friendship/">friendship</a>
+            </span>
+            
+            <span class="tag-item">
+            <a class="tag" style="font-size: 8px" href="/tag/friends/">friends</a>
+            </span>
+            
+            <span class="tag-item">
+            <a class="tag" style="font-size: 8px" href="/tag/truth/">truth</a>
+            </span>
+            
+            <span class="tag-item">
+            <a class="tag" style="font-size: 6px" href="/tag/simile/">simile</a>
+            </span>
+            
+        
+    </div>
+</div>
+
+    </div>
+    <footer class="footer">
+        <div class="container">
+            <p class="text-muted">
+                Quotes by: <a href="https://www.goodreads.com/quotes">GoodReads.com</a>
+            </p>
+            <p class="copyright">
+                Made with <span class='zyte'>❤</span> by <a class='zyte' href="https://www.zyte.com">Zyte</a>
+            </p>
+        </div>
+    </footer>
+</body>
+</html>
