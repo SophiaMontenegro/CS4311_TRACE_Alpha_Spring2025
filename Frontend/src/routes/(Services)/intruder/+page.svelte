@@ -14,7 +14,7 @@
 
 	async function scanTarget() {
 	try {
-		const response = await fetch(`${getApiBaseURL()}/api/intruder/reconnaissance`, {
+		const response = await fetch(`${getApiBaseURL().trim()}/api/intruder/reconnaissance`, {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify({ url: targetUrl })

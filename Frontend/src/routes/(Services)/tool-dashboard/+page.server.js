@@ -6,6 +6,7 @@ export function load() {
       { name: 'Brute Force', route: '/bruteForce/config' },
       { name: 'Intruder', route: '/intruder' },
       { name: 'HTTP Tester', route: '/http-tester' },
+      { name: 'SQL Injector', route: '/SQLInjection/config' }
     ]
   };
 }

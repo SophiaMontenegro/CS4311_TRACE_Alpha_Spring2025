@@ -386,6 +386,7 @@
                                     class="flex items-center bg-[var(--accent)] text-[var(--accent-foreground)] text-sm font-medium px-4 py-2 rounded-md shadow hover:bg-[var(--accent3)] disabled:opacity-60 disabled:cursor-not-allowed"
                                     on:click={() => {
 									if (!project.locked) {
+                                        localStorage.getItem('currentProjectName');
 										apiBaseURL = `http://${project.lead_ip}:8000`;
 										localStorage.setItem('apiBaseURL', apiBaseURL);
 										console.log('API BASE URL set to:', apiBaseURL);

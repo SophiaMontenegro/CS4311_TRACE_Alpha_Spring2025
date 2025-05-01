@@ -44,9 +44,9 @@ class FileManager:
 
 
 
-    def create_file_node(self, project_name, job_id, file_name, file_path, size=None, is_log=False, file_format="csv"):
+    def create_file_node(self, project_name, tool_name, job_id, file_name, file_path, size=None, is_log=False, file_format="csv"):
         query = """
-        MATCH (p:Project {name: $project_name})
+        MATCH (p:Project {name: $project_name})-[:ToolResults]->(t:Tool {name: $tool_name})
         CREATE (f:File {
             file_name: $file_name,
             path: $file_path,
@@ -57,12 +57,13 @@ class FileManager:
             is_log: $is_log,
             format: $file_format
         })
-        CREATE (p)-[:HAS_FILE]->(f)
+        CREATE (t)-[:HAS_FILE]->(f)
         """
 
         try:
             self.db.run_query(query, {
                 "project_name": project_name,
+                "tool_name": tool_name,
                 "job_id": job_id,
                 "file_name": file_name,
                 "file_path": file_path,
@@ -72,8 +73,9 @@ class FileManager:
             })
             return True
         except Exception as e:
-            logging.error(f"Error creating file node for project '{project_name}': {e}", exc_info=True)
+            logging.error(f"Error creating file node for project '{project_name}' and tool '{tool_name}': {e}", exc_info=True)
             return None
+
 
 
 
@@ -244,15 +246,18 @@ class FileManager:
         """
         query = """
         MATCH (p:Project {name: $project_name})-[:ToolResults]->(t:Tool {name: $tool_name})
-        RETURN t.directory AS directory
+        RETURN t.file_path AS file_path
         """
         result = self.db.run_query(query, {
             "project_name": project_name,
             "tool_name": tool_name
         }, fetch=True)
-        return result[0]["directory"] if result and result[0].get("directory") else None
+        print("✅ Result:", result)
+        return result[0]["file_path"] if result and result[0].get("file_path") else None
 
     def create_tools_for_project(self, project_name: str, base_file_path: str):
+
+        base_file_path = os.path.normpath(base_file_path) # normalize to make it adapative to windows and linux
         """
         Creates Tool nodes for a project, appending the tool name to the file_path,
         and initializing an empty job_ids list.
@@ -274,7 +279,8 @@ class FileManager:
 
         tool_nodes = []
         for tool_name in tools:
-            full_path = f"{base_file_path}\\{tool_name}"  # Windows-style path
+
+            full_path = os.path.join(base_file_path, project_name, tool_name)
             tool_nodes.append({
                 "name": tool_name,
                 "file_path": full_path,
