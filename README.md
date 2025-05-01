@@ -38,13 +38,143 @@ cd Frontend
 npm install
 ```
 
-### Neo4j Configuration
+## 🐍 Backend Setup (Python + Requirements)
 
-1. Install and start Neo4j locally
-2. Modify the `.env` file inside `Backend/Team3/Database` with your Neo4j credentials
-3. Configure Neo4j to allow connections from any IP on the intranet
-4. Ensure your firewall permits these connections
+To install all required Python dependencies for the backend:
 
+### 📦 Step 1: Navigate to the Backend directory
+
+```bash
+cd Backend
+```
+
+### 📥 Step 2: Install dependencies
+
+Use the following command to install all required packages:
+
+```bash
+pip install -r requirements.txt
+```
+
+This ensures that all necessary modules (such as FastAPI, neo4j, etc.) are available in your Python environment.
+
+---
+
+### 🧠 Local Neo4j Database Configuration for TRACE
+
+This guide walks through the steps to configure a **local Neo4j instance** for the TRACE penetration testing suite. It includes instructions for both **Lead Analysts (who host the database)** and **Client Analysts (who connect remotely)**.
+
+---
+
+### 📥 Step 1: Download & Install Neo4j
+
+### For ONLY THE LEAD's Machine
+
+Download Neo4j Desktop:
+➡️ [https://neo4j.com/download/](https://neo4j.com/download/)
+
+Follow installation steps, including:
+- Setting up an account
+- Copying and pasting the activation code
+- Skipping updates when prompted
+- Choosing a save directory
+
+---
+
+### 🛠️ Step 2: Configure the Database (Lead Analyst)
+
+#### 🔧 Create a Local DBMS
+
+1. Open Neo4j Desktop and **add a local DBMS** (not a remote connection).
+2. Set an easy-to-remember password.
+3. Stop and delete any temporary projects you don’t need.
+
+#### 📝 Modify the Configuration File
+
+1. Go to **Manage → Settings** for your database.
+2. Locate and **uncomment or set** these lines:
+
+```properties
+# Listen on all interfaces
+dbms.default_listen_address=0.0.0.0
+
+# Advertise the LAN IP (replace with actual IP)
+dbms.default_advertised_address=192.168.X.X
+```
+
+### 🔥 Open the Firewall Ports
+
+If you’re on Linux:
+sudo ufw allow 7687/tcp
+sudo ufw allow 7474/tcp
+
+For Windows, ensure port 7687 and 7474 are allowed through the firewall.
+
+### 📁 Step 3: Set Up the .env File
+
+For Lead Analyst (Host)
+NEO4J_URI=bolt://localhost:7687
+NEO4J_USER=neo4j
+NEO4J_PASSWORD=your_password_here
+
+For Client Analysts (Remote Users)
+NEO4J_URI=bolt://<host_ip>:7687
+NEO4J_USER=neo4j
+NEO4J_PASSWORD=your_password_here
+
+### 🧪 Final Step: Test Your Setup
+	•	Start the Neo4j instance via Neo4j Desktop.
+	•	Run the TRACE backend locally and ensure there’s no authentication or connection error.
+
+If you see:
+Neo.ClientError.Security.Unauthorized
+
+→ Double-check your .env credentials and make sure the database is running.
+
+---
+
+## 🌐 Frontend Setup (Vite + Node.js)
+
+This project uses **Vite** with **Node.js** for the frontend.
+
+### 📦 Step 1: Install Node.js and npm
+
+Download the latest **LTS version** of Node.js, which includes npm:
+➡️ [https://nodejs.org/en/download](https://nodejs.org/en/download)
+
+After installation, verify versions:
+```bash
+node -v
+npm -v
+```
+
+### 🚀 Step 2: Install Dependencies
+
+Navigate to the frontend directory:
+```bash
+cd Frontend
+npm install
+```
+
+This installs all required packages listed in `package.json`.
+
+### ▶️ Step 3: Run the Frontend
+
+```bash
+npm run dev
+```
+
+This starts the Vite development server. You should see output showing the local server URL, e.g.:
+
+```
+  VITE vX.X.X  ready in Y ms
+
+  ➜  Local:   http://localhost:5173/
+```
+
+Visit the provided URL in your browser to view the TRACE UI.
+
+---
 ## Getting Started
 
 ### Starting the Application
