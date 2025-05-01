@@ -11,7 +11,7 @@
 	import { derived, get, writable } from 'svelte/store';
 	import { serviceResults } from '$lib/stores/serviceResultsStore.js';
 	import { toast } from 'svelte-sonner';
-	import { connectToSQLInjectionWebSocket, closeSQLInjectionWebSocket } from '$lib/services/sqlInjectionSocket';
+	//import { connectToSQLInjectionWebSocket, closeSQLInjectionWebSocket } from '$lib/services/sqlInjectionSocket';
 	import {
 		scanProgress,
 		scanPaused,
@@ -26,7 +26,7 @@
 	const { data } = $props();
 	let showStopDialog = $state(false);
 	let intervalId;
-  let projectName;
+    let projectName;
 	let apiBaseURL = '';
 
 	if (browser) {
@@ -171,7 +171,7 @@
         
         try {
             // Make the actual API call to get the results
-            const res = await fetch(`http://localhost:8000/sqlmap/results/${projectName}/${jobId}`); // saving results
+            const res = await fetch(`${apiBaseURL}/sqlmap/results/${projectName}/${jobId}`); // saving results
             if (!res.ok) {
                 throw new Error(`Failed to fetch results: ${res.statusText}`);
             }
@@ -181,7 +181,7 @@
             // Check if we have a result file path
             if (data && data.result_file) {
                 // Fetch the CSV content from the result file
-                const csvRes = await fetch(`http://localhost:8000/sqlmap/csv/${projectName}/${jobId}`);
+                const csvRes = await fetch(`${apiBaseURL}/sqlmap/csv/${projectName}/${jobId}`);
                 if (!csvRes.ok) {
                     throw new Error(`Failed to fetch CSV: ${csvRes.statusText}`);
                 }

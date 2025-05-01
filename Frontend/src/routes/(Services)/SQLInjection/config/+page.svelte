@@ -6,6 +6,8 @@
     import { Switch } from '$lib/components/ui/switch/index.js';
     import StepIndicator from '$lib/components/ui/progressStep/ProgressStep.svelte';
     import FormField from '$lib/components/ui/form/FormField.svelte';
+    import { browser } from '$app/environment';
+    import { getApiBaseURL } from '$lib/utils/apiBaseURL';
 
     let analystInitials = '';
     let projectName;
@@ -31,8 +33,11 @@
 
     let fieldErrors = {};
 
-    const API_BASE_URL = 'http://127.0.0.1:8000';
+    let apiBaseURL = '';
 
+    if (browser) {
+        apiBaseURL = getApiBaseURL();
+    }
 
     const inputFields = [
         {
@@ -173,7 +178,7 @@
             if (formData.dbEnum) flags += ` --dbs`;
             if (formData.additional) flags += ` ${formData.additional}`;
     
-            const res = await fetch(`${API_BASE_URL}/sqlmap/scan`, {
+            const res = await fetch(`${apiBaseURL}/sqlmap/scan`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -199,7 +204,7 @@
 
     async function fetchHistory() {
         try {
-            const res = await fetch(`${API_BASE_URL}/sqlmap/history`);
+            const res = await fetch(`${apiBaseURL}/sqlmap/history`);
             if (res.ok) {
                 const data = await res.json();
                 history = data.history || [];

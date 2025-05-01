@@ -43,7 +43,10 @@ export const actions = {
 		};
 
 		try {
-			const response = await fetch("http://127.0.0.1:8000/api/sqlinjection", {
+            const apiBaseURL = formData["api-base-url"];
+            if (!apiBaseURL) throw new Error('API Base URL is not set!');
+            console.log("Sending sql injection config to:", apiBaseURL);
+			const response = await fetch("${apiBaseURL}/api/sqlinjection", {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
