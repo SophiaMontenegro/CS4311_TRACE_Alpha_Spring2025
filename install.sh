@@ -32,6 +32,8 @@ else
     exit 1
 fi
 
+cd Team3/Database
+
 # Prompt user for Neo4j credentials
 echo "Please enter your Neo4j connection details:"
 read -p "NEO4J_URI: " NEO4J_URI
