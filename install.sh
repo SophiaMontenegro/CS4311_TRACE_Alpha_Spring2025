@@ -52,7 +52,7 @@ EOL
 echo ".env file created with provided Neo4j credentials."
 
 # Return to project root
-cd ..
+cd ../../../
 
 # Install frontend dependencies
 echo "Installing frontend dependencies..."
