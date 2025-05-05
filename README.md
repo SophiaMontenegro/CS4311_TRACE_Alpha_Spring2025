@@ -19,9 +19,9 @@ For a detailed video guide on installation and setup, refer to the following lin
 - Node.js and npm
 - Neo4j database
 
-### Project Dependencies
+### Dependencies
 
-To set up the project environment, execute the `install.sh` script.  
+To set up the project environment automatically, execute the `install.sh` script.  
 This script will:
 
 - Create and activate a Python virtual environment
@@ -32,7 +32,45 @@ This script will:
 ./install.sh
 ```
 
----
+To manually install dependencies:
+**Backend:**
+
+```bash
+# Create and activate a Python virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install dependencies
+cd Backend
+pip install -r requirements.txt
+```
+
+**Frontend:**
+
+```bash
+cd Frontend
+npm install
+```
+
+## 🐍 Backend Setup (Python + Requirements)
+
+To install all required Python dependencies for the backend:
+
+### 📦 Step 1: Navigate to the Backend directory
+
+```bash
+cd Backend
+```
+
+### 📥 Step 2: Install dependencies
+
+Use the following command to install all required packages:
+
+```bash
+pip install -r requirements.txt
+```
+
+## This ensures that all necessary modules (such as FastAPI, neo4j, etc.) are available in your Python environment.
 
 ### 🧠 Local Neo4j Database Configuration for TRACE
 
