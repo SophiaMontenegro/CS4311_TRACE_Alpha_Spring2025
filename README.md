@@ -19,44 +19,18 @@ For a detailed video guide on installation and setup, refer to the following lin
 - Node.js and npm
 - Neo4j database
 
-### Dependencies
+### Project Dependencies
 
-**Backend:**
-```bash
-# Create and activate a Python virtual environment
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+To set up the project environment, execute the `install.sh` script.  
+This script will:
 
-# Install dependencies
-cd Backend
-pip install -r requirements.txt
-```
-
-**Frontend:**
-```bash
-cd Frontend
-npm install
-```
-
-## 🐍 Backend Setup (Python + Requirements)
-
-To install all required Python dependencies for the backend:
-
-### 📦 Step 1: Navigate to the Backend directory
+- Create and activate a Python virtual environment
+- Install backend dependencies (`FastAPI`, `neo4j`, etc.)
+- Install frontend dependencies via `npm`
 
 ```bash
-cd Backend
+./install.sh
 ```
-
-### 📥 Step 2: Install dependencies
-
-Use the following command to install all required packages:
-
-```bash
-pip install -r requirements.txt
-```
-
-This ensures that all necessary modules (such as FastAPI, neo4j, etc.) are available in your Python environment.
 
 ---
 
@@ -74,6 +48,7 @@ Download Neo4j Desktop:
 ➡️ [https://neo4j.com/download/](https://neo4j.com/download/)
 
 Follow installation steps, including:
+
 - Setting up an account
 - Copying and pasting the activation code
 - Skipping updates when prompted
@@ -123,8 +98,9 @@ NEO4J_USER=neo4j
 NEO4J_PASSWORD=your_password_here
 
 ### 🧪 Final Step: Test Your Setup
-	•	Start the Neo4j instance via Neo4j Desktop.
-	•	Run the TRACE backend locally and ensure there’s no authentication or connection error.
+
+    •	Start the Neo4j instance via Neo4j Desktop.
+    •	Run the TRACE backend locally and ensure there’s no authentication or connection error.
 
 If you see:
 Neo.ClientError.Security.Unauthorized
@@ -143,6 +119,7 @@ Download the latest **LTS version** of Node.js, which includes npm:
 ➡️ [https://nodejs.org/en/download](https://nodejs.org/en/download)
 
 After installation, verify versions:
+
 ```bash
 node -v
 npm -v
@@ -151,6 +128,7 @@ npm -v
 ### 🚀 Step 2: Install Dependencies
 
 Navigate to the frontend directory:
+
 ```bash
 cd Frontend
 npm install
@@ -175,17 +153,32 @@ This starts the Vite development server. You should see output showing the local
 Visit the provided URL in your browser to view the TRACE UI.
 
 ---
+
 ## Getting Started
 
 ### Starting the Application
 
+## Run Script
+
+To run it automatically run:
+
+```Bash
+./run.sh
+```
+
+**Register and login** to the application
+
+## Run it Manually
+
 1. **Start the Frontend:**
+
    ```bash
    cd Frontend
    npm run dev
    ```
 
 2. **Start the Backend:**
+
    ```bash
    # In a separate terminal with virtual environment activated
    cd Backend
@@ -203,34 +196,45 @@ Visit the provided URL in your browser to view the TRACE UI.
 ## Tools
 
 ### Crawler
+
 Scans websites by following HTML links to map site structure and discover pages.
 
 ### Web Tree
+
 Visualizes website structure from crawler results. Nodes are color-coded based on:
+
 - Response codes
 - Path sensitivity
 - Potential security issues
 
 ### Intruder
+
 Tests form vulnerabilities by:
+
 - Identifying forms on target sites
 - Allowing insertion of custom payloads at specified intrusion points
 - Submitting crafted POST requests
 
 ### HTTP-Tester
+
 A request crafting tool that allows you to:
+
 - Create custom HTTP requests
 - Edit and manipulate request parameters
 - Resend modified requests to analyze responses
 
 ### Directory Brute Forcer
+
 Discovers hidden directories and pages by:
+
 - Testing paths not linked in HTML
 - Using customizable wordlists
 - Identifying resources through status code responses
 
 ### Fuzzer
+
 Tests application parameter handling by:
+
 - Injecting unexpected data into parameters
 - Using various payload types
 - Identifying potential vulnerabilities
@@ -242,18 +246,22 @@ The Markov Decision Process (MDP) module generates high-quality usernames and pa
 ### How it Works
 
 1. **Input Preparation**
+
    - Processes site data and wordlists for training credential generation
 
 2. **State Transition Mapping**
+
    - Analyzes character sequences to build transition probability maps
    - Creates state-action pairs linking potential actions to resulting states
 
 3. **Q-Learning Optimization**
+
    - Calculates rewards based on username quality and password strength
    - Penalizes reused credentials while rewarding structural patterns
    - Updates Q-values iteratively to improve future credentials
 
 4. **Credential Generation**
+
    - Starts with initial state derived from wordlist
    - Iteratively extends username/password based on optimized transitions
    - Ensures quality criteria are satisfied
@@ -265,19 +273,23 @@ The Markov Decision Process (MDP) module generates high-quality usernames and pa
 ### Running the MDP Generator
 
 1. **Prepare Input Files:**
+
    - `wordlist.txt`: Contains sample words for training (user-specified via file selection)
    - `site_list.csv`: Contains discovered directories from the spider functionality
 
 2. **Run the Generator:**
+
    ```bash
    python mdp3.py
    ```
 
 3. **Output:**
+
    - Generated credentials are displayed in the GUI
    - Results are stored as a CSV file for future reference
 
    Example output:
+
    ```
    Username: skipe487, Password: Computerst%
    ```
