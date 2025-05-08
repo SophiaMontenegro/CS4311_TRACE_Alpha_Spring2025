@@ -57,11 +57,12 @@
             advanced: false
         },
         {
+            
             id: 'injectableParams',
             label: 'Injectable Parameters',
             placeholder: 'id',
             tooltip: 'Comma-separated parameter names to test (optional)',
-            required: false,
+            required: true, // Entering a parameter is now required 
             advanced: false
         },
         {
@@ -119,6 +120,7 @@
         validateField(id, value);
     }
 
+    
     function validateField(id, value) {
         if (id === 'targetUrl' && !value) {
             fieldErrors[id] = { error: true, message: 'Target URL is required' };
@@ -130,27 +132,19 @@
             } else {
                 fieldErrors[id] = null;
             }
-        } 
-        // else if (id === 'enumLevel') {
-        //     if (value && !/^[1-5]$/.test(value)) {
-        //         fieldErrors[id] = { error: true, message: 'Level must be 1-5' };
-        //     } else {
-        //         fieldErrors[id] = null;
-        //     }
-        // } 
-        // else if (id === 'timeout') {
-        //     if (value && !/^\d+$/.test(value)) {
-        //         fieldErrors[id] = { error: true, message: 'Timeout must be numeric' };
-        //     } else {
-        //         fieldErrors[id] = null;
-        //     }
-        // } 
-        else {
+        // Have to enter a valid parameter you can't just enter 0 or none or NA etc
+        } else if (id === 'injectableParams') {
+            if (!value) {
+                fieldErrors[id] = { error: true, message: 'Injectable Parameters are required (e.g., "id,name")' };
+            } else if (!/['";#=<>%_\-\-]|\/\*/.test(value)) { // if you don't enter correct or valid
+                fieldErrors[id] = { error: true, message: 'Invalid Parameter' };
+            } else {
+                fieldErrors[id] = null;
+            }
+        } else {
             fieldErrors[id] = null;
         }
     }
-
-
 
     async function runScan(event) {
         event.preventDefault();
