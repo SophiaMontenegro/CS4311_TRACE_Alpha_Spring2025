@@ -16,7 +16,7 @@ class WebTreeBuilder:
             tree = [{
                 "path": r["path"],
                 "severity": r["severity"],
-                "ip": r.get("ip", "0.0.0.0"),
+                "ip": r.get("ip"),
                 "hidden": r.get("hidden", False),
                 "url": r.get("url", "")
             } for r in result]
@@ -104,7 +104,6 @@ class WebTreeBuilder:
                     MERGE (parent:Node {path: $parent_path})
                     ON CREATE SET 
                         parent.severity = "unknown", 
-                        parent.ip = "0.0.0.0",
                         parent.hidden = false
                     """,
                     parent_path=parent_path
